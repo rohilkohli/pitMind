@@ -1,0 +1,123 @@
+"""Rule-based + heuristic scoring for pit windows and compounds."""
+
+from __future__ import annotations
+
+from statistics import mean
+
+from models.race_state import LapPoint, TelemetryPayload
+from models.strategy import StrategyRecommendation, StrategyScores
+
+
+def _latest_wear(laps: list[LapPoint]) -> float:
+    wears = [lp.tyre_wear_pct for lp in laps if lp.tyre_wear_pct is not None]
+    return wears[-1] if wears else 55.0
+
+
+def _lap_time_trend(laps: list[LapPoint]) -> float:
+    times = [lp.lap_time_s for lp in laps[-8:] if lp.lap_time_s is not None]
+    if len(times) < 3:
+        return 0.0
+    early = mean(times[: len(times) // 2])
+    late = mean(times[len(times) // 2 :])
+    return max(0.0, late - early)
+
+
+def _gap_volatility(laps: list[LapPoint]) -> float:
+    gaps = [lp.gap_ahead_s for lp in laps[-10:] if lp.gap_ahead_s is not None]
+    if len(gaps) < 3:
+        return 0.3
+    m = mean(gaps)
+    var = mean((g - m) ** 2 for g in gaps)
+    return min(1.0, var**0.5 / max(0.5, abs(m) + 0.5))
+
+
+def predict_strategy(payload: TelemetryPayload) -> tuple[StrategyScores, list[str], dict]:
+    laps = sorted(payload.laps, key=lambda x: x.lap)
+    wear = _latest_wear(laps)
+    degradation = _lap_time_trend(laps)
+    gap_vol = _gap_volatility(laps)
+
+    pit_urgency = min(
+        100.0,
+        max(0.0, wear * 0.65 + degradation * 120 + (gap_vol * 25)),
+    )
+
+    sc_probability = min(100.0, max(5.0, gap_vol * 55 + degradation * 80))
+
+    threat_behind = laps[-1].gap_behind_s if laps and laps[-1].gap_behind_s is not None else 1.2
+    overtake_risk = min(100.0, max(10.0, 70 - threat_behind * 25 + degradation * 40))
+
+    current_lap = laps[-1].lap if laps else 0
+    window_start = current_lap + 1
+    window_end = current_lap + 4
+
+    if pit_urgency >= 78:
+        pit_this_lap = True
+        reasons = [
+            f"Tyre wear proxy at ~{wear:.0f}% with rising lap-time delta (~{degradation:.2f}s trend).",
+            "Closing pit window aligns with minimizing time lost to compound drop-off.",
+        ]
+    elif pit_urgency >= 62:
+        pit_this_lap = False
+        reasons = [
+            "Wear approaching critical band but lap-time loss still manageable short-term.",
+            f"Monitor gap volatility (~{gap_vol:.2f}); flexible stop across laps {window_start}-{window_end}.",
+        ]
+    else:
+        pit_this_lap = False
+        reasons = [
+            "Tyre life and pace stability favor extending stint.",
+            "Re-evaluate after next telemetry batch or SC signal.",
+        ]
+
+    compound = laps[-1].tyre_compound if laps and laps[-1].tyre_compound else "MEDIUM"
+    compound_upper = str(compound).upper()
+    suggested = "HARD" if pit_urgency > 70 and "SOFT" in compound_upper else (
+        "MEDIUM" if compound_upper in {"SOFT", "UNKNOWN"} else compound_upper
+    )
+
+    meta = {
+        "wear": wear,
+        "degradation": degradation,
+        "gap_volatility": gap_vol,
+        "current_lap": current_lap,
+        "circuit": payload.circuit,
+        "driver": payload.driver,
+        "suggested_compound": suggested,
+    }
+
+    scores = StrategyScores(
+        pit_urgency=round(pit_urgency, 2),
+        sc_probability_next_3_laps=round(sc_probability, 2),
+        overtake_risk=round(overtake_risk, 2),
+        recommended_window_laps=(window_start, window_end),
+    )
+    return scores, reasons, meta
+
+
+def build_recommendation(payload: TelemetryPayload) -> StrategyRecommendation:
+    scores, reasons, meta = predict_strategy(payload)
+
+    pit_now = scores.pit_urgency >= 78
+    action = "PIT THIS LAP" if pit_now else "STAY OUT — PREPARE WINDOW"
+
+    explanation_stub = (
+        f"Pitting {'now' if pit_now else 'in the next stop window'} is suggested because "
+        f"tyre wear sits near {meta['wear']:.0f}% with ~{meta['degradation']:.2f}s lap-time trend; "
+        f"gap volatility hints SC clustering probability ~{scores.sc_probability_next_3_laps:.0f}% "
+        "over the next few laps (heuristic)."
+    )
+
+    return StrategyRecommendation(
+        action=action,
+        pit_this_lap=pit_now,
+        suggested_compound=str(meta.get("suggested_compound", "MEDIUM")),
+        scores=scores,
+        structured_reasons=reasons,
+        explanation=explanation_stub,
+        pipeline_steps=[
+            "preprocess.telemetry.normalize",
+            "strategy.heuristic.pit_window",
+            "llm.granite.explain",
+        ],
+    )

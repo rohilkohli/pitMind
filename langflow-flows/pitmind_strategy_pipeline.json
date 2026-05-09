@@ -1,0 +1,76 @@
+{
+  "name": "pitmind_strategy_pipeline",
+  "description": "Export template mirroring the PitMind backend pipeline: preprocess telemetry, score pit window, optionally enrich via HTTP tool calls, then Granite explanation.",
+  "data": {
+    "nodes": [
+      {
+        "id": "ingest",
+        "type": "TextInput",
+        "position": { "x": 0, "y": 0 },
+        "data": {
+          "label": "Telemetry JSON",
+          "value": "{ \"circuit\": \"Monza\", \"driver\": \"VER\", \"laps\": [] }"
+        }
+      },
+      {
+        "id": "normalize",
+        "type": "PythonFunction",
+        "position": { "x": 260, "y": 0 },
+        "data": {
+          "label": "Preprocess / sanitize",
+          "code": "# Pseudocode — mirror backend/app/services/sanitize.py\nreturn normalized_payload"
+        }
+      },
+      {
+        "id": "score",
+        "type": "PythonFunction",
+        "position": { "x": 520, "y": 0 },
+        "data": {
+          "label": "Heuristic pit scoring",
+          "code": "# Pseudocode — mirror backend/app/services/strategy_engine.py\nreturn scores"
+        }
+      },
+      {
+        "id": "http_merge",
+        "type": "HTTPRequest",
+        "position": { "x": 780, "y": -80 },
+        "data": {
+          "label": "Optional external enrichment",
+          "method": "POST",
+          "url": "{{LANGFLOW_MERGE_ENDPOINT}}"
+        }
+      },
+      {
+        "id": "granite",
+        "type": "IBMGranite",
+        "position": { "x": 1040, "y": 0 },
+        "data": {
+          "label": "Granite explanation",
+          "model": "{{GRANITE_MODEL_ID}}",
+          "prompt": "Explain pit recommendation with telemetry evidence."
+        }
+      },
+      {
+        "id": "structured_output",
+        "type": "StructuredOutput",
+        "position": { "x": 1320, "y": 0 },
+        "data": {
+          "label": "Recommendation card JSON",
+          "schema": "{ action: string, pit_this_lap: boolean, scores: object, explanation: string }"
+        }
+      }
+    ],
+    "edges": [
+      { "source": "ingest", "target": "normalize" },
+      { "source": "normalize", "target": "score" },
+      { "source": "score", "target": "http_merge" },
+      { "source": "http_merge", "target": "granite" },
+      { "source": "granite", "target": "structured_output" }
+    ]
+  },
+  "notes": [
+    "Langflow component IDs vary by version — treat this file as a blueprint to recreate visually.",
+    "Wire IBM Granite via Watsonx credentials consistent with backend environment variables.",
+    "Point HTTP nodes to FastAPI hooks if you externalize scoring microservices."
+  ]
+}

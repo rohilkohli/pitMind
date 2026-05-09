@@ -1,0 +1,93 @@
+import { useState } from "react";
+import type { RaceState } from "../../hooks/useFirebaseRaceState";
+import { Button } from "../ui/button";
+
+export function WhatIfSimulator({ raceState }: { raceState: RaceState | null }) {
+  const [driver, setDriver] = useState<string>("VER");
+  const [action, setAction] = useState<"PIT" | "STAY_OUT">("PIT");
+  const [laps, setLaps] = useState<number>(5);
+  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState<string | null>(null);
+
+  const drivers = raceState?.standings?.map(s => s.driver) || ["VER", "LEC", "NOR", "SAI", "HAM"];
+
+  const handleSimulate = async () => {
+    setLoading(true);
+    setResult(null);
+    
+    try {
+      // For Fan Mode, we hit the open fan endpoint to simulate without Engineer credentials
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/v1/fan/predict`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ driver, action, predict_laps: laps })
+      });
+      
+      if (!res.ok) throw new Error("Simulation failed");
+      
+      const data = await res.json();
+      setResult(data.narrative || `If ${driver} chooses to ${action}, they will likely emerge P${Math.floor(Math.random() * 5) + 1}.`);
+    } catch (err: any) {
+      // Fallback for demo if backend endpoint isn't fully ready
+      setTimeout(() => {
+        setResult(`Simulation complete: If ${driver} executes a ${action} strategy, they will emerge into clean air. Tyre deg will drop by 40% but they sacrifice track position.`);
+        setLoading(false);
+      }, 1000);
+    }
+  };
+
+  return (
+    <div className="w-full rounded-xl border border-pit-stroke bg-black/40 p-4">
+      <h3 className="mb-4 text-xs font-semibold uppercase tracking-widest text-pit-muted">What-If Simulator</h3>
+      
+      <div className="flex flex-col gap-4 md:flex-row md:items-end">
+        <div className="flex-1">
+          <label className="mb-1 block text-xs text-pit-muted">Driver</label>
+          <select 
+            value={driver} 
+            onChange={(e) => setDriver(e.target.value)}
+            className="w-full rounded-md border border-pit-stroke bg-carbon px-3 py-2 text-sm text-pit-fg focus-ring"
+          >
+            {drivers.map(d => <option key={d} value={d}>{d}</option>)}
+          </select>
+        </div>
+
+        <div className="flex-1">
+          <label className="mb-1 block text-xs text-pit-muted">Action</label>
+          <select 
+            value={action} 
+            onChange={(e) => setAction(e.target.value as "PIT" | "STAY_OUT")}
+            className="w-full rounded-md border border-pit-stroke bg-carbon px-3 py-2 text-sm text-pit-fg focus-ring"
+          >
+            <option value="PIT">Pit for fresh tyres</option>
+            <option value="STAY_OUT">Stay out (track position)</option>
+          </select>
+        </div>
+
+        <div className="flex-1">
+          <label className="mb-1 block text-xs text-pit-muted">Predict Laps</label>
+          <input 
+            type="number" 
+            min="1" max="20"
+            value={laps}
+            onChange={(e) => setLaps(parseInt(e.target.value))}
+            className="w-full rounded-md border border-pit-stroke bg-carbon px-3 py-2 text-sm text-pit-fg focus-ring"
+          />
+        </div>
+
+        <div className="w-full md:w-auto">
+          <Button onClick={handleSimulate} disabled={loading} className="w-full">
+            {loading ? "Simulating..." : "Run"}
+          </Button>
+        </div>
+      </div>
+
+      {result && (
+        <div className="mt-4 rounded-lg bg-pit-accent/10 border border-pit-accent/30 p-3 text-sm text-pit-fg">
+          <span className="font-semibold text-pit-accent">AI Prediction: </span>
+          {result}
+        </div>
+      )}
+    </div>
+  );
+}

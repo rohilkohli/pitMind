@@ -107,6 +107,25 @@ def build_recommendation(payload: TelemetryPayload) -> StrategyRecommendation:
         f"gap volatility hints SC clustering probability ~{scores.sc_probability_next_3_laps:.0f}% "
         "over the next few laps (heuristic)."
     )
+    window_start, window_end = scores.recommended_window_laps
+    evidence = [
+        f"Tyre wear proxy ~{meta['wear']:.0f}% with lap-time trend +{meta['degradation']:.2f}s.",
+        f"Gap volatility index {meta['gap_volatility']:.2f} (SC probability {scores.sc_probability_next_3_laps:.0f}%).",
+        f"Recommended pit window laps {window_start}-{window_end} (current lap {meta['current_lap']}).",
+    ]
+    assumptions = [
+        "Telemetry snapshot reflects current pace without major traffic shifts.",
+        "No unexpected safety car beyond volatility heuristic.",
+        "Tyre wear estimate assumes steady push laps, not peak-attack bursts.",
+    ]
+    alternative = (
+        f"Hold to laps {window_start}-{window_end} if degradation stabilizes; "
+        "pit immediately if wear spikes above ~80% or lap-time loss grows >0.3s."
+    )
+    if pit_now:
+        confidence = max(40.0, min(100.0, scores.pit_urgency))
+    else:
+        confidence = max(40.0, min(100.0, 100.0 - scores.pit_urgency))
 
     return StrategyRecommendation(
         action=action,
@@ -115,6 +134,10 @@ def build_recommendation(payload: TelemetryPayload) -> StrategyRecommendation:
         scores=scores,
         structured_reasons=reasons,
         explanation=explanation_stub,
+        evidence=evidence,
+        assumptions=assumptions,
+        confidence=round(confidence, 1),
+        alternative=alternative,
         pipeline_steps=[
             "preprocess.telemetry.normalize",
             "strategy.heuristic.pit_window",

@@ -1,6 +1,8 @@
 # Env & secrets
 .env
 .env.local
+*.env
+firebase-service-account.json
 *.pem
 
 # Python

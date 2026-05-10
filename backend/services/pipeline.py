@@ -2,12 +2,76 @@
 
 from __future__ import annotations
 
+import json
 from typing import Any
 
 from models.strategy import StrategyRecommendation
 from models.race_state import TelemetryPayload
 from services import granite, langflow_client
 from services.strategy_engine import build_recommendation
+
+
+def _extract_granite_json(raw: str) -> dict[str, Any] | None:
+    if not raw:
+        return None
+    start = raw.find("{")
+    end = raw.rfind("}")
+    if start < 0 or end <= start:
+        return None
+    try:
+        return json.loads(raw[start : end + 1])
+    except json.JSONDecodeError:
+        return None
+
+
+def _coerce_list(value: Any, fallback: list[str]) -> list[str]:
+    if isinstance(value, list):
+        items = [str(item).strip() for item in value if str(item).strip()]
+        if items:
+            return items
+    return fallback
+
+
+def _coerce_text(value: Any, fallback: str) -> str:
+    if isinstance(value, str) and value.strip():
+        return value.strip()
+    return fallback
+
+
+def _coerce_confidence(value: Any, fallback: float) -> float:
+    try:
+        num = float(value)
+    except (TypeError, ValueError):
+        return fallback
+    if num <= 1.0:
+        num *= 100.0
+    return max(0.0, min(100.0, num))
+
+
+def _merge_granite_explainability(raw: str, base: StrategyRecommendation) -> tuple[str, list[str], list[str], float, str]:
+    fallback_explanation = raw.strip() if raw.strip() else base.explanation
+    payload = _extract_granite_json(raw)
+    if not payload:
+        return (
+            fallback_explanation,
+            base.evidence,
+            base.assumptions,
+            base.confidence,
+            base.alternative,
+        )
+
+    summary = (
+        payload.get("summary")
+        or payload.get("prose")
+        or payload.get("recommendation")
+        or payload.get("explanation")
+    )
+    explanation = _coerce_text(summary, fallback_explanation)
+    evidence = _coerce_list(payload.get("evidence"), base.evidence)
+    assumptions = _coerce_list(payload.get("assumptions"), base.assumptions)
+    alternative = _coerce_text(payload.get("alternative"), base.alternative)
+    confidence = _coerce_confidence(payload.get("confidence"), base.confidence)
+    return explanation, evidence, assumptions, confidence, alternative
 
 
 async def run_strategy_pipeline(payload: TelemetryPayload) -> StrategyRecommendation:
@@ -46,8 +110,9 @@ async def run_strategy_pipeline(payload: TelemetryPayload) -> StrategyRecommenda
     }
 
     system = (
-        "You are PitMind, an F1 race engineer copilot. Explain strategy succinctly for a stressed engineer. "
-        "Use only plausible motorsport reasoning; if uncertainty remains, say so. Under 180 words."
+        "You are PitMind, an F1 race engineer copilot. Return ONLY JSON with keys "
+        "summary, evidence, confidence, assumptions, alternative. Summary must be 1-3 sentences, "
+        "confidence is 0-100, evidence/assumptions are string arrays. Use plausible motorsport reasoning."
     )
     user = (
         f"Telemetry summary for {payload.driver} at {payload.circuit}: {context}. "
@@ -55,14 +120,19 @@ async def run_strategy_pipeline(payload: TelemetryPayload) -> StrategyRecommenda
         f"Suggested compound: {base.suggested_compound}."
     )
 
-    explanation = await granite.granite_generate(system, user)
+    granite_raw = await granite.granite_generate(system, user)
+    explanation, evidence, assumptions, confidence, alternative = _merge_granite_explainability(granite_raw, base)
     return StrategyRecommendation(
         action=base.action,
         pit_this_lap=base.pit_this_lap,
         suggested_compound=base.suggested_compound,
         scores=base.scores,
         structured_reasons=base.structured_reasons,
-        explanation=explanation.strip(),
+        explanation=explanation,
+        evidence=evidence,
+        assumptions=assumptions,
+        confidence=confidence,
+        alternative=alternative,
         pipeline_steps=base.pipeline_steps,
     )
 

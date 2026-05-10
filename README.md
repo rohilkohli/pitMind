@@ -10,8 +10,8 @@ Race engineers synthesize hundreds of telemetry-derived signals per lap—tyre d
 
 ## AI / Technical Approach
 
-- **IBM Granite** powers natural-language explanations for strategy cards, comparison summaries, debriefs, and interactive chat follow-ups (`backend/app/services/granite.py`).
-- **Langflow** models the multi-step pipeline visually. This repo ships a blueprint export in `langflow-flows/pitmind_strategy_pipeline.json` plus an HTTP runner stub (`backend/app/services/langflow_client.py`) so flows can call external enrichment endpoints before Granite narrates.
+- **IBM Granite** powers natural-language explanations for strategy cards, comparison summaries, debriefs, and interactive chat follow-ups (`backend/services/granite.py`).
+- **Langflow** models the multi-step pipeline visually. This repo ships a blueprint export in `langflow-flows/pitmind_strategy_pipeline.json` plus an HTTP runner stub (`backend/services/langflow_client.py`) so flows can call external enrichment endpoints before Granite narrates.
 - **FastAPI** validates uploads, rate limits APIs, sanitizes paths, and stitches pipeline stages. The backend is modularized into `routes/`, `models/` (Pydantic), and `services/`.
 - **FastF1** (optional) produces grounded CSV exports via `backend/scripts/export_fastf1_sample.py`; bundled samples live in `data/`.
 - **React + Tailwind + Recharts + React Router** drive the multi-view frontend (Dashboard for engineers, Fan Mode for public).
@@ -100,9 +100,17 @@ cd backend
 # Note: Python 3.11 or 3.12 is required (pydantic-core requires Rust/maturin on 3.14+)
 # A .python-version file is included for pyenv users.
 python -m venv .venv
-source .venv/bin/activate  # Windows: .venv\Scripts\activate
+# macOS / Linux
+source .venv/bin/activate
+# Windows (PowerShell)
+.venv\Scripts\Activate.ps1
+# Windows (cmd.exe)
+.venv\Scripts\activate.bat
 pip install -r requirements.txt
-uvicorn app.main:app --reload --port 8000
+# Run from the backend/ directory:
+uvicorn main:app --reload --port 8000
+# Or from project root (explicit module path):
+# python -m uvicorn backend.main:app --reload --port 8000
 ```
 
 Frontend:

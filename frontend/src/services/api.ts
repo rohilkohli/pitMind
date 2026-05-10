@@ -41,52 +41,71 @@ export type StrategyRecommendation = {
   pipeline_steps: string[];
 };
 
-export async function postRecommend(payload: TelemetryPayload) {
+export async function postRecommend(payload: TelemetryPayload, token?: string) {
+  const headers: Record<string, string> = { "Content-Type": "application/json" };
+  if (token) headers["Authorization"] = `Bearer ${token}`;
+
   const res = await fetch(`${BASE}/api/v1/strategy/recommend`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers,
     body: JSON.stringify(payload),
   });
   if (!res.ok) throw new Error(await res.text());
   return res.json() as Promise<StrategyRecommendation>;
 }
 
-export async function postChat(messages: { role: "user" | "assistant"; content: string }[], ctx?: object) {
+export async function postChat(messages: { role: "user" | "assistant"; content: string }[], ctx?: object, token?: string) {
+  const headers: Record<string, string> = { "Content-Type": "application/json" };
+  if (token) headers["Authorization"] = `Bearer ${token}`;
+
   const res = await fetch(`${BASE}/api/v1/chat/explain`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers,
     body: JSON.stringify({ messages, telemetry_context: ctx }),
   });
   if (!res.ok) throw new Error(await res.text());
   return res.json() as Promise<{ reply: string }>;
 }
 
-export async function postCompare(a: TelemetryPayload, b: TelemetryPayload) {
+export async function postCompare(a: TelemetryPayload, b: TelemetryPayload, token?: string) {
+  const headers: Record<string, string> = { "Content-Type": "application/json" };
+  if (token) headers["Authorization"] = `Bearer ${token}`;
+
   const res = await fetch(`${BASE}/api/v1/compare/drivers`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers,
     body: JSON.stringify({ driver_a: a, driver_b: b }),
   });
   if (!res.ok) throw new Error(await res.text());
   return res.json() as Promise<{ chart_series: Record<string, unknown>; narrative: string }>;
 }
 
-export async function uploadTelemetry(file: File): Promise<TelemetryPayload> {
+export async function uploadTelemetry(file: File, token?: string): Promise<TelemetryPayload> {
   const fd = new FormData();
   fd.append("file", file);
+  
+  const headers: Record<string, string> = {};
+  if (token) headers["Authorization"] = `Bearer ${token}`;
+
   const res = await fetch(`${BASE}/api/v1/telemetry/upload`, {
     method: "POST",
+    headers,
     body: fd,
   });
   if (!res.ok) throw new Error(await res.text());
   return res.json();
 }
 
-export async function uploadDebrief(file: File): Promise<{ report_markdown: string; source_note: string }> {
+export async function uploadDebrief(file: File, token?: string): Promise<{ report_markdown: string; source_note: string }> {
   const fd = new FormData();
   fd.append("file", file);
+
+  const headers: Record<string, string> = {};
+  if (token) headers["Authorization"] = `Bearer ${token}`;
+
   const res = await fetch(`${BASE}/api/v1/debrief/upload`, {
     method: "POST",
+    headers,
     body: fd,
   });
   if (!res.ok) throw new Error(await res.text());

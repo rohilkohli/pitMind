@@ -42,6 +42,18 @@ export default function App() {
           } 
         />
         
+        {/* Copilot is an alias for the Dashboard view in this version */}
+        <Route 
+          path="/copilot" 
+          element={
+            <RequireAuth>
+              <PageShell>
+                <Dashboard />
+              </PageShell>
+            </RequireAuth>
+          } 
+        />
+        
         {/* Default route */}
         <Route path="/" element={<Navigate to="/fan" replace />} />
       </Routes>

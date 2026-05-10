@@ -8,6 +8,7 @@ import { useTelemetry } from "../hooks/useTelemetry";
 import { demoDriverA } from "../data/demoTelemetry";
 import { postRecommend, postChat, type StrategyRecommendation } from "../services/api";
 import { Button } from "../components/ui/button";
+import { auth } from "../lib/firebase";
 
 export function Dashboard() {
   const { raceState } = useFirebaseRaceState("current_race");
@@ -27,7 +28,8 @@ export function Dashboard() {
     setRecoLoading(true);
     setRecoError(null);
     try {
-      const data = await postRecommend(payload);
+      const token = await auth.currentUser?.getIdToken();
+      const data = await postRecommend(payload, token);
       setReco(data);
     } catch (e) {
       console.error(e);
@@ -44,8 +46,9 @@ export function Dashboard() {
     setDraft("");
     setChat(next);
     try {
+      const token = await auth.currentUser?.getIdToken();
       const ctx = { recommendation: reco, telemetry: { laps: payload.laps.length, circuit: payload.circuit } };
-      const { reply } = await postChat(next, ctx);
+      const { reply } = await postChat(next, ctx, token);
       setChat([...next, { role: "assistant", content: reply }]);
     } catch (e) {
       setChat([...next, { role: "assistant", content: `Error: ${String(e)}` }]);

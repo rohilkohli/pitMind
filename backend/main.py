@@ -44,9 +44,17 @@ app.add_middleware(
 )
 
 
+from typing import Any
+
+
 @app.get("/health")
-async def health() -> dict[str, str]:
-    return {"status": "ok"}
+async def health() -> dict[str, Any]:
+    return {"status": "ok", **granite.get_ai_status()}
+
+
+@app.get("/api/health")
+async def api_health() -> dict[str, Any]:
+    return {"status": "ok", **granite.get_ai_status()}
 
 from routes import strategy, commentary, fan, auth
 

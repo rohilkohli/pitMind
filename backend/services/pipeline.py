@@ -12,16 +12,35 @@ from services.strategy_engine import build_recommendation
 
 
 def _extract_granite_json(raw: str) -> dict[str, Any] | None:
+    """Extract the first complete JSON object from raw text.
+    
+    Handles cases where the response contains multiple JSON objects
+    by using brace-depth tracking to find the first complete one.
+    """
     if not raw:
         return None
+    
+    # Find the first opening brace
     start = raw.find("{")
-    end = raw.rfind("}")
-    if start < 0 or end <= start:
+    if start < 0:
         return None
-    try:
-        return json.loads(raw[start : end + 1])
-    except json.JSONDecodeError:
-        return None
+    
+    # Track brace depth to find the matching closing brace for the first object
+    depth = 0
+    for i in range(start, len(raw)):
+        if raw[i] == "{":
+            depth += 1
+        elif raw[i] == "}":
+            depth -= 1
+            if depth == 0:
+                # Found the closing brace of the first object
+                try:
+                    return json.loads(raw[start : i + 1])
+                except json.JSONDecodeError:
+                    return None
+    
+    # No matching closing brace found
+    return None
 
 
 def _coerce_list(value: Any, fallback: list[str]) -> list[str]:

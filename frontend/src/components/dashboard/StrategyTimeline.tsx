@@ -1,4 +1,6 @@
-export function StrategyTimeline({ reco }: { reco: Record<string, any> | null }) {
+import type { StrategyRecommendation } from "../../services/api";
+
+export function StrategyTimeline({ reco }: { reco: StrategyRecommendation | null }) {
   if (!reco) {
     return (
       <div className="flex h-full items-center justify-center p-4">
@@ -7,16 +9,10 @@ export function StrategyTimeline({ reco }: { reco: Record<string, any> | null })
     );
   }
 
-  if (reco.error) {
-    return (
-      <div className="p-4">
-        <p className="text-sm text-red-400">{String(reco.error)}</p>
-      </div>
-    );
-  }
-
-  const steps = (reco.pipeline_steps as string[]) || [];
-  const reasons = (reco.structured_reasons as string[]) || [];
+  const steps = reco.pipeline_steps ?? [];
+  const reasons = reco.structured_reasons ?? [];
+  const evidence = reco.evidence ?? [];
+  const assumptions = reco.assumptions ?? [];
 
   return (
     <div className="flex flex-col">
@@ -34,10 +30,21 @@ export function StrategyTimeline({ reco }: { reco: Record<string, any> | null })
           <p className="text-sm text-pit-fg mb-1">
             Pit this lap: <span className="font-mono text-pit-accent">{String(reco.pit_this_lap)}</span>
           </p>
+          <p className="text-sm text-pit-fg mb-1">
+            Compound: <span className="font-mono text-pit-accent">{reco.suggested_compound}</span>
+          </p>
           <p className="text-sm text-pit-fg">
-            Compound: <span className="font-mono text-pit-accent">{String(reco.suggested_compound)}</span>
+            Confidence: <span className="font-mono text-pit-accent">{reco.confidence.toFixed(1)}%</span>
           </p>
         </div>
+
+        {/* Explanation */}
+        {reco.explanation && (
+          <div>
+            <h3 className="text-[11px] font-semibold uppercase tracking-widest text-pit-muted mb-2">Summary</h3>
+            <p className="text-sm text-pit-fg leading-relaxed">{reco.explanation}</p>
+          </div>
+        )}
 
         {/* Timeline Steps */}
         <div className="relative border-l border-pit-stroke pl-4 ml-2">
@@ -51,17 +58,57 @@ export function StrategyTimeline({ reco }: { reco: Record<string, any> | null })
         </div>
 
         {/* Structured Reasons */}
-        <div className="mt-4">
-          <h3 className="text-[11px] font-semibold uppercase tracking-widest text-pit-muted mb-2">Key Drivers</h3>
-          <ul className="space-y-2">
-            {reasons.map((reason, idx) => (
-              <li key={idx} className="flex gap-2 text-sm text-pit-fg">
-                <span className="text-pit-accent">▹</span>
-                <span>{reason}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
+        {reasons.length > 0 && (
+          <div>
+            <h3 className="text-[11px] font-semibold uppercase tracking-widest text-pit-muted mb-2">Key Drivers</h3>
+            <ul className="space-y-2">
+              {reasons.map((reason, idx) => (
+                <li key={idx} className="flex gap-2 text-sm text-pit-fg">
+                  <span className="text-pit-accent">▹</span>
+                  <span>{reason}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {/* Evidence */}
+        {evidence.length > 0 && (
+          <div>
+            <h3 className="text-[11px] font-semibold uppercase tracking-widest text-pit-muted mb-2">Evidence</h3>
+            <ul className="space-y-2">
+              {evidence.map((item, idx) => (
+                <li key={idx} className="flex gap-2 text-sm text-pit-fg">
+                  <span className="text-teal-400">◆</span>
+                  <span>{item}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {/* Assumptions */}
+        {assumptions.length > 0 && (
+          <div>
+            <h3 className="text-[11px] font-semibold uppercase tracking-widest text-pit-muted mb-2">Assumptions</h3>
+            <ul className="space-y-2">
+              {assumptions.map((item, idx) => (
+                <li key={idx} className="flex gap-2 text-sm text-pit-muted">
+                  <span className="text-yellow-500">⚠</span>
+                  <span>{item}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {/* Alternative */}
+        {reco.alternative && (
+          <div className="rounded-lg border border-pit-stroke bg-black/30 p-3">
+            <h3 className="text-[11px] font-semibold uppercase tracking-widest text-pit-muted mb-1">Alternative Strategy</h3>
+            <p className="text-sm text-pit-fg">{reco.alternative}</p>
+          </div>
+        )}
       </div>
     </div>
   );

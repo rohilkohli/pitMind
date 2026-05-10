@@ -99,6 +99,10 @@ async def run_strategy_pipeline(payload: TelemetryPayload) -> StrategyRecommenda
         scores=base.scores,
         structured_reasons=base.structured_reasons,
         explanation=base.explanation,
+        evidence=base.evidence,
+        assumptions=base.assumptions,
+        confidence=base.confidence,
+        alternative=base.alternative,
         pipeline_steps=steps,
     )
 

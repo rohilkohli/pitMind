@@ -25,9 +25,9 @@ export function WhatIfSimulator({ raceState }: { raceState: RaceState | null }) 
       
       if (!res.ok) throw new Error("Simulation failed");
       
-      const data = await res.json();
+      const data = await res.json() as { narrative?: string };
       setResult(data.narrative || `If ${driver} chooses to ${action}, they will likely emerge P${Math.floor(Math.random() * 5) + 1}.`);
-    } catch (err: any) {
+    } catch {
       // Fallback for demo if backend endpoint isn't fully ready
       setTimeout(() => {
         setResult(`Simulation complete: If ${driver} executes a ${action} strategy, they will emerge into clean air. Tyre deg will drop by 40% but they sacrifice track position.`);
@@ -42,8 +42,9 @@ export function WhatIfSimulator({ raceState }: { raceState: RaceState | null }) 
       
       <div className="flex flex-col gap-4 md:flex-row md:items-end">
         <div className="flex-1">
-          <label className="mb-1 block text-xs text-pit-muted">Driver</label>
+          <label htmlFor="wif-driver" className="mb-1 block text-xs text-pit-muted">Driver</label>
           <select 
+            id="wif-driver"
             value={driver} 
             onChange={(e) => setDriver(e.target.value)}
             className="w-full rounded-md border border-pit-stroke bg-carbon px-3 py-2 text-sm text-pit-fg focus-ring"
@@ -53,8 +54,9 @@ export function WhatIfSimulator({ raceState }: { raceState: RaceState | null }) 
         </div>
 
         <div className="flex-1">
-          <label className="mb-1 block text-xs text-pit-muted">Action</label>
+          <label htmlFor="wif-action" className="mb-1 block text-xs text-pit-muted">Action</label>
           <select 
+            id="wif-action"
             value={action} 
             onChange={(e) => setAction(e.target.value as "PIT" | "STAY_OUT")}
             className="w-full rounded-md border border-pit-stroke bg-carbon px-3 py-2 text-sm text-pit-fg focus-ring"
@@ -65,8 +67,9 @@ export function WhatIfSimulator({ raceState }: { raceState: RaceState | null }) 
         </div>
 
         <div className="flex-1">
-          <label className="mb-1 block text-xs text-pit-muted">Predict Laps</label>
+          <label htmlFor="wif-laps" className="mb-1 block text-xs text-pit-muted">Predict Laps</label>
           <input 
+            id="wif-laps"
             type="number" 
             min="1" max="20"
             value={laps}

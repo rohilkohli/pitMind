@@ -6,16 +6,17 @@ import { LapChart } from "../components/dashboard/LapChart";
 import { StrategyTimeline } from "../components/dashboard/StrategyTimeline";
 import { useTelemetry } from "../hooks/useTelemetry";
 import { demoDriverA } from "../data/demoTelemetry";
-import { postRecommend, postChat } from "../services/api";
+import { postRecommend, postChat, type StrategyRecommendation } from "../services/api";
 import { Button } from "../components/ui/button";
 
 export function Dashboard() {
-  const { raceState, loading, error } = useFirebaseRaceState("current_race");
+  const { raceState } = useFirebaseRaceState("current_race");
   
   // Local telemetry state (for demo / upload purposes as built in step 1)
   const { payload } = useTelemetry(demoDriverA);
   
-  const [reco, setReco] = useState<Record<string, unknown> | null>(null);
+  const [reco, setReco] = useState<StrategyRecommendation | null>(null);
+  const [recoError, setRecoError] = useState<string | null>(null);
   const [recoLoading, setRecoLoading] = useState(false);
   const [draft, setDraft] = useState("");
   const [chat, setChat] = useState<{ role: "user" | "assistant"; content: string }[]>([
@@ -24,12 +25,13 @@ export function Dashboard() {
 
   async function onRecommend() {
     setRecoLoading(true);
+    setRecoError(null);
     try {
       const data = await postRecommend(payload);
       setReco(data);
     } catch (e) {
       console.error(e);
-      setReco({ error: String(e) });
+      setRecoError(String(e));
     } finally {
       setRecoLoading(false);
     }
@@ -77,6 +79,9 @@ export function Dashboard() {
             >
               {recoLoading ? "Analyzing..." : "Generate AI Strategy"}
             </Button>
+            {recoError && (
+              <p className="mt-2 text-xs text-red-400">{recoError}</p>
+            )}
           </div>
         </div>
 

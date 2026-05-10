@@ -11,8 +11,8 @@ export function Login() {
     try {
       await signInWithPopup(auth, googleProvider);
       navigate("/dashboard");
-    } catch (err: any) {
-      setError(err.message || "Failed to sign in with Google.");
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Failed to sign in with Google.");
     }
   };
 

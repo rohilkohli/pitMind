@@ -20,6 +20,27 @@ export type TelemetryPayload = {
   laps: LapPoint[];
 };
 
+export type StrategyScores = {
+  pit_urgency: number;
+  sc_probability_next_3_laps: number;
+  overtake_risk: number;
+  recommended_window_laps: [number, number];
+};
+
+export type StrategyRecommendation = {
+  action: string;
+  pit_this_lap: boolean;
+  suggested_compound: string;
+  scores: StrategyScores;
+  structured_reasons: string[];
+  explanation: string;
+  evidence: string[];
+  assumptions: string[];
+  confidence: number;
+  alternative: string;
+  pipeline_steps: string[];
+};
+
 export async function postRecommend(payload: TelemetryPayload) {
   const res = await fetch(`${BASE}/api/v1/strategy/recommend`, {
     method: "POST",
@@ -27,7 +48,7 @@ export async function postRecommend(payload: TelemetryPayload) {
     body: JSON.stringify(payload),
   });
   if (!res.ok) throw new Error(await res.text());
-  return res.json() as Promise<Record<string, unknown>>;
+  return res.json() as Promise<StrategyRecommendation>;
 }
 
 export async function postChat(messages: { role: "user" | "assistant"; content: string }[], ctx?: object) {

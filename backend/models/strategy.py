@@ -19,6 +19,10 @@ class StrategyRecommendation(BaseModel):
     scores: StrategyScores
     structured_reasons: list[str]
     explanation: str
+    evidence: list[str]
+    assumptions: list[str]
+    confidence: float = Field(..., ge=0, le=100)
+    alternative: str
     pipeline_steps: list[str]
 
 

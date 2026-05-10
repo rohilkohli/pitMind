@@ -1,4 +1,6 @@
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
+import type { TooltipProps } from "recharts";
+import type { ValueType, NameType } from "recharts/types/component/DefaultTooltipContent";
 
 export function LapChart() {
   // Placeholder data for the chart layout
@@ -10,18 +12,18 @@ export function LapChart() {
   }));
 
   // Recharts custom tooltip
-  const CustomTooltip = ({ active, payload, label }: any) => {
+  const CustomTooltip = ({ active, payload, label }: TooltipProps<ValueType, NameType>) => {
     if (active && payload && payload.length) {
       return (
         <div className="rounded-lg border border-pit-stroke bg-black/90 p-3 shadow-lg">
           <p className="mb-2 text-xs font-semibold uppercase text-pit-muted">Lap {label}</p>
-          {payload.map((p: any) => (
+          {payload.map((p) => (
             <div key={p.dataKey} className="flex items-center justify-between gap-4 py-1 text-sm">
               <div className="flex items-center gap-2">
                 <span className="h-2 w-2 rounded-full" style={{ backgroundColor: p.color }} />
                 <span className="font-semibold text-pit-fg">{p.dataKey}</span>
               </div>
-              <span className="font-mono text-pit-fg">{p.value.toFixed(3)}s</span>
+              <span className="font-mono text-pit-fg">{typeof p.value === "number" ? p.value.toFixed(3) : p.value}s</span>
             </div>
           ))}
         </div>

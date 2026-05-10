@@ -10,6 +10,7 @@ const variants = cva(
     variants: {
       variant: {
         primary: "bg-pit-accent text-white hover:bg-red-700",
+        secondary: "bg-white/10 text-pit-fg hover:bg-white/20 border border-pit-stroke",
         ghost: "bg-transparent text-pit-fg hover:bg-white/5 border border-pit-stroke",
       },
       size: {

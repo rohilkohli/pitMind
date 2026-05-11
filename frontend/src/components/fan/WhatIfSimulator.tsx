@@ -37,10 +37,13 @@ export function WhatIfSimulator({ raceState }: { raceState: RaceState | null }) 
   };
 
   return (
-    <div className="w-full rounded-xl border border-pit-stroke bg-black/40 p-4">
-      <h3 className="mb-4 text-xs font-semibold uppercase tracking-widest text-pit-muted">What-If Simulator</h3>
+    <div className="w-full rounded-3xl border border-white/10 bg-white/5 p-4 shadow-[0_12px_32px_rgba(0,0,0,0.28)] backdrop-blur">
+      <div className="mb-4">
+        <h3 className="text-[11px] font-semibold uppercase tracking-[0.32em] text-pit-muted">What-If Simulator</h3>
+        <p className="mt-1 text-xs text-pit-muted">Explore one alternative and see the likely narrative response</p>
+      </div>
       
-      <div className="flex flex-col gap-4 md:flex-row md:items-end">
+      <div className="grid gap-4 md:grid-cols-[1.1fr_1.1fr_0.8fr_auto] md:items-end">
         <div className="flex-1">
           <label htmlFor="wif-driver" className="mb-1 block text-xs text-pit-muted">Driver</label>
           <select 
@@ -79,14 +82,14 @@ export function WhatIfSimulator({ raceState }: { raceState: RaceState | null }) 
         </div>
 
         <div className="w-full md:w-auto">
-          <Button onClick={handleSimulate} disabled={loading} className="w-full">
+          <Button onClick={handleSimulate} disabled={loading} className="w-full shadow-[0_16px_32px_rgba(225,6,0,0.18)]">
             {loading ? "Simulating..." : "Run"}
           </Button>
         </div>
       </div>
 
       {result && (
-        <div className="mt-4 rounded-lg bg-pit-accent/10 border border-pit-accent/30 p-3 text-sm text-pit-fg">
+        <div className="mt-4 rounded-2xl border border-pit-accent/20 bg-pit-accent/10 p-4 text-sm text-pit-fg">
           <span className="font-semibold text-pit-accent">AI Prediction: </span>
           {result}
         </div>

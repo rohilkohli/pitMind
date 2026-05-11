@@ -27,6 +27,13 @@ export type StrategyScores = {
   recommended_window_laps: [number, number];
 };
 
+export type ConfidenceDecomposition = {
+  data_quality: number; // 0-100: % completeness and reliability of telemetry inputs
+  model_certainty: number; // 0-100: confidence in model predictions
+  stability: number; // 0-100: consistency across similar scenarios
+  regret_bound: number; // 0-1: max expected loss vs optimal (lower is better)
+};
+
 export type StrategyRecommendation = {
   action: string;
   pit_this_lap: boolean;
@@ -39,6 +46,7 @@ export type StrategyRecommendation = {
   confidence: number;
   alternative: string;
   pipeline_steps: string[];
+  confidence_decomposition?: ConfidenceDecomposition;
 };
 
 export async function postRecommend(payload: TelemetryPayload, token?: string) {

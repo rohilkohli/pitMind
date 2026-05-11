@@ -2,20 +2,23 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import type { TooltipProps } from "recharts";
 import type { ValueType, NameType } from "recharts/types/component/DefaultTooltipContent";
 
-export function LapChart() {
-  // Placeholder data for the chart layout
-  const mockData = Array.from({ length: 30 }, (_, i) => ({
-    lap: i + 1,
-    VER: 82.5 - Math.random() * 2,
-    LEC: 83.0 - Math.random() * 2,
-    NOR: 83.2 - Math.random() * 2,
-  }));
+const mockData = Array.from({ length: 30 }, (_, i) => {
+  const lap = i + 1;
+  const trend = i < 10 ? 0.18 : i < 20 ? 0.08 : -0.02;
 
-  // Recharts custom tooltip
+  return {
+    lap,
+    VER: 82.4 + trend + Math.sin(i / 3) * 0.08,
+    LEC: 82.9 + trend + Math.cos(i / 4) * 0.07,
+    NOR: 83.1 + trend + Math.sin(i / 5) * 0.06,
+  };
+});
+
+export function LapChart() {
   const CustomTooltip = ({ active, payload, label }: TooltipProps<ValueType, NameType>) => {
     if (active && payload && payload.length) {
       return (
-        <div className="rounded-lg border border-pit-stroke bg-black/90 p-3 shadow-lg">
+        <div className="rounded-2xl border border-white/10 bg-black/90 p-4 shadow-[0_12px_36px_rgba(0,0,0,0.45)] backdrop-blur">
           <p className="mb-2 text-xs font-semibold uppercase text-pit-muted">Lap {label}</p>
           {payload.map((p) => (
             <div key={p.dataKey} className="flex items-center justify-between gap-4 py-1 text-sm">
@@ -34,11 +37,17 @@ export function LapChart() {
 
   return (
     <div className="flex h-full flex-col">
-      <div className="sticky top-0 bg-carbon pb-2 pt-4">
-        <h2 className="px-4 text-[11px] font-semibold uppercase tracking-widest text-pit-muted">Lap Time Trace</h2>
+      <div className="sticky top-0 z-10 bg-carbon/80 pb-2 pt-4 backdrop-blur">
+        <div className="flex items-center justify-between px-4">
+          <div>
+            <h2 className="text-[11px] font-semibold uppercase tracking-[0.32em] text-pit-muted">Lap Time Trace</h2>
+            <p className="mt-1 text-xs text-pit-muted">Smoothed demo trend that stays stable across renders</p>
+          </div>
+          <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[11px] text-pit-muted">Demo telemetry</span>
+        </div>
       </div>
       
-      <div className="flex-1 p-4 min-h-[300px]">
+      <div className="min-h-[300px] flex-1 p-4">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={mockData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="var(--pit-stroke)" vertical={false} />

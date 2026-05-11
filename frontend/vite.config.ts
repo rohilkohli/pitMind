@@ -18,6 +18,26 @@ export default defineConfig({
       },
     },
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (!id.includes("node_modules")) {
+            return undefined;
+          }
+
+          if (id.includes("recharts")) return "vendor-charts";
+          if (id.includes("firebase")) return "vendor-firebase";
+          if (id.includes("@radix-ui") || id.includes("class-variance-authority") || id.includes("clsx") || id.includes("tailwind-merge")) {
+            return "vendor-ui";
+          }
+          if (id.includes("lucide-react")) return "vendor-icons";
+
+          return "vendor";
+        },
+      },
+    },
+  },
   test: {
     environment: "jsdom",
     globals: true,

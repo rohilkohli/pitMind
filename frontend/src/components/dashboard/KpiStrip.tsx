@@ -5,61 +5,58 @@ export function KpiStrip({ raceState }: { raceState: RaceState | null }) {
   const fastest = raceState?.fastest_lap;
 
   return (
-    <div className="flex w-full snap-x snap-mandatory gap-4 overflow-x-auto pb-2 md:h-20">
-      {/* Leader Card */}
-      <div 
-        className="flex min-w-[160px] snap-center flex-col justify-center rounded-lg bg-black/40 p-3"
-        style={{ borderLeft: `4px solid ${leader ? leader.team_color : 'transparent'}` }}
-      >
-        <span className="text-xs uppercase tracking-wide text-pit-muted">Leader</span>
-        <span className="font-mono text-[22px] text-pit-fg">{leader ? leader.driver : "—"}</span>
-      </div>
-
-      {/* Fastest Lap Card */}
-      <div className="flex min-w-[160px] snap-center flex-col justify-center rounded-lg bg-black/40 p-3">
-        <span className="text-xs uppercase tracking-wide text-pit-muted">Fastest Lap</span>
-        <div className="flex items-center gap-2">
-          <span className="font-mono text-[22px] text-pit-fg">{fastest ? fastest.lap_time_s.toFixed(3) : "—"}</span>
-          {fastest && (
-            <span className="rounded-full bg-purple-500/20 px-2 py-0.5 text-[11px] uppercase tracking-wider text-purple-400">
-              {fastest.driver}
-            </span>
-          )}
+    <div className="grid gap-3 md:grid-cols-4">
+      <div className="rounded-2xl border border-white/10 bg-white/5 p-4 shadow-[0_12px_32px_rgba(0,0,0,0.25)] backdrop-blur">
+        <span className="text-[10px] uppercase tracking-[0.3em] text-pit-muted">Leader</span>
+        <div className="mt-2 flex items-end justify-between gap-3">
+          <span className="font-mono text-2xl text-pit-fg">{leader ? leader.driver : "—"}</span>
+          {leader && <span className="rounded-full border border-white/10 bg-white/5 px-2 py-1 text-[11px] text-pit-muted">#{leader.position}</span>}
+        </div>
+        <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-black/30">
+          <div className="h-full w-[76%] rounded-full bg-gradient-to-r from-pit-accent to-orange-400" style={{ backgroundColor: leader?.team_color }} />
         </div>
       </div>
 
-      {/* Safety Car Card */}
-      <div className="flex min-w-[160px] snap-center flex-col justify-center rounded-lg bg-black/40 p-3">
-        <span className="text-xs uppercase tracking-wide text-pit-muted">Safety Car</span>
-        <div>
+      <div className="rounded-2xl border border-white/10 bg-white/5 p-4 shadow-[0_12px_32px_rgba(0,0,0,0.25)] backdrop-blur">
+        <span className="text-[10px] uppercase tracking-[0.3em] text-pit-muted">Fastest Lap</span>
+        <div className="mt-2 flex items-end justify-between gap-3">
+          <span className="font-mono text-2xl text-pit-fg">{fastest ? fastest.lap_time_s.toFixed(3) : "—"}</span>
+          {fastest && <span className="rounded-full border border-white/10 bg-white/5 px-2 py-1 text-[11px] text-pit-muted">{fastest.driver}</span>}
+        </div>
+        <p className="mt-3 text-xs text-pit-muted">Best pace currently shaping the strategy window.</p>
+      </div>
+
+      <div className="rounded-2xl border border-white/10 bg-white/5 p-4 shadow-[0_12px_32px_rgba(0,0,0,0.25)] backdrop-blur">
+        <span className="text-[10px] uppercase tracking-[0.3em] text-pit-muted">Safety Car</span>
+        <div className="mt-2">
           {raceState?.safety_car_active ? (
-            <span className="inline-flex items-center rounded-full bg-red-500/20 px-2 py-0.5 text-[11px] uppercase tracking-wider text-red-400">
-              <span className="mr-1 h-2 w-2 rounded-full bg-red-500"></span>
-              ACTIVE
+            <span className="inline-flex items-center gap-2 rounded-full border border-red-500/25 bg-red-500/10 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.24em] text-red-300">
+              <span className="h-2 w-2 rounded-full bg-red-400" />
+              Active
             </span>
           ) : (
-            <span className="inline-flex items-center rounded-full bg-green-500/20 px-2 py-0.5 text-[11px] uppercase tracking-wider text-green-400">
-              <span className="mr-1 h-2 w-2 rounded-full bg-green-500"></span>
-              CLEAR
+            <span className="inline-flex items-center gap-2 rounded-full border border-emerald-500/25 bg-emerald-500/10 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.24em] text-emerald-300">
+              <span className="h-2 w-2 rounded-full bg-emerald-400" />
+              Clear
             </span>
           )}
         </div>
       </div>
 
-      {/* DRS Card */}
-      <div className="flex min-w-[160px] snap-center flex-col justify-center rounded-lg bg-black/40 p-3">
-        <span className="text-xs uppercase tracking-wide text-pit-muted">DRS</span>
-        <div>
+      <div className="rounded-2xl border border-white/10 bg-white/5 p-4 shadow-[0_12px_32px_rgba(0,0,0,0.25)] backdrop-blur">
+        <span className="text-[10px] uppercase tracking-[0.3em] text-pit-muted">DRS</span>
+        <div className="mt-2">
           {raceState?.drs_open ? (
-            <span className="inline-flex rounded-full bg-pit-accent/20 px-2 py-0.5 text-[11px] uppercase tracking-wider text-pit-accent">
-              OPEN
+            <span className="inline-flex items-center gap-2 rounded-full border border-pit-accent/25 bg-pit-accent/10 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.24em] text-pit-accent">
+              Open
             </span>
           ) : (
-            <span className="inline-flex rounded-full bg-black/60 px-2 py-0.5 text-[11px] uppercase tracking-wider text-pit-muted border border-pit-stroke">
-              CLOSED
+            <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.24em] text-pit-muted">
+              Closed
             </span>
           )}
         </div>
+        <p className="mt-3 text-xs text-pit-muted">Track-state indicator for overtaking conditions.</p>
       </div>
     </div>
   );

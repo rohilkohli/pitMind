@@ -8,10 +8,6 @@ import { StrategyTimeline } from "../components/dashboard/StrategyTimeline";
 import { EventTimeline } from "../components/dashboard/EventTimeline";
 import { ConfidenceDecompositionCard } from "../components/dashboard/ConfidenceDecompositionCard";
 import { ShareButton } from "../components/dashboard/ShareButton";
-import { BranchingSimulator } from "../components/dashboard/BranchingSimulator";
-import { DecisionLog } from "../components/dashboard/DecisionLog";
-import { FanBattleCards } from "../components/dashboard/FanBattleCards";
-import { HealthConsole } from "../components/dashboard/HealthConsole";
 import { RoleSwitcher } from "../components/dashboard/RoleSwitcher";
 import { StreamHealthMonitor } from "../components/dashboard/StreamHealthMonitor";
 import { useTelemetry } from "../hooks/useTelemetry";
@@ -22,7 +18,12 @@ import { auth } from "../lib/firebase";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
 import { Skeleton } from "../components/ui/skeleton";
 
+// Lazy load heavy components
 const LapChart = lazy(() => import("../components/dashboard/LapChart").then((module) => ({ default: module.LapChart })));
+const BranchingSimulator = lazy(() => import("../components/dashboard/BranchingSimulator").then((module) => ({ default: module.BranchingSimulator })));
+const DecisionLog = lazy(() => import("../components/dashboard/DecisionLog").then((module) => ({ default: module.DecisionLog })));
+const FanBattleCards = lazy(() => import("../components/dashboard/FanBattleCards").then((module) => ({ default: module.FanBattleCards })));
+const HealthConsole = lazy(() => import("../components/dashboard/HealthConsole").then((module) => ({ default: module.HealthConsole })));
 
 type ChatMessage = {
   id: string;
@@ -363,17 +364,25 @@ export function Dashboard() {
       {/* Phase 2: Strategy & Analysis */}
       <div className="grid gap-4 md:grid-cols-2">
         <div>
-          <BranchingSimulator currentLap={27} currentPosition={1} currentGap={0.0} />
+          <Suspense fallback={<Card className="border-white/10 bg-white/5 p-6"><Skeleton className="h-64 w-full" /></Card>}>
+            <BranchingSimulator currentLap={27} currentPosition={1} currentGap={0.0} />
+          </Suspense>
         </div>
         <div>
-          <FanBattleCards />
+          <Suspense fallback={<Card className="border-white/10 bg-white/5 p-6"><Skeleton className="h-64 w-full" /></Card>}>
+            <FanBattleCards />
+          </Suspense>
         </div>
       </div>
 
-      <DecisionLog />
+      <Suspense fallback={<Card className="border-white/10 bg-white/5 p-6"><Skeleton className="h-96 w-full" /></Card>}>
+        <DecisionLog />
+      </Suspense>
 
       {/* Phase 3: Observability & Health */}
-      <HealthConsole />
+      <Suspense fallback={<Card className="border-white/10 bg-white/5 p-6"><Skeleton className="h-96 w-full" /></Card>}>
+        <HealthConsole />
+      </Suspense>
 
       {/* Role-based content */}
       {currentRole === 'engineer' && (

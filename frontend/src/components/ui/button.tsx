@@ -5,17 +5,18 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 
 const variants = cva(
-  "inline-flex items-center justify-center whitespace-nowrap rounded-md font-semibold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pit-accent disabled:pointer-events-none disabled:opacity-40",
+  "inline-flex items-center justify-center whitespace-nowrap rounded-lg font-extrabold uppercase tracking-wider transition-all duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-f1-red disabled:pointer-events-none disabled:opacity-40",
   {
     variants: {
       variant: {
-        primary: "bg-pit-accent text-white hover:bg-red-700",
+        primary: "bg-f1-red text-white hover:shadow-glow-lg active:scale-95",
         secondary: "bg-white/10 text-pit-fg hover:bg-white/20 border border-pit-stroke",
         ghost: "bg-transparent text-pit-fg hover:bg-white/5 border border-pit-stroke",
       },
       size: {
-        sm: "h-9 px-3 text-sm",
-        md: "h-11 px-4 text-sm",
+        sm: "h-10 px-4 text-xs",
+        md: "h-12 px-6 text-sm",
+        lg: "h-14 px-8 text-base",
       },
     },
     defaultVariants: {

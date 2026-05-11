@@ -83,7 +83,7 @@ const getEventIcon = (type: RaceEvent['type']) => {
   switch (type) {
     case 'safety_car':
     case 'vsc':
-      return <Flag className="w-5 h-5 text-red-500" />;
+      return <Flag className="w-5 h-5 text-f1-red" />;
     case 'incident':
       return <AlertCircle className="w-5 h-5 text-amber-500" />;
     case 'pit_stop':
@@ -93,26 +93,26 @@ const getEventIcon = (type: RaceEvent['type']) => {
     case 'gap_spike':
     case 'flag':
     default:
-      return <Clock className="w-5 h-5 text-slate-500" />;
+      return <Clock className="w-5 h-5 text-pit-muted" />;
   }
 };
 
 const getEventColor = (type: RaceEvent['type'], severity?: string) => {
-  if (severity === 'critical') return 'border-l-4 border-l-red-500 bg-red-50';
-  if (severity === 'warning') return 'border-l-4 border-l-amber-500 bg-amber-50';
+  if (severity === 'critical') return 'border-l-4 border-l-f1-red bg-f1-red/15';
+  if (severity === 'warning') return 'border-l-4 border-l-amber-500 bg-amber-500/15';
   
   switch (type) {
     case 'safety_car':
     case 'vsc':
-      return 'border-l-4 border-l-red-500 bg-red-50';
+      return 'border-l-4 border-l-f1-red bg-f1-red/15';
     case 'incident':
-      return 'border-l-4 border-l-amber-500 bg-amber-50';
+      return 'border-l-4 border-l-amber-500 bg-amber-500/15';
     case 'pit_stop':
-      return 'border-l-4 border-l-blue-500 bg-blue-50';
+      return 'border-l-4 border-l-blue-500 bg-blue-500/15';
     case 'weather':
-      return 'border-l-4 border-l-cyan-500 bg-cyan-50';
+      return 'border-l-4 border-l-cyan-500 bg-cyan-500/15';
     default:
-      return 'border-l-4 border-l-slate-400 bg-slate-50';
+      return 'border-l-4 border-l-pit-stroke bg-pit-panel/60';
   }
 };
 
@@ -129,16 +129,16 @@ export const EventTimeline: React.FC<EventTimelineProps> = ({
 
   if (events.length === 0) {
     return (
-      <Card className="p-6 text-center text-slate-500">
+      <Card className="p-6 text-center text-pit-muted">
         <Clock className="w-8 h-8 mx-auto mb-2 opacity-50" />
-        <p>No race events recorded yet</p>
+        <p className="font-semibold">No race events recorded yet</p>
       </Card>
     );
   }
 
   return (
     <Card className="p-6">
-      <h3 className="text-lg font-semibold text-slate-900 mb-6">Race Timeline</h3>
+      <h3 className="text-xl font-black text-pit-fg mb-8 uppercase tracking-wide">Race Timeline</h3>
       
       {/* Timeline container */}
       <div className="space-y-4 max-h-96 overflow-y-auto">

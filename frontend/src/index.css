@@ -1,9 +1,17 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
   color-scheme: dark;
+  /* F1 Official Colors */
+  --f1-red: #EF3340;
+  --f1-black: #000000;
+  --f1-white: #FFFFFF;
+  --f1-silver: #E8E8E8;
+  /* Tyre Compounds */
   --tyre-soft: #f87171;     /* red-400 */
   --tyre-medium: #facc15;   /* yellow-400 */
   --tyre-hard: #f8fafc;     /* slate-50 */
@@ -14,7 +22,7 @@
 
 html {
   background:
-    radial-gradient(circle at top left, rgba(225, 6, 0, 0.12), transparent 30%),
+    radial-gradient(circle at top left, rgba(239, 51, 64, 0.15), transparent 30%),
     radial-gradient(circle at top right, rgba(20, 184, 166, 0.10), transparent 28%),
     #0a0a0b;
 }
@@ -22,25 +30,50 @@ html {
 body {
   min-height: 100vh;
   margin: 0;
-  font-family: "Inter", "Segoe UI", sans-serif;
+  font-family: 'Outfit', 'Segoe UI', sans-serif;
   background:
-    radial-gradient(circle at 20% 0%, rgba(225, 6, 0, 0.12), transparent 22%),
+    radial-gradient(circle at 20% 0%, rgba(239, 51, 64, 0.15), transparent 22%),
     radial-gradient(circle at 80% 0%, rgba(20, 184, 166, 0.10), transparent 24%),
     linear-gradient(180deg, #111113 0%, #0a0a0b 45%, #070708 100%);
   color: #f4f4f5;
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
+  letter-spacing: -0.3px;
 }
 
+/* F1-style headings: bold, uppercase-ready, tight tracking */
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 800;
+  letter-spacing: -0.5px;
+}
+
+h1 { font-size: 2.5rem; line-height: 1.2; }
+h2 { font-size: 2rem; line-height: 1.25; }
+h3 { font-size: 1.5rem; line-height: 1.3; }
+
+/* Focus ring with F1 red */
 .focus-ring:focus-visible {
-  outline: 2px solid #e10600;
+  outline: 2px solid #EF3340;
   outline-offset: 2px;
+}
+
+/* F1-style button animations */
+button, [role="button"] {
+  transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+button:hover, [role="button"]:hover {
+  transform: translateY(-2px);
+}
+
+button:active, [role="button"]:active {
+  transform: translateY(0);
 }
 
 * {
   scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.22) transparent;
+  scrollbar-color: rgba(239, 51, 64, 0.5) transparent;
 }
 
 *::-webkit-scrollbar {
@@ -55,6 +88,44 @@ body {
 *::-webkit-scrollbar-thumb {
   border-radius: 999px;
   border: 2px solid transparent;
-  background: rgba(255, 255, 255, 0.18);
+  background: rgba(239, 51, 64, 0.5);
   background-clip: padding-box;
+  transition: background 200ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: rgba(239, 51, 64, 0.8);
+}
+
+/* F1-style utility classes */
+@layer utilities {
+  /* Bold uppercase text for labels */
+  .text-label {
+    @apply text-xs font-bold uppercase tracking-wider letter-spacing-wide;
+  }
+
+  /* Data display with monospace */
+  .text-data {
+    @apply font-mono text-sm font-semibold tracking-tight;
+  }
+
+  /* F1-style accent highlights */
+  .accent-glow {
+    @apply text-f1-red;
+  }
+
+  /* Card with premium feel */
+  .card-premium {
+    @apply bg-pit-panel border border-pit-stroke rounded-2xl p-6 shadow-glow transition-all duration-300;
+  }
+
+  /* Bold button with F1 styling */
+  .btn-f1 {
+    @apply px-6 py-3 bg-f1-red text-white font-bold rounded-lg uppercase tracking-wider transition-all duration-200 hover:shadow-glow-lg active:scale-95;
+  }
+
+  /* Subtle divider with F1 red tint */
+  .divider-f1 {
+    @apply h-px bg-gradient-to-r from-transparent via-f1-red/30 to-transparent;
+  }
 }

@@ -23,7 +23,7 @@ function PageLoader({ label }: { label: string }) {
 }
 
 function RequireAuth({ children }: { children: React.ReactElement }) {
-  const { user, loading } = useOptionalAuthUser();
+  const { loading } = useOptionalAuthUser();
 
   if (loading) {
     return <div className="flex h-screen items-center justify-center bg-f1-black text-f1-muted">Checking authentication...</div>;

@@ -7,6 +7,8 @@ except ImportError:
 router = APIRouter(prefix="/api/v1/auth", tags=["auth"])
 
 import logging
+import jwt
+import os
 
 logger = logging.getLogger(__name__)
 
@@ -24,7 +26,6 @@ async def verify_token(authorization: str = Header(None)) -> str:
     if firebase_auth is None:
         logger.warning("Firebase auth not configured; using mock UID for development")
         # Only in non-production, allow dev testing
-        import os
         if os.getenv("ENVIRONMENT") == "development" and token.startswith("dev_"):
             return token.replace("Bearer ", "")
         raise HTTPException(status_code=401, detail="Firebase authentication not configured")
@@ -34,6 +35,20 @@ async def verify_token(authorization: str = Header(None)) -> str:
         return decoded["uid"]
     except Exception as e:
         logger.warning(f"Token verification failed: {e}")
+        
+        # Fallback for local development if Google credentials are missing
+        if os.getenv("ENVIRONMENT") == "development":
+            logger.warning("Development mode: attempting unverified token decode fallback")
+            try:
+                # Decode without verification just to extract the UID for dev session continuity
+                unverified = jwt.decode(token, options={"verify_signature": False})
+                uid = unverified.get("uid") or unverified.get("user_id") or unverified.get("sub")
+                if uid:
+                    logger.info(f"Fallback success: using unverified UID {uid}")
+                    return uid
+            except Exception as jwt_err:
+                logger.error(f"Fallback decode failed: {jwt_err}")
+
         raise HTTPException(status_code=401, detail="Invalid or expired token") from e
 
 @router.get("/verify")

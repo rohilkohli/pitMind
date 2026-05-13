@@ -24,6 +24,8 @@ export const useStreamConnection = (config: StreamConnectionConfig) => {
   const wsRef = useRef<WebSocket | null>(null);
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
   const heartbeatIntervalRef = useRef<NodeJS.Timeout | undefined>(undefined);
+  const reconnectAttemptsRef = useRef(0);
+  const isComponentMounted = useRef(true);
   
   const [state, setState] = useState<StreamConnectionState>({
     status: 'connecting',
@@ -70,8 +72,15 @@ export const useStreamConnection = (config: StreamConnectionConfig) => {
 
   // Connect to WebSocket
   const connect = useCallback(() => {
-    if (wsRef.current?.readyState === WebSocket.OPEN || wsRef.current?.readyState === WebSocket.CONNECTING) {
+    // Prevent multiple simultaneous connection attempts
+    if (wsRef.current && (wsRef.current.readyState === WebSocket.OPEN || wsRef.current.readyState === WebSocket.CONNECTING)) {
       return;
+    }
+
+    // Clear any pending reconnect
+    if (reconnectTimeoutRef.current) {
+      clearTimeout(reconnectTimeoutRef.current);
+      reconnectTimeoutRef.current = undefined;
     }
 
     setState((prev) => ({ ...prev, status: 'connecting' }));
@@ -80,7 +89,12 @@ export const useStreamConnection = (config: StreamConnectionConfig) => {
       const ws = new WebSocket(config.url);
 
       ws.onopen = () => {
+        if (!isComponentMounted.current) {
+          ws.close();
+          return;
+        }
         console.log('[Stream] Connected');
+        reconnectAttemptsRef.current = 0;
         setState((prev) => ({
           ...prev,
           status: 'connected',
@@ -89,6 +103,7 @@ export const useStreamConnection = (config: StreamConnectionConfig) => {
         }));
 
         // Start heartbeat to measure latency
+        if (heartbeatIntervalRef.current) clearInterval(heartbeatIntervalRef.current);
         heartbeatIntervalRef.current = setInterval(() => {
           if (ws.readyState === WebSocket.OPEN) {
             const timestamp = Date.now();
@@ -99,6 +114,7 @@ export const useStreamConnection = (config: StreamConnectionConfig) => {
       };
 
       ws.onmessage = (event) => {
+        if (!isComponentMounted.current) return;
         try {
           const message = JSON.parse(event.data);
           
@@ -117,8 +133,10 @@ export const useStreamConnection = (config: StreamConnectionConfig) => {
       };
 
       ws.onerror = (event) => {
-        // Only log errors if not at max retries
-        if (state.reconnectAttempts < (config.maxRetries || 5)) {
+        if (!isComponentMounted.current) return;
+        // Only log errors if not at max retries and we didn't just unmount
+        const maxRetries = config.maxRetries || 5;
+        if (reconnectAttemptsRef.current < maxRetries && isComponentMounted.current) {
           console.error('[Stream] WebSocket error:', event);
         }
         setState((prev) => ({
@@ -130,12 +148,17 @@ export const useStreamConnection = (config: StreamConnectionConfig) => {
       };
 
       ws.onclose = () => {
-        clearInterval(heartbeatIntervalRef.current);
+        if (heartbeatIntervalRef.current) {
+          clearInterval(heartbeatIntervalRef.current);
+          heartbeatIntervalRef.current = undefined;
+        }
+        
+        if (!isComponentMounted.current) return;
+
         const maxRetries = config.maxRetries || 5;
         
         // Check if we've exceeded max retries
-        if (state.reconnectAttempts >= maxRetries) {
-          // Set to offline and stop retrying
+        if (reconnectAttemptsRef.current >= maxRetries) {
           setState((prev) => ({
             ...prev,
             status: 'offline',
@@ -148,16 +171,21 @@ export const useStreamConnection = (config: StreamConnectionConfig) => {
           status: 'disconnected',
         }));
         
+        // Increment attempts
+        reconnectAttemptsRef.current += 1;
+        
         // Schedule reconnection with exponential backoff
         setState((prev) => ({
           ...prev,
           status: 'reconnecting',
-          reconnectAttempts: prev.reconnectAttempts + 1,
+          reconnectAttempts: reconnectAttemptsRef.current,
         }));
 
         // Exponential backoff: 1s, 2s, 4s, 8s, 16s
         const backoffSequence = [1000, 2000, 4000, 8000, 16000];
-        const nextBackoffMs = backoffSequence[Math.min(state.reconnectAttempts, backoffSequence.length - 1)];
+        const nextBackoffMs = backoffSequence[Math.min(reconnectAttemptsRef.current - 1, backoffSequence.length - 1)];
+        
+        console.log(`[Stream] Reconnecting in ${nextBackoffMs}ms (attempt ${reconnectAttemptsRef.current}/${maxRetries})`);
         
         reconnectTimeoutRef.current = setTimeout(() => {
           connect();
@@ -166,9 +194,9 @@ export const useStreamConnection = (config: StreamConnectionConfig) => {
 
       wsRef.current = ws;
     } catch (error) {
-      // Only log connection errors if not at max retries
+      if (!isComponentMounted.current) return;
       const maxRetries = config.maxRetries || 5;
-      if (state.reconnectAttempts < maxRetries) {
+      if (reconnectAttemptsRef.current < maxRetries) {
         console.error('[Stream] Connection failed:', error);
       }
       setState((prev) => ({
@@ -177,7 +205,7 @@ export const useStreamConnection = (config: StreamConnectionConfig) => {
         error: error instanceof Error ? error : new Error('Unknown error'),
       }));
     }
-  }, [config, state.reconnectAttempts]);
+  }, [config.url, config.maxRetries, config.heartbeatIntervalMs]);
 
   // Disconnect from WebSocket
   const disconnect = useCallback(() => {
@@ -185,6 +213,10 @@ export const useStreamConnection = (config: StreamConnectionConfig) => {
     clearInterval(heartbeatIntervalRef.current);
     
     if (wsRef.current) {
+      // Suppress the "closed before established" error by checking readyState
+      if (wsRef.current.readyState === WebSocket.CONNECTING) {
+        // Just let it close silently
+      }
       wsRef.current.close();
       wsRef.current = null;
     }
@@ -197,6 +229,7 @@ export const useStreamConnection = (config: StreamConnectionConfig) => {
 
   // Manual reconnect
   const reconnect = useCallback(() => {
+    reconnectAttemptsRef.current = 0;
     setState((prev) => ({
       ...prev,
       reconnectAttempts: 0,
@@ -221,9 +254,11 @@ export const useStreamConnection = (config: StreamConnectionConfig) => {
 
   // Auto-connect on mount
   useEffect(() => {
+    isComponentMounted.current = true;
     connect();
     
     return () => {
+      isComponentMounted.current = false;
       disconnect();
     };
   }, [connect, disconnect]);

@@ -20,10 +20,11 @@ export default defineConfig({
         rewrite: (path) => path,
       },
     },
-    headers: {
-      "Cross-Origin-Opener-Policy": "same-origin-allow-popups",
-      "Cross-Origin-Embedder-Policy": "require-corp",
-    },
+    // Relaxing security headers to allow Firebase Auth popups and iframes
+    // headers: {
+    //   "Cross-Origin-Opener-Policy": "same-origin-allow-popups",
+    //   "Cross-Origin-Embedder-Policy": "require-corp",
+    // },
   },
   build: {
     chunkSizeWarningLimit: 1000,

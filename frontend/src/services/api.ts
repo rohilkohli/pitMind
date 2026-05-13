@@ -53,11 +53,6 @@ export interface ChatResponse {
   reply: string;
 }
 
-export interface CompareResponse {
-  chart_series: Record<string, unknown>;
-  narrative: string;
-}
-
 export interface DebriefResponse {
   report_markdown: string;
   source_note: string;
@@ -84,19 +79,6 @@ export async function postChat(messages: { role: "user" | "assistant"; content: 
     method: "POST",
     headers,
     body: JSON.stringify({ messages, telemetry_context: ctx }),
-  });
-  if (!res.ok) throw new Error(await res.text());
-  return res.json();
-}
-
-export async function postCompare(a: TelemetryPayload, b: TelemetryPayload, token?: string): Promise<CompareResponse> {
-  const headers: Record<string, string> = { "Content-Type": "application/json" };
-  if (token) headers["Authorization"] = `Bearer ${token}`;
-
-  const res = await fetch(`${BASE}/api/v1/compare/drivers`, {
-    method: "POST",
-    headers,
-    body: JSON.stringify({ driver_a: a, driver_b: b }),
   });
   if (!res.ok) throw new Error(await res.text());
   return res.json();

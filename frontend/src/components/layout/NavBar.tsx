@@ -1,12 +1,13 @@
 import { useOptionalAuthUser } from "../../hooks/useOptionalAuthUser";
 import { Link, useLocation } from "react-router-dom";
 
-// F1 Logo SVG
+// F1-style Logo SVG (Premium Path)
 const F1LogoIcon = () => (
-  <svg viewBox="0 0 40 28" fill="none" width="24" height="18" className="text-f1-red">
-    <rect width="40" height="28" fill="currentColor" />
-    <path d="M6 8h10v4H10v2h5v4H10v6H6V8z" fill="white" />
-    <path d="M20 8h8l-8 12h8" stroke="white" strokeWidth="3" fill="none" />
+  <svg viewBox="0 0 100 40" fill="none" width="48" height="18" className="text-f1-red">
+    <path 
+      d="M0 40L15 40L25 0L10 0L0 40ZM35 15L45 15L48 5L38 5L35 15ZM32 25L42 25L45 15L35 15L32 25ZM29 35L39 35L42 25L32 25L29 35ZM55 40L95 40C100 40 100 35 100 35L100 30L60 30L63 20L100 20L100 15C100 15 100 10 95 10L65 10L68 0L100 0L100 0L58 0L46 40L55 40Z" 
+      fill="currentColor" 
+    />
   </svg>
 );
 

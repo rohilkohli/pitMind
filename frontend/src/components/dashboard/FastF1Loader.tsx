@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '../ui/card';
-import { Database, Search, Loader2, Play } from 'lucide-react';
+import { Database, Loader2, Play } from 'lucide-react';
 import { postLoadFastF1, type TelemetryPayload } from '../../services/api';
 import { auth } from '../../lib/firebase';
 

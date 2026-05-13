@@ -2,6 +2,16 @@ import { signInWithPopup } from "firebase/auth";
 import { auth, googleProvider } from "../lib/firebase";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
+import { Card, CardContent } from "../components/ui/card";
+
+// F1 Shield Logo
+const F1ShieldLogo = () => (
+  <svg viewBox="0 0 80 80" fill="none" width="80" height="80" className="mx-auto">
+    <rect width="80" height="80" fill="#E10600" />
+    <path d="M20 16h20v8H28v4h10v8H28v12H20V16z" fill="white" />
+    <path d="M44 16h16l-16 24h16" stroke="white" strokeWidth="4" fill="none" />
+  </svg>
+);
 
 export function Login() {
   const navigate = useNavigate();
@@ -21,29 +31,59 @@ export function Login() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-carbon text-pit-fg">
-      <div className="w-full max-w-md rounded-lg border border-pit-stroke bg-black/60 p-8 shadow-lg backdrop-blur">
-        <h1 className="mb-2 text-center text-2xl font-semibold">PitMind Engineer Login</h1>
-        <p className="mb-6 text-center text-sm text-pit-muted">
-          Authenticate with Google to access the full strategy dashboard.
-        </p>
-        
-        {error && (
-          <div className="mb-4 rounded border border-red-500/50 bg-red-500/10 p-3 text-sm text-red-400">
-            {error}
+    <div className="relative flex min-h-screen items-center justify-center px-4 py-10 bg-f1-black text-f1-white">
+      <div className="relative grid w-full max-w-4xl gap-8">
+        {/* Left: Information Panel */}
+        <div className="f1-card border-0 p-8">
+          <p className="text-xs font-bold uppercase tracking-widest text-f1-muted">Engineer Portal</p>
+          <h1 className="mt-4 text-4xl font-display font-black uppercase md:text-5xl">PitMind</h1>
+          <p className="mt-2 text-sm font-display font-bold uppercase text-f1-red">AI Race Strategy Copilot</p>
+          <p className="mt-4 max-w-lg text-sm leading-relaxed text-f1-secondary">
+            Authenticate with Google to access the live strategy workspace, simulation tools, and explanation trace.
+          </p>
+
+          <div className="mt-8 space-y-3">
+            <div className="border-l-4 border-f1-red bg-f1-dark p-4">
+              <div className="text-xs font-bold uppercase tracking-widest text-f1-muted">Live Strategy</div>
+              <p className="mt-2 text-sm text-f1-secondary">Engineer-grade recommendations</p>
+            </div>
+            <div className="border-l-4 border-f1-red bg-f1-dark p-4">
+              <div className="text-xs font-bold uppercase tracking-widest text-f1-muted">AI Trace</div>
+              <p className="mt-2 text-sm text-f1-secondary">Structured reasoning and evidence</p>
+            </div>
+            <div className="border-l-4 border-f1-red bg-f1-dark p-4">
+              <div className="text-xs font-bold uppercase tracking-widest text-f1-muted">Fan Mode</div>
+              <p className="mt-2 text-sm text-f1-secondary">Public-facing race narrative</p>
+            </div>
           </div>
-        )}
-
-        <button
-          onClick={handleLogin}
-          className="w-full rounded-md bg-pit-accent px-4 py-2 font-semibold text-white transition-colors hover:bg-pit-accent/80 focus-ring"
-        >
-          Sign in with Google
-        </button>
-
-        <div className="mt-6 text-center text-sm text-pit-muted">
-          Are you a fan? <a href="/fan" className="text-pit-accent hover:underline">Go to Fan Mode</a>
         </div>
+
+        {/* Right: Login Card */}
+        <Card className="mx-auto w-full max-w-md border-0">
+          <CardContent className="p-8">
+            <F1ShieldLogo />
+            <h2 className="mt-6 text-2xl font-display font-black uppercase text-center text-f1-white">Sign In</h2>
+            <p className="mt-2 text-sm text-center text-f1-secondary">Use your Google account to continue</p>
+
+            {error && (
+              <div className="mt-6 border border-f1-red bg-f1-dark p-4 text-sm text-f1-red">
+                {error}
+              </div>
+            )}
+
+            <button
+              onClick={handleLogin}
+              className="mt-6 f1-btn w-full py-3 flex items-center justify-center gap-3"
+            >
+              <span className="text-lg">G</span>
+              SIGN IN WITH GOOGLE
+            </button>
+
+            <div className="mt-6 border border-f1-border bg-f1-dark p-4 text-sm text-f1-secondary">
+              New to PitMind? <a href="/fan" className="text-f1-red hover:underline font-bold">FAN MODE</a>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

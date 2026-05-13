@@ -4,9 +4,9 @@ import { BottomNav } from "./BottomNav";
 
 export function PageShell({ children }: { children: ReactNode }) {
   return (
-    <div className="flex min-h-screen flex-col overflow-hidden bg-carbon text-pit-fg">
+    <div className="relative flex min-h-screen flex-col overflow-hidden bg-f1-black text-f1-white">
       <NavBar />
-      <main className="flex-1 overflow-hidden pb-14 md:pb-0">
+      <main className="relative flex-1 overflow-hidden pb-16 md:pb-0">
         {children}
       </main>
       <BottomNav />

@@ -5,61 +5,52 @@ export function KpiStrip({ raceState }: { raceState: RaceState | null }) {
   const fastest = raceState?.fastest_lap;
 
   return (
-    <div className="flex w-full snap-x snap-mandatory gap-4 overflow-x-auto pb-2 md:h-20">
-      {/* Leader Card */}
-      <div 
-        className="flex min-w-[160px] snap-center flex-col justify-center rounded-lg bg-black/40 p-3"
-        style={{ borderLeft: `4px solid ${leader ? leader.team_color : 'transparent'}` }}
-      >
-        <span className="text-xs uppercase tracking-wide text-pit-muted">Leader</span>
-        <span className="font-mono text-[22px] text-pit-fg">{leader ? leader.driver : "—"}</span>
+    <div className="grid gap-4 md:grid-cols-4 animate-fade-in">
+      <div className="f1-card p-4 border-l-4" style={{ borderColor: leader?.team_color || '#38383F' }}>
+        <p className="text-f1-muted text-xs font-bold uppercase tracking-widest">Leader</p>
+        <p className="font-display text-3xl font-black text-f1-white mt-2">{leader ? leader.driver : "—"}</p>
+        <p className="text-f1-muted text-xs mt-1">P{leader?.position || "—"}</p>
       </div>
 
-      {/* Fastest Lap Card */}
-      <div className="flex min-w-[160px] snap-center flex-col justify-center rounded-lg bg-black/40 p-3">
-        <span className="text-xs uppercase tracking-wide text-pit-muted">Fastest Lap</span>
-        <div className="flex items-center gap-2">
-          <span className="font-mono text-[22px] text-pit-fg">{fastest ? fastest.lap_time_s.toFixed(3) : "—"}</span>
-          {fastest && (
-            <span className="rounded-full bg-purple-500/20 px-2 py-0.5 text-[11px] uppercase tracking-wider text-purple-400">
-              {fastest.driver}
-            </span>
-          )}
-        </div>
+      <div className="f1-card p-4">
+        <p className="text-f1-muted text-xs font-bold uppercase tracking-widest">Fastest Lap</p>
+        <p className="f1-mono text-3xl font-black text-f1-white mt-2">{fastest ? fastest.lap_time_s.toFixed(3) : "—"}</p>
+        <p className="text-f1-muted text-xs mt-1">{fastest?.driver || "—"}</p>
       </div>
 
-      {/* Safety Car Card */}
-      <div className="flex min-w-[160px] snap-center flex-col justify-center rounded-lg bg-black/40 p-3">
-        <span className="text-xs uppercase tracking-wide text-pit-muted">Safety Car</span>
-        <div>
+      <div className="f1-card p-4">
+        <p className="text-f1-muted text-xs font-bold uppercase tracking-widest">Safety Car</p>
+        <div className="mt-4">
           {raceState?.safety_car_active ? (
-            <span className="inline-flex items-center rounded-full bg-red-500/20 px-2 py-0.5 text-[11px] uppercase tracking-wider text-red-400">
-              <span className="mr-1 h-2 w-2 rounded-full bg-red-500"></span>
-              ACTIVE
+            <span className="inline-flex items-center gap-2 px-3 py-1 text-xs font-bold uppercase tracking-widest text-f1-red f1-badge">
+              <span className="h-2.5 w-2.5 rounded-full bg-f1-red animate-pulse-red" />
+              Active
             </span>
           ) : (
-            <span className="inline-flex items-center rounded-full bg-green-500/20 px-2 py-0.5 text-[11px] uppercase tracking-wider text-green-400">
-              <span className="mr-1 h-2 w-2 rounded-full bg-green-500"></span>
-              CLEAR
+            <span className="inline-flex items-center gap-2 px-3 py-1 text-xs font-bold uppercase tracking-widest text-f1-white bg-f1-border">
+              <span className="h-2.5 w-2.5 rounded-full bg-emerald-400" />
+              Clear
             </span>
           )}
         </div>
       </div>
 
-      {/* DRS Card */}
-      <div className="flex min-w-[160px] snap-center flex-col justify-center rounded-lg bg-black/40 p-3">
-        <span className="text-xs uppercase tracking-wide text-pit-muted">DRS</span>
-        <div>
+      <div className="f1-card p-4">
+        <p className="text-f1-muted text-xs font-bold uppercase tracking-widest">DRS</p>
+        <div className="mt-4">
           {raceState?.drs_open ? (
-            <span className="inline-flex rounded-full bg-pit-accent/20 px-2 py-0.5 text-[11px] uppercase tracking-wider text-pit-accent">
-              OPEN
+            <span className="inline-flex items-center gap-2 px-3 py-1 text-xs font-bold uppercase tracking-widest text-f1-red f1-badge">
+              <span className="h-2.5 w-2.5 bg-f1-red animate-pulse" />
+              Open
             </span>
           ) : (
-            <span className="inline-flex rounded-full bg-black/60 px-2 py-0.5 text-[11px] uppercase tracking-wider text-pit-muted border border-pit-stroke">
-              CLOSED
+            <span className="inline-flex items-center gap-2 px-3 py-1 text-xs font-bold uppercase tracking-widest text-f1-white bg-f1-border">
+              <span className="h-2.5 w-2.5 bg-f1-elevated" />
+              Closed
             </span>
           )}
         </div>
+        <p className="mt-3 text-xs font-medium text-f1-muted">Track status for overtaking window.</p>
       </div>
     </div>
   );

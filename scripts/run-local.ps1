@@ -7,7 +7,7 @@ Start-Process powershell -ArgumentList @(
   "-NoExit",
   "-NoProfile",
   "-Command",
-  "Set-Location '$Root'; python -m pip install -r backend\requirements.txt -q; python -m uvicorn main:app --app-dir backend --host 127.0.0.1 --port 8000 --reload"
+  "Set-Location '$Root'; & .\.venv312\Scripts\Activate.ps1; python -m uvicorn main:app --app-dir backend --host 127.0.0.1 --port 8000 --reload"
 )
 
 Write-Host "PitMind: starting UI on http://127.0.0.1:5173 ..." -ForegroundColor Cyan

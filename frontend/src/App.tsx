@@ -30,7 +30,10 @@ function RequireAuth({ children }: { children: React.ReactElement }) {
     return <div className="flex h-screen items-center justify-center bg-carbon text-pit-muted">Checking authentication...</div>;
   }
 
-  if (!user) {
+  // Allow demo mode or authenticated user
+  const isDemoMode = typeof window !== "undefined" && localStorage.getItem("demoMode") === "true";
+
+  if (!user && !isDemoMode) {
     return <Navigate to="/login" replace />;
   }
 
@@ -67,14 +70,8 @@ export default function App() {
           path="/dashboard" 
           element={
             <RequireAuth>
-              <StreamProvider wsUrl="ws://localhost:8000/api/v1/stream/telemetry">
-                <RoleProvider>
-                  <PageShell>
-                    <Suspense fallback={<PageLoader label="Loading engineer console..." />}>
-                      <Dashboard />
-                    </Suspense>
-                  </PageShell>
-                </RoleProvider>
+              <StreamProvider wsUrl="ws://127.0.0.1:8000/api/v1/stream/telemetry">
+                <Dashboard />
               </StreamProvider>
             </RequireAuth>
           } 
@@ -85,14 +82,8 @@ export default function App() {
           path="/copilot" 
           element={
             <RequireAuth>
-              <StreamProvider wsUrl="ws://localhost:8000/api/v1/stream/telemetry">
-                <RoleProvider>
-                  <PageShell>
-                    <Suspense fallback={<PageLoader label="Loading Copilot workspace..." />}>
-                      <Dashboard />
-                    </Suspense>
-                  </PageShell>
-                </RoleProvider>
+              <StreamProvider wsUrl="ws://127.0.0.1:8000/api/v1/stream/telemetry">
+                <Dashboard />
               </StreamProvider>
             </RequireAuth>
           } 

@@ -17,6 +17,12 @@ export function Login() {
     }
   };
 
+  const handleDemoLogin = () => {
+    // Demo mode for local development - bypass Firebase
+    localStorage.setItem("demoMode", "true");
+    navigate("/dashboard");
+  };
+
   return (
     <div className="relative flex min-h-screen items-center justify-center px-4 py-10 text-pit-fg">
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(225,6,0,0.18),_transparent_26%),radial-gradient(circle_at_bottom_right,_rgba(20,184,166,0.14),_transparent_28%)]" />
@@ -62,6 +68,14 @@ export function Login() {
             >
               <span className="text-lg">G</span>
               Sign in with Google
+            </button>
+
+            <button
+              onClick={handleDemoLogin}
+              className="mt-3 flex w-full items-center justify-center gap-3 rounded-2xl bg-white/10 px-4 py-3 font-semibold text-pit-fg border border-white/20 shadow-[0_18px_40px_rgba(225,6,0,0.15)] transition-transform hover:-translate-y-0.5 hover:bg-white/15 focus-ring"
+            >
+              <span className="text-lg">🏎️</span>
+              Demo Engineer Mode (Local Dev)
             </button>
 
             <div className="mt-6 rounded-2xl border border-white/10 bg-black/20 p-4 text-sm text-pit-muted">

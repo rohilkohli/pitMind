@@ -16,15 +16,20 @@ from slowapi.errors import RateLimitExceeded
 from slowapi.util import get_remote_address
 import firebase_admin
 
+from config import cors_origin_list, get_settings
+
 try:
-    # This will use GOOGLE_APPLICATION_CREDENTIALS environment variable
-    firebase_admin.initialize_app()
+    # Use explicit project ID for local development if credentials aren't set
+    settings = get_settings()
+    firebase_admin.initialize_app(options={"projectId": settings.firebase_project_id})
 except ValueError:
-    pass # App already initialized or no credentials provided
+    pass # App already initialized
+except Exception as e:
+    logging.warning(f"Firebase initialization failed: {e}")
 
 from config import cors_origin_list, get_settings
 from models.chat import ChatRequest, ChatResponse, DebriefResponse
-from models.strategy import DriverCompareRequest, DriverCompareResponse, StrategyRecommendation
+from models.strategy import StrategyRecommendation, DriverCompareRequest, DriverCompareResponse
 from models.race_state import TelemetryPayload
 from services import sanitize
 from services import pipeline as pipeline_svc
@@ -193,7 +198,9 @@ async def websocket_telemetry_stream(websocket: WebSocket):
     Handles ping/pong for latency measurement and broadcasts telemetry data.
     """
     session_id = "current_race"  # In production, extract from auth token
+    logger.info(f"Connecting WebSocket session: {session_id}")
     await manager.connect(websocket, session_id)
+    logger.info(f"WebSocket connected: {session_id}")
     
     try:
         # Generate and send initial state
@@ -212,7 +219,9 @@ async def websocket_telemetry_stream(websocket: WebSocket):
             "gap_to_leader": 0.0,
             "gap_to_p2": 1.234,
         }
+        logger.info(f"Sending initial telemetry to {session_id}")
         await manager.send_to_one(websocket, initial_telemetry)
+        logger.info(f"Initial telemetry sent to {session_id}")
         
         # Handle incoming messages and broadcast telemetry
         while True:

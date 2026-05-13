@@ -61,6 +61,7 @@ class Settings(BaseSettings):
     langflow_api_key: str = Field(default="", validation_alias=AliasChoices("LANGFLOW_API_KEY", "langflow_api_key"))
 
     google_maps_api_key: str = Field(default="", validation_alias=AliasChoices("GOOGLE_MAPS_API_KEY", "google_maps_api_key"))
+    firebase_project_id: str = Field(default="pitminds-ibm", validation_alias=AliasChoices("FIREBASE_PROJECT_ID", "firebase_project_id"))
 
 
 @lru_cache

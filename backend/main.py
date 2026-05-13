@@ -23,11 +23,10 @@ try:
     settings = get_settings()
     firebase_admin.initialize_app(options={"projectId": settings.firebase_project_id})
 except ValueError:
-    pass # App already initialized
+    pass  # App already initialized
 except Exception as e:
     logging.warning(f"Firebase initialization failed: {e}")
 
-from config import cors_origin_list, get_settings
 from models.chat import ChatRequest, ChatResponse, DebriefResponse
 from models.strategy import StrategyRecommendation, DriverCompareRequest, DriverCompareResponse
 from models.race_state import TelemetryPayload

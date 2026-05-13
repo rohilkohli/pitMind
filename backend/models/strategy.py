@@ -12,6 +12,13 @@ class StrategyScores(BaseModel):
     recommended_window_laps: tuple[int, int]
 
 
+class ConfidenceDecomposition(BaseModel):
+    data_quality: float = Field(..., ge=0, le=100, description="% completeness and reliability of telemetry inputs")
+    model_certainty: float = Field(..., ge=0, le=100, description="confidence in model predictions")
+    stability: float = Field(..., ge=0, le=100, description="consistency across similar scenarios")
+    regret_bound: float = Field(..., ge=0, le=1, description="max expected loss vs optimal")
+
+
 class StrategyRecommendation(BaseModel):
     action: str
     pit_this_lap: bool
@@ -24,6 +31,7 @@ class StrategyRecommendation(BaseModel):
     confidence: float = Field(..., ge=0, le=100)
     alternative: str
     pipeline_steps: list[str]
+    confidence_decomposition: ConfidenceDecomposition | None = None
 
 
 class DriverCompareRequest(BaseModel):

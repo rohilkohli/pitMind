@@ -17,7 +17,7 @@ function PageLoader({ label }: { label: string }) {
       <div className="w-full max-w-md rounded-3xl border border-white/10 bg-white/5 p-6 text-center shadow-[0_18px_48px_rgba(0,0,0,0.25)] backdrop-blur">
         <Skeleton className="mx-auto h-3 w-24" />
         <Skeleton className="mx-auto mt-4 h-9 w-48" />
-        <p className="mt-4 text-sm text-pit-muted">{label}</p>
+        <p className="mt-4 text-sm text-f1-muted">{label}</p>
       </div>
     </div>
   );
@@ -27,13 +27,10 @@ function RequireAuth({ children }: { children: React.ReactElement }) {
   const [user, loading] = useAuthState(auth);
 
   if (loading) {
-    return <div className="flex h-screen items-center justify-center bg-carbon text-pit-muted">Checking authentication...</div>;
+    return <div className="flex h-screen items-center justify-center bg-f1-black text-f1-muted">Checking authentication...</div>;
   }
 
-  // Allow demo mode or authenticated user
-  const isDemoMode = typeof window !== "undefined" && localStorage.getItem("demoMode") === "true";
-
-  if (!user && !isDemoMode) {
+  if (!user) {
     return <Navigate to="/login" replace />;
   }
 
@@ -71,7 +68,13 @@ export default function App() {
           element={
             <RequireAuth>
               <StreamProvider wsUrl="ws://127.0.0.1:8000/api/v1/stream/telemetry">
-                <Dashboard />
+                <RoleProvider>
+                  <PageShell>
+                    <Suspense fallback={<PageLoader label="Loading engineer console..." />}>
+                      <Dashboard />
+                    </Suspense>
+                  </PageShell>
+                </RoleProvider>
               </StreamProvider>
             </RequireAuth>
           } 
@@ -83,7 +86,13 @@ export default function App() {
           element={
             <RequireAuth>
               <StreamProvider wsUrl="ws://127.0.0.1:8000/api/v1/stream/telemetry">
-                <Dashboard />
+                <RoleProvider>
+                  <PageShell>
+                    <Suspense fallback={<PageLoader label="Loading Copilot workspace..." />}>
+                      <Dashboard />
+                    </Suspense>
+                  </PageShell>
+                </RoleProvider>
               </StreamProvider>
             </RequireAuth>
           } 

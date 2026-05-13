@@ -85,34 +85,34 @@ const getEventIcon = (type: RaceEvent['type']) => {
     case 'vsc':
       return <Flag className="w-5 h-5 text-f1-red" />;
     case 'incident':
-      return <AlertCircle className="w-5 h-5 text-amber-500" />;
+      return <AlertCircle className="w-5 h-5 text-medium" />;
     case 'pit_stop':
-      return <Wrench className="w-5 h-5 text-blue-500" />;
+      return <Wrench className="w-5 h-5 text-f1-white" />;
     case 'weather':
-      return <Wind className="w-5 h-5 text-cyan-500" />;
+      return <Wind className="w-5 h-5 text-inter" />;
     case 'gap_spike':
     case 'flag':
     default:
-      return <Clock className="w-5 h-5 text-pit-muted" />;
+      return <Clock className="w-5 h-5 text-f1-muted" />;
   }
 };
 
 const getEventColor = (type: RaceEvent['type'], severity?: string) => {
-  if (severity === 'critical') return 'border-l-4 border-l-f1-red bg-f1-red/15';
-  if (severity === 'warning') return 'border-l-4 border-l-amber-500 bg-amber-500/15';
+  if (severity === 'critical') return 'border-l-4 border-l-f1-red bg-f1-dark';
+  if (severity === 'warning') return 'border-l-4 border-l-medium bg-f1-dark';
   
   switch (type) {
     case 'safety_car':
     case 'vsc':
-      return 'border-l-4 border-l-f1-red bg-f1-red/15';
+      return 'border-l-4 border-l-f1-red bg-f1-dark';
     case 'incident':
-      return 'border-l-4 border-l-amber-500 bg-amber-500/15';
+      return 'border-l-4 border-l-medium bg-f1-dark';
     case 'pit_stop':
-      return 'border-l-4 border-l-blue-500 bg-blue-500/15';
+      return 'border-l-4 border-l-inter bg-f1-dark';
     case 'weather':
-      return 'border-l-4 border-l-cyan-500 bg-cyan-500/15';
+      return 'border-l-4 border-l-inter bg-f1-dark';
     default:
-      return 'border-l-4 border-l-pit-stroke bg-pit-panel/60';
+      return 'border-l-4 border-l-f1-border bg-f1-dark';
   }
 };
 
@@ -129,16 +129,16 @@ export const EventTimeline: React.FC<EventTimelineProps> = ({
 
   if (events.length === 0) {
     return (
-      <Card className="p-6 text-center text-pit-muted">
+      <Card className="p-6 text-center text-f1-muted">
         <Clock className="w-8 h-8 mx-auto mb-2 opacity-50" />
-        <p className="font-semibold">No race events recorded yet</p>
+        <p className="font-bold uppercase tracking-widest">No race events recorded yet</p>
       </Card>
     );
   }
 
   return (
     <Card className="p-6">
-      <h3 className="text-xl font-black text-pit-fg mb-8 uppercase tracking-wide">Race Timeline</h3>
+      <h3 className="f1-section-title text-xl mb-8">Race Timeline</h3>
       
       {/* Timeline container */}
       <div className="space-y-4 max-h-96 overflow-y-auto">
@@ -150,37 +150,37 @@ export const EventTimeline: React.FC<EventTimelineProps> = ({
           >
             {/* Timeline connector */}
             <div className="flex flex-col items-center">
-              <div className="w-10 h-10 rounded-full bg-white border-2 border-slate-300 flex items-center justify-center flex-shrink-0">
+                <div className="w-10 h-10 bg-f1-dark border border-f1-border flex items-center justify-center flex-shrink-0">
                 {getEventIcon(event.type)}
               </div>
               {index < events.length - 1 && (
-                <div className="w-0.5 h-12 bg-slate-200 mt-2" />
+                  <div className="w-0.5 h-12 bg-f1-border mt-2" />
               )}
             </div>
 
             {/* Event content */}
             <div
-              className={`flex-1 p-4 rounded-lg cursor-pointer transition-all ${getEventColor(
+              className={`flex-1 p-4 cursor-pointer transition-all ${getEventColor(
                 event.type,
                 event.severity
               )} ${
                 selectedEvent === event.id
-                  ? 'ring-2 ring-offset-2 ring-blue-400 shadow-md'
-                  : 'hover:shadow-md'
+                  ? 'ring-1 ring-f1-red'
+                  : 'hover:bg-f1-elevated'
               }`}
             >
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-1">
-                    <h4 className="font-semibold text-slate-900">{event.title}</h4>
+                    <h4 className="font-bold text-f1-white uppercase tracking-widest">{event.title}</h4>
                     {event.driver && (
-                      <span className="text-xs font-medium px-2 py-1 bg-slate-200 rounded text-slate-700">
+                      <span className="text-xs font-bold px-2 py-1 bg-f1-border text-f1-white uppercase tracking-widest">
                         {event.driver}
                       </span>
                     )}
                   </div>
-                  <p className="text-sm text-slate-700 mb-2">{event.description}</p>
-                  <div className="flex items-center gap-3 text-xs text-slate-600">
+                  <p className="text-sm text-f1-secondary mb-2">{event.description}</p>
+                  <div className="flex items-center gap-3 text-xs text-f1-muted uppercase tracking-widest">
                     <span>Lap {event.lap}</span>
                     <span>•</span>
                     <span>{event.time}</span>
@@ -193,26 +193,26 @@ export const EventTimeline: React.FC<EventTimelineProps> = ({
       </div>
 
       {/* Summary stats */}
-      <div className="mt-6 pt-4 border-t border-slate-200 grid grid-cols-4 gap-4">
+      <div className="mt-6 pt-4 border-t border-f1-border grid grid-cols-4 gap-4">
         <div className="text-center">
-          <div className="text-xs text-slate-600 mb-1">Total Events</div>
-          <div className="text-lg font-bold text-slate-900">{events.length}</div>
+          <div className="text-xs text-f1-muted mb-1 uppercase tracking-widest">Total Events</div>
+          <div className="text-lg font-display font-black text-f1-white">{events.length}</div>
         </div>
         <div className="text-center">
-          <div className="text-xs text-slate-600 mb-1">Critical</div>
-          <div className="text-lg font-bold text-red-600">
+          <div className="text-xs text-f1-muted mb-1 uppercase tracking-widest">Critical</div>
+          <div className="text-lg font-display font-black text-f1-red">
             {events.filter((e) => e.severity === 'critical').length}
           </div>
         </div>
         <div className="text-center">
-          <div className="text-xs text-slate-600 mb-1">Pit Stops</div>
-          <div className="text-lg font-bold text-blue-600">
+          <div className="text-xs text-f1-muted mb-1 uppercase tracking-widest">Pit Stops</div>
+          <div className="text-lg font-display font-black text-inter">
             {events.filter((e) => e.type === 'pit_stop').length}
           </div>
         </div>
         <div className="text-center">
-          <div className="text-xs text-slate-600 mb-1">Incidents</div>
-          <div className="text-lg font-bold text-amber-600">
+          <div className="text-xs text-f1-muted mb-1 uppercase tracking-widest">Incidents</div>
+          <div className="text-lg font-display font-black text-medium">
             {events.filter((e) => e.type === 'incident').length}
           </div>
         </div>

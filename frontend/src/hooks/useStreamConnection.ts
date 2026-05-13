@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 
-export type WebSocketStatus = 'connecting' | 'connected' | 'disconnected' | 'reconnecting' | 'error';
+export type WebSocketStatus = 'connecting' | 'connected' | 'disconnected' | 'reconnecting' | 'error' | 'offline';
 
 export interface StreamConnectionConfig {
   url: string;
@@ -34,7 +34,6 @@ export const useStreamConnection = (config: StreamConnectionConfig) => {
     lastConnected: new Date().toISOString(),
   });
 
-  const [backoffMs, setBackoffMs] = useState(config.initialBackoffMs || 1000);
   const [uptime, setUptime] = useState(0);
   const [latencyMeasurements, setLatencyMeasurements] = useState<number[]>([]);
   const [totalMessages, setTotalMessages] = useState(0);
@@ -88,7 +87,6 @@ export const useStreamConnection = (config: StreamConnectionConfig) => {
           reconnectAttempts: 0,
           lastConnected: new Date().toISOString(),
         }));
-        setBackoffMs(config.initialBackoffMs || 1000);
 
         // Start heartbeat to measure latency
         heartbeatIntervalRef.current = setInterval(() => {
@@ -119,7 +117,10 @@ export const useStreamConnection = (config: StreamConnectionConfig) => {
       };
 
       ws.onerror = (event) => {
-        console.error('[Stream] WebSocket error:', event);
+        // Only log errors if not at max retries
+        if (state.reconnectAttempts < (config.maxRetries || 5)) {
+          console.error('[Stream] WebSocket error:', event);
+        }
         setState((prev) => ({
           ...prev,
           status: 'error',
@@ -129,42 +130,54 @@ export const useStreamConnection = (config: StreamConnectionConfig) => {
       };
 
       ws.onclose = () => {
-        console.log('[Stream] Disconnected');
         clearInterval(heartbeatIntervalRef.current);
+        const maxRetries = config.maxRetries || 5;
+        
+        // Check if we've exceeded max retries
+        if (state.reconnectAttempts >= maxRetries) {
+          // Set to offline and stop retrying
+          setState((prev) => ({
+            ...prev,
+            status: 'offline',
+          }));
+          return;
+        }
+        
         setState((prev) => ({
           ...prev,
           status: 'disconnected',
         }));
         
         // Schedule reconnection with exponential backoff
-        if (state.reconnectAttempts < (config.maxRetries || 10)) {
-          setState((prev) => ({
-            ...prev,
-            status: 'reconnecting',
-            reconnectAttempts: prev.reconnectAttempts + 1,
-          }));
+        setState((prev) => ({
+          ...prev,
+          status: 'reconnecting',
+          reconnectAttempts: prev.reconnectAttempts + 1,
+        }));
 
-          reconnectTimeoutRef.current = setTimeout(() => {
-            const nextBackoff = Math.min(
-              backoffMs * 2,
-              config.maxBackoffMs || 30000
-            );
-            setBackoffMs(nextBackoff);
-            connect();
-          }, backoffMs);
-        }
+        // Exponential backoff: 1s, 2s, 4s, 8s, 16s
+        const backoffSequence = [1000, 2000, 4000, 8000, 16000];
+        const nextBackoffMs = backoffSequence[Math.min(state.reconnectAttempts, backoffSequence.length - 1)];
+        
+        reconnectTimeoutRef.current = setTimeout(() => {
+          connect();
+        }, nextBackoffMs);
       };
 
       wsRef.current = ws;
     } catch (error) {
-      console.error('[Stream] Connection failed:', error);
+      // Only log connection errors if not at max retries
+      const maxRetries = config.maxRetries || 5;
+      if (state.reconnectAttempts < maxRetries) {
+        console.error('[Stream] Connection failed:', error);
+      }
       setState((prev) => ({
         ...prev,
         status: 'error',
         error: error instanceof Error ? error : new Error('Unknown error'),
       }));
     }
-  }, [config, backoffMs, state.reconnectAttempts]);
+  }, [config, state.reconnectAttempts]);
 
   // Disconnect from WebSocket
   const disconnect = useCallback(() => {
@@ -188,13 +201,12 @@ export const useStreamConnection = (config: StreamConnectionConfig) => {
       ...prev,
       reconnectAttempts: 0,
     }));
-    setBackoffMs(config.initialBackoffMs || 1000);
     setLatencyMeasurements([]);
     setTotalMessages(0);
     setLostMessages(0);
     disconnect();
     connect();
-  }, [config.initialBackoffMs, connect, disconnect]);
+  }, [connect, disconnect]);
 
   // Send message
   const send = useCallback((data: unknown) => {

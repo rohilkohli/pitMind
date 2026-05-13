@@ -36,20 +36,23 @@ export function FanMode() {
 
   return (
     <div className="mx-auto max-w-6xl space-y-6 px-4 py-6 lg:px-6">
-      <div className="overflow-hidden rounded-3xl border border-white/10 bg-[linear-gradient(135deg,rgba(225,6,0,0.16),rgba(255,255,255,0.04),rgba(20,184,166,0.12))] p-6 shadow-[0_18px_48px_rgba(0,0,0,0.25)] backdrop-blur">
-        <p className="text-[10px] font-semibold uppercase tracking-[0.36em] text-pit-muted">Fan experience</p>
-        <h1 className="mt-2 text-3xl font-semibold tracking-tight text-pit-fg md:text-4xl">Live race narrative</h1>
-        <p className="mt-2 max-w-2xl text-sm leading-relaxed text-pit-muted">Follow the pack, inspect the map, and test what-if calls without needing engineer credentials.</p>
-        <div className="mt-4 flex flex-wrap gap-2">
-          <span className="rounded-full border border-white/10 bg-black/20 px-3 py-1.5 text-xs text-pit-fg">Demo fallback ready</span>
-          <span className="rounded-full border border-white/10 bg-black/20 px-3 py-1.5 text-xs text-pit-fg">Strategy simulator</span>
-          <span className="rounded-full border border-white/10 bg-black/20 px-3 py-1.5 text-xs text-pit-fg">Live telemetry hooks</span>
+      {/* Hero Section */}
+      <div className="f1-card border-0 p-8 bg-gradient-to-r from-f1-dark to-f1-black">
+        <div className="f1-stripe" />
+        <p className="text-xs font-bold uppercase tracking-widest text-f1-muted">Fan Experience</p>
+        <h1 className="mt-4 text-4xl font-display font-black uppercase text-f1-white md:text-5xl">Monaco Grand Prix</h1>
+        <h2 className="mt-2 text-2xl font-display font-bold uppercase text-f1-red">Live Race Narrative</h2>
+        <p className="mt-4 max-w-2xl text-sm leading-relaxed text-f1-secondary">Follow the pack, inspect the circuit, and test what-if strategy scenarios in real time.</p>
+        <div className="mt-6 flex flex-wrap gap-2">
+          <span className="f1-badge f1-badge-soft text-xs">LIVE</span>
+          <span className="f1-badge bg-f1-dark border border-f1-border text-f1-white text-xs">INTERACTIVE</span>
+          <span className="f1-badge bg-f1-dark border border-f1-border text-f1-white text-xs">TELEMETRY</span>
         </div>
       </div>
 
       {loading ? (
-        <div className="flex h-64 items-center justify-center rounded-3xl border border-white/10 bg-white/5 shadow-[0_12px_32px_rgba(0,0,0,0.28)] backdrop-blur">
-          <p className="text-sm text-pit-muted animate-pulse">Connecting to live race telemetry...</p>
+        <div className="flex h-64 items-center justify-center f1-card">
+          <p className="text-sm text-f1-muted animate-pulse">Connecting to live race telemetry...</p>
         </div>
       ) : (
         <div className="grid gap-6 xl:grid-cols-[1.3fr_0.9fr]">

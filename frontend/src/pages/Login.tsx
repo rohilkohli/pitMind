@@ -4,6 +4,15 @@ import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { Card, CardContent } from "../components/ui/card";
 
+// F1 Shield Logo
+const F1ShieldLogo = () => (
+  <svg viewBox="0 0 80 80" fill="none" width="80" height="80" className="mx-auto">
+    <rect width="80" height="80" fill="#E10600" />
+    <path d="M20 16h20v8H28v4h10v8H28v12H20V16z" fill="white" />
+    <path d="M44 16h16l-16 24h16" stroke="white" strokeWidth="4" fill="none" />
+  </svg>
+);
+
 export function Login() {
   const navigate = useNavigate();
   const [error, setError] = useState("");
@@ -17,69 +26,57 @@ export function Login() {
     }
   };
 
-  const handleDemoLogin = () => {
-    // Demo mode for local development - bypass Firebase
-    localStorage.setItem("demoMode", "true");
-    navigate("/dashboard");
-  };
-
   return (
-    <div className="relative flex min-h-screen items-center justify-center px-4 py-10 text-pit-fg">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(225,6,0,0.18),_transparent_26%),radial-gradient(circle_at_bottom_right,_rgba(20,184,166,0.14),_transparent_28%)]" />
-      <div className="relative grid w-full max-w-5xl gap-6 lg:grid-cols-[1.05fr_0.95fr]">
-        <div className="rounded-[2rem] border border-white/10 bg-white/5 p-8 shadow-[0_24px_80px_rgba(0,0,0,0.35)] backdrop-blur">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.36em] text-pit-muted">Secure access</p>
-          <h1 className="mt-3 text-4xl font-semibold tracking-tight md:text-5xl">PitMind Engineer Login</h1>
-          <p className="mt-4 max-w-lg text-sm leading-relaxed text-pit-muted">
+    <div className="relative flex min-h-screen items-center justify-center px-4 py-10 bg-f1-black text-f1-white">
+      <div className="relative grid w-full max-w-4xl gap-8">
+        {/* Left: Information Panel */}
+        <div className="f1-card border-0 p-8">
+          <p className="text-xs font-bold uppercase tracking-widest text-f1-muted">Engineer Portal</p>
+          <h1 className="mt-4 text-4xl font-display font-black uppercase md:text-5xl">PitMind</h1>
+          <p className="mt-2 text-sm font-display font-bold uppercase text-f1-red">AI Race Strategy Copilot</p>
+          <p className="mt-4 max-w-lg text-sm leading-relaxed text-f1-secondary">
             Authenticate with Google to access the live strategy workspace, simulation tools, and explanation trace.
           </p>
 
-          <div className="mt-8 grid gap-3 sm:grid-cols-3">
-            <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
-              <div className="text-[10px] uppercase tracking-[0.28em] text-pit-muted">Live strategy</div>
-              <p className="mt-2 text-sm text-pit-fg">Engineer-grade call generation</p>
+          <div className="mt-8 space-y-3">
+            <div className="border-l-4 border-f1-red bg-f1-dark p-4">
+              <div className="text-xs font-bold uppercase tracking-widest text-f1-muted">Live Strategy</div>
+              <p className="mt-2 text-sm text-f1-secondary">Engineer-grade recommendations</p>
             </div>
-            <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
-              <div className="text-[10px] uppercase tracking-[0.28em] text-pit-muted">AI trace</div>
-              <p className="mt-2 text-sm text-pit-fg">Structured rationale and evidence</p>
+            <div className="border-l-4 border-f1-red bg-f1-dark p-4">
+              <div className="text-xs font-bold uppercase tracking-widest text-f1-muted">AI Trace</div>
+              <p className="mt-2 text-sm text-f1-secondary">Structured reasoning and evidence</p>
             </div>
-            <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
-              <div className="text-[10px] uppercase tracking-[0.28em] text-pit-muted">Fan mode</div>
-              <p className="mt-2 text-sm text-pit-fg">Public-facing race narrative</p>
+            <div className="border-l-4 border-f1-red bg-f1-dark p-4">
+              <div className="text-xs font-bold uppercase tracking-widest text-f1-muted">Fan Mode</div>
+              <p className="mt-2 text-sm text-f1-secondary">Public-facing race narrative</p>
             </div>
           </div>
         </div>
 
-        <Card className="border-white/10 bg-white/5 shadow-[0_24px_80px_rgba(0,0,0,0.35)] backdrop-blur">
+        {/* Right: Login Card */}
+        <Card className="mx-auto w-full max-w-md border-0">
           <CardContent className="p-8">
-            <p className="text-[10px] uppercase tracking-[0.36em] text-pit-muted">Engineer portal</p>
-            <h2 className="mt-3 text-2xl font-semibold text-pit-fg">Sign in to continue</h2>
-            <p className="mt-2 text-sm text-pit-muted">Use your Google account to unlock the dashboard.</p>
+            <F1ShieldLogo />
+            <h2 className="mt-6 text-2xl font-display font-black uppercase text-center text-f1-white">Sign In</h2>
+            <p className="mt-2 text-sm text-center text-f1-secondary">Use your Google account to continue</p>
 
             {error && (
-              <div className="mt-6 rounded-2xl border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-300">
+              <div className="mt-6 border border-f1-red bg-f1-dark p-4 text-sm text-f1-red">
                 {error}
               </div>
             )}
 
             <button
               onClick={handleLogin}
-              className="mt-6 flex w-full items-center justify-center gap-3 rounded-2xl bg-pit-accent px-4 py-3 font-semibold text-white shadow-[0_18px_40px_rgba(225,6,0,0.25)] transition-transform hover:-translate-y-0.5 hover:bg-pit-accent/85 focus-ring"
+              className="mt-6 f1-btn w-full py-3 flex items-center justify-center gap-3"
             >
               <span className="text-lg">G</span>
-              Sign in with Google
+              SIGN IN WITH GOOGLE
             </button>
 
-            <button
-              onClick={handleDemoLogin}
-              className="mt-3 flex w-full items-center justify-center gap-3 rounded-2xl bg-white/10 px-4 py-3 font-semibold text-pit-fg border border-white/20 shadow-[0_18px_40px_rgba(225,6,0,0.15)] transition-transform hover:-translate-y-0.5 hover:bg-white/15 focus-ring"
-            >
-              <span className="text-lg">🏎️</span>
-              Demo Engineer Mode (Local Dev)
-            </button>
-
-            <div className="mt-6 rounded-2xl border border-white/10 bg-black/20 p-4 text-sm text-pit-muted">
-              Are you a fan? <a href="/fan" className="text-pit-accent hover:underline">Go to Fan Mode</a>
+            <div className="mt-6 border border-f1-border bg-f1-dark p-4 text-sm text-f1-secondary">
+              New to PitMind? <a href="/fan" className="text-f1-red hover:underline font-bold">FAN MODE</a>
             </div>
           </CardContent>
         </Card>

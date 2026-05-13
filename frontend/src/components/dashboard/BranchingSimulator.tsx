@@ -143,14 +143,14 @@ export const BranchingSimulator: React.FC<BranchingSimulatorProps> = ({
             }}
             className={`cursor-pointer rounded-2xl border-2 p-4 transition-all ${
               selectedId === scenario.id
-                ? 'border-pit-accent bg-pit-accent/10 ring-2 ring-pit-accent/30 shadow-lg'
+                ? 'border-f1-red bg-f1-red/10 ring-2 ring-f1-red/30 shadow-lg'
                 : 'border-white/10 bg-black/20 hover:border-white/20 hover:bg-black/30'
             }`}
           >
             <div className="flex items-start justify-between gap-2 mb-3">
               <div>
-                <h3 className="text-sm font-semibold text-pit-fg">{scenario.label}</h3>
-                <p className="text-xs text-pit-muted mt-1">{scenario.description}</p>
+                <h3 className="text-sm font-semibold text-white">{scenario.label}</h3>
+                <p className="text-xs text-f1-muted mt-1">{scenario.description}</p>
               </div>
               <div
                 className={`px-2 py-1 rounded-lg text-xs font-bold border ${getConfidenceBadgeColor(
@@ -164,25 +164,25 @@ export const BranchingSimulator: React.FC<BranchingSimulatorProps> = ({
             {/* Outcome metrics */}
             <div className="space-y-2 mb-4">
               <div className="flex items-center justify-between text-xs">
-                <span className="text-pit-muted">Predicted Position</span>
-                <span className="font-semibold text-pit-fg">{scenario.predictedPosition}</span>
+                <span className="text-f1-muted">Predicted Position</span>
+                <span className="font-semibold text-white">{scenario.predictedPosition}</span>
               </div>
               <div className="flex items-center justify-between text-xs">
-                <span className="text-pit-muted">Gap to Leader</span>
+                <span className="text-f1-muted">Gap to Leader</span>
                 <span className={`font-semibold ${scenario.predictedGap > 0 ? 'text-red-400' : 'text-emerald-400'}`}>
                   {scenario.predictedGap > 0 ? '+' : ''}{scenario.predictedGap.toFixed(1)}s
                 </span>
               </div>
               <div className="flex items-center justify-between text-xs">
-                <span className="text-pit-muted">Lap Time</span>
-                <span className="font-mono text-pit-fg">{scenario.predictedLapTime.toFixed(1)}s</span>
+                <span className="text-f1-muted">Lap Time</span>
+                <span className="font-mono text-white">{scenario.predictedLapTime.toFixed(1)}s</span>
               </div>
             </div>
 
             {/* Selection indicator */}
             {selectedId === scenario.id && (
               <div className="pt-3 border-t border-white/10">
-                <p className="text-xs text-pit-accent font-semibold">✓ Selected scenario</p>
+                <p className="text-xs text-f1-red font-semibold">✓ Selected scenario</p>
               </div>
             )}
           </div>
@@ -196,13 +196,13 @@ export const BranchingSimulator: React.FC<BranchingSimulatorProps> = ({
             {/* Left: Pros & Cons */}
             <div className="space-y-4">
               <div>
-                <h4 className="text-sm font-semibold text-pit-fg mb-3 flex items-center gap-2">
+                <h4 className="text-sm font-semibold text-white mb-3 flex items-center gap-2">
                   <TrendingUp className="w-4 h-4 text-emerald-400" />
                   Advantages
                 </h4>
                 <ul className="space-y-2">
                   {selectedScenario.pros.map((pro, idx) => (
-                    <li key={idx} className="flex gap-2 text-xs text-pit-fg">
+                    <li key={idx} className="flex gap-2 text-xs text-white">
                       <span className="mt-1 h-1.5 w-1.5 rounded-full bg-emerald-400 flex-shrink-0" />
                       <span>{pro}</span>
                     </li>
@@ -211,13 +211,13 @@ export const BranchingSimulator: React.FC<BranchingSimulatorProps> = ({
               </div>
 
               <div>
-                <h4 className="text-sm font-semibold text-pit-fg mb-3 flex items-center gap-2">
+                <h4 className="text-sm font-semibold text-white mb-3 flex items-center gap-2">
                   <Zap className="w-4 h-4 text-red-400" />
                   Risks
                 </h4>
                 <ul className="space-y-2">
                   {selectedScenario.cons.map((con, idx) => (
-                    <li key={idx} className="flex gap-2 text-xs text-pit-fg">
+                    <li key={idx} className="flex gap-2 text-xs text-white">
                       <span className="mt-1 h-1.5 w-1.5 rounded-full bg-red-400 flex-shrink-0" />
                       <span>{con}</span>
                     </li>
@@ -228,15 +228,15 @@ export const BranchingSimulator: React.FC<BranchingSimulatorProps> = ({
 
             {/* Right: Timeline */}
             <div>
-              <h4 className="text-sm font-semibold text-pit-fg mb-3 flex items-center gap-2">
-                <Clock className="w-4 h-4 text-pit-accent" />
+              <h4 className="text-sm font-semibold text-white mb-3 flex items-center gap-2">
+                <Clock className="w-4 h-4 text-f1-red" />
                 Predicted Timeline
               </h4>
               <div className="space-y-3">
                 {selectedScenario.timeline.map((entry, idx) => (
                   <div
                     key={idx}
-                    className="p-3 rounded-lg border border-white/10 bg-black/20 text-xs text-pit-fg"
+                    className="p-3 rounded-lg border border-white/10 bg-black/20 text-xs text-white"
                   >
                     <div className="flex items-center justify-between mb-1">
                       <span className="font-semibold">Lap {entry.lap}</span>
@@ -244,7 +244,7 @@ export const BranchingSimulator: React.FC<BranchingSimulatorProps> = ({
                         {entry.delta}
                       </span>
                     </div>
-                    <p className="text-pit-muted">{entry.event}</p>
+                    <p className="text-f1-muted">{entry.event}</p>
                   </div>
                 ))}
               </div>
@@ -253,7 +253,7 @@ export const BranchingSimulator: React.FC<BranchingSimulatorProps> = ({
 
           {/* Action button */}
           <div className="mt-6 pt-6 border-t border-white/10">
-            <button className="w-full px-4 py-3 rounded-lg bg-pit-accent text-white font-semibold hover:bg-pit-accent/90 transition flex items-center justify-center gap-2">
+            <button className="w-full px-4 py-3 rounded-lg bg-f1-red text-white font-semibold hover:bg-f1-red-dark transition flex items-center justify-center gap-2">
               <span>Execute {selectedScenario.label} Strategy</span>
               <ArrowRight className="w-4 h-4" />
             </button>
@@ -263,10 +263,10 @@ export const BranchingSimulator: React.FC<BranchingSimulatorProps> = ({
 
       {/* Info panel */}
       <div className="p-4 rounded-lg border border-white/10 bg-black/20">
-        <p className="text-xs text-pit-muted">
-          <span className="font-semibold text-pit-fg">Current State:</span> Lap {currentLap}, P{currentPosition}, Gap {currentGap > 0 ? '+' : ''}{currentGap.toFixed(1)}s
+        <p className="text-xs text-f1-muted">
+          <span className="font-semibold text-white">Current State:</span> Lap {currentLap}, P{currentPosition}, Gap {currentGap > 0 ? '+' : ''}{currentGap.toFixed(1)}s
         </p>
-        <p className="text-xs text-pit-muted mt-2">
+        <p className="text-xs text-f1-muted mt-2">
           Click a scenario card to view pros/cons and predicted timeline. Compare outcomes before committing to a pit strategy.
         </p>
       </div>

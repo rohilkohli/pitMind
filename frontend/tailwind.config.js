@@ -5,28 +5,37 @@ export default {
   theme: {
     extend: {
       colors: {
-        /* F1 Official Palette */
-        f1: {
-          red: "#EF3340",
-          black: "#000000",
-          white: "#FFFFFF",
-          silver: "#E8E8E8",
-        },
-        /* PitMind Theme (updated to F1 red) */
-        pit: {
-          bg: "#0a0a0b",
-          panel: "#121214",
-          stroke: "#2a2a2f",
-          muted: "#9ca3af",
-          fg: "#f4f4f5",
-          accent: "#EF3340",  /* Updated from #e10600 to F1 red */
-          white: "#fafafa",
-        },
+        /* F1 Core Colors */
+        'f1-red':     '#E10600',
+        'f1-red-dark':'#B30500',
+        'f1-black':   '#15151E',
+        'f1-dark':    '#1F1F27',
+        'f1-elevated':'#2D2D35',
+        'f1-border':  '#38383F',
+        'f1-muted':   '#67676D',
+        'f1-white':   '#FFFFFF',
+        /* Tyre Compounds */
+        'soft':       '#E8002D',
+        'medium':     '#FFC906',
+        'hard':       '#FFFFFF',
+        'inter':      '#39B54A',
+        'wet':        '#0067FF',
+        /* Team Colors */
+        'red-bull':   '#3671C6',
+        'ferrari':    '#E8002D',
+        'mercedes':   '#27F4D2',
+        'mclaren':    '#FF8000',
+        'aston':      '#229971',
+        'alpine':     '#FF87BC',
+        'williams':   '#64C4FF',
+        'haas':       '#B6BABD',
+        'sauber':     '#52E252',
+        'rb':         '#6692FF',
       },
       fontFamily: {
-        sans: ["Outfit", "system-ui", "sans-serif"],
-        mono: ["IBM Plex Mono", "ui-monospace", "monospace"],
-        display: ["Outfit", "system-ui", "sans-serif"],  /* For large headings */
+        sans: ["'Titillium Web'", "system-ui", "sans-serif"],
+        mono: ["'IBM Plex Mono'", "ui-monospace", "monospace"],
+        display: ["'Barlow Condensed'", "system-ui", "sans-serif"],
       },
       fontSize: {
         /* F1-style typography scale */

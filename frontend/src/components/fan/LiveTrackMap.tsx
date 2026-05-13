@@ -7,10 +7,10 @@ export function LiveTrackMap({ raceState }: { raceState: RaceState | null }) {
     <div className="relative w-full overflow-hidden rounded-3xl border border-white/10 bg-white/5 p-4 shadow-[0_12px_32px_rgba(0,0,0,0.28)] backdrop-blur">
       <div className="mb-4 flex items-center justify-between gap-3">
         <div>
-          <h3 className="text-[11px] font-semibold uppercase tracking-[0.32em] text-pit-muted">Live Track Map</h3>
-          <p className="mt-1 text-xs text-pit-muted">Approximate track position for the leading pack</p>
+          <h3 className="text-[11px] font-semibold uppercase tracking-[0.32em] text-f1-muted">Live Track Map</h3>
+          <p className="mt-1 text-xs text-f1-muted">Approximate track position for the leading pack</p>
         </div>
-        <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[11px] text-pit-muted">Top {Math.max(topDrivers.length, 1)}</span>
+        <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[11px] text-f1-muted">Top {Math.max(topDrivers.length, 1)}</span>
       </div>
       
       <div className="relative mx-auto aspect-[16/9] w-full max-w-2xl overflow-hidden rounded-2xl border border-white/10 bg-[radial-gradient(circle_at_center,_rgba(225,6,0,0.10),_transparent_55%),linear-gradient(180deg,rgba(255,255,255,0.02),rgba(0,0,0,0.25))] flex items-center justify-center">
@@ -19,7 +19,7 @@ export function LiveTrackMap({ raceState }: { raceState: RaceState | null }) {
           <path 
             d="M 150 250 L 250 150 L 550 150 C 650 150 700 200 650 300 L 550 350 L 200 350 C 100 350 100 300 150 250 Z" 
             fill="none" 
-            stroke="var(--pit-stroke)" 
+            stroke="#E10600" 
             strokeWidth="20" 
             strokeLinejoin="round"
           />
@@ -61,7 +61,7 @@ export function LiveTrackMap({ raceState }: { raceState: RaceState | null }) {
         })}
         
         {topDrivers.length === 0 && (
-          <div className="absolute inset-0 flex items-center justify-center text-sm text-pit-muted">
+          <div className="absolute inset-0 flex items-center justify-center text-sm text-f1-muted">
             Waiting for live tracking data...
           </div>
         )}

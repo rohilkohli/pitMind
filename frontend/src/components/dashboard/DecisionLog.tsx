@@ -25,7 +25,6 @@ interface DecisionLogProps {
   onExportSession?: () => void;
 }
 
-// Mock decisions from the session
 const MOCK_DECISIONS: StrategyDecision[] = [
   {
     id: '1',
@@ -98,47 +97,56 @@ export const DecisionLog: React.FC<DecisionLogProps> = ({
   };
 
   const getConfidenceColor = (confidence: number) => {
-    if (confidence >= 0.8) return 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30';
-    if (confidence >= 0.65) return 'bg-amber-500/20 text-amber-300 border-amber-500/30';
-    return 'bg-red-500/20 text-red-300 border-red-500/30';
+    if (confidence >= 0.8) return 'bg-inter/20 text-inter border-inter/30';
+    if (confidence >= 0.65) return 'bg-medium/20 text-medium border-medium/30';
+    return 'bg-f1-red/20 text-f1-red border-f1-red/30';
   };
 
   return (
-    <Card className="border-white/10 bg-white/5">
+    <Card className="border-f1-border bg-f1-black">
       <div className="p-6">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h3 className="text-lg font-semibold text-pit-fg flex items-center gap-2">
-              <FileText className="w-5 h-5 text-pit-accent" />
+            <h3 className="text-lg font-bold text-f1-white flex items-center gap-2 uppercase tracking-widest">
+              <FileText className="w-5 h-5 text-f1-red" />
               Decision Log
             </h3>
-            <p className="text-xs text-pit-muted mt-1">All strategy calls and outcomes from this session</p>
+            <p className="text-xs text-f1-muted mt-1 uppercase tracking-widest">All strategy calls and outcomes from this session</p>
           </div>
           <button
             onClick={onExportSession}
-            className="flex items-center gap-2 px-3 py-2 rounded-lg border border-white/10 bg-black/20 text-pit-fg text-sm font-medium hover:border-white/20 hover:bg-black/30 transition"
+            className="flex items-center gap-2 px-3 py-2 border border-f1-border bg-f1-dark text-f1-white text-sm font-bold uppercase tracking-widest hover:bg-f1-elevated transition"
           >
             <Download className="w-4 h-4" />
             Export
           </button>
         </div>
 
-        {/* Timeline */}
         <div className="space-y-4">
           {decisions.map((decision, index) => (
             <div
               key={decision.id}
-              className={`relative pb-6 ${index < decisions.length - 1 ? 'border-b border-white/10' : ''}`}
+              className={`relative pb-6 ${index < decisions.length - 1 ? 'border-b border-f1-border' : ''}`}
             >
-              {/* Timeline marker */}
-              <div className="absolute left-0 top-1 w-4 h-4 rounded-full border-2 border-pit-accent bg-black/40" />
+              <div className="absolute left-0 top-1 w-4 h-4 bg-f1-red border border-f1-red" />
 
-              {/* Decision card */}
-              <div className="ml-8 cursor-pointer" onClick={() => setExpandedId(expandedId === decision.id ? null : decision.id)}>
+              <div
+                className="ml-8 cursor-pointer"
+                onClick={() => setExpandedId(expandedId === decision.id ? null : decision.id)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    setExpandedId(expandedId === decision.id ? null : decision.id);
+                  }
+                }}
+                role="button"
+                tabIndex={0}
+                aria-expanded={expandedId === decision.id}
+              >
                 <div className="flex items-start justify-between gap-3 mb-2">
                   <div className="flex-1">
-                    <h4 className="font-semibold text-pit-fg">{decision.action}</h4>
-                    <div className="flex items-center gap-2 mt-1 text-xs text-pit-muted">
+                    <h4 className="font-bold text-f1-white uppercase tracking-widest">{decision.action}</h4>
+                    <div className="flex items-center gap-2 mt-1 text-xs text-f1-muted uppercase tracking-widest">
                       <span>Lap {decision.lap}</span>
                       <span>•</span>
                       <span>{decision.timestamp}</span>
@@ -146,69 +154,57 @@ export const DecisionLog: React.FC<DecisionLogProps> = ({
                   </div>
 
                   <div className="flex items-center gap-2">
-                    {decision.approved && (
-                      <CheckCircle className="w-4 h-4 text-emerald-400" />
-                    )}
-                    <div
-                      className={`px-2.5 py-1 rounded-lg text-[11px] font-bold border ${getConfidenceColor(
-                        decision.confidence
-                      )}`}
-                    >
+                    {decision.approved && <CheckCircle className="w-4 h-4 text-inter" />}
+                    <div className={`px-2.5 py-1 text-[11px] font-bold border uppercase tracking-widest ${getConfidenceColor(decision.confidence)}`}>
                       {(decision.confidence * 100).toFixed(0)}%
                     </div>
                   </div>
                 </div>
 
-                <p className="text-sm text-pit-fg mb-2">{decision.reasoning}</p>
+                <p className="text-sm text-f1-secondary mb-2">{decision.reasoning}</p>
 
-                {/* Annotation badge */}
                 {decision.annotation && (
-                  <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-pit-accent/10 border border-pit-accent/30 text-[11px] text-pit-accent font-medium">
+                  <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-f1-dark border border-f1-border text-[11px] text-f1-red font-bold uppercase tracking-widest">
                     <MessageSquare className="w-3 h-3" />
                     {decision.annotation}
                   </div>
                 )}
 
-                {/* Expand indicator */}
-                <div className="text-xs text-pit-muted mt-2">{expandedId === decision.id ? '▼' : '▶'} Details</div>
+                <div className="text-xs text-f1-muted mt-2 uppercase tracking-widest">
+                  {expandedId === decision.id ? '▼' : '▶'} Details
+                </div>
               </div>
 
-              {/* Expanded details */}
               {expandedId === decision.id && (
-                <div className="ml-8 mt-4 space-y-4 p-4 rounded-lg border border-white/10 bg-black/20">
-                  {/* Approval status */}
+                <div className="ml-8 mt-4 space-y-4 p-4 border border-f1-border bg-f1-dark">
                   {decision.approved && (
-                    <div className="flex items-center gap-2 text-xs text-emerald-300">
+                    <div className="flex items-center gap-2 text-xs text-inter uppercase tracking-widest">
                       <CheckCircle className="w-4 h-4" />
                       <span>Approved by {decision.approvedBy}</span>
                     </div>
                   )}
 
-                  {/* Outcome if available */}
                   {decision.outcome && (
-                    <div className="p-3 rounded-lg border border-white/10 bg-black/30">
-                      <h5 className="text-xs font-semibold text-pit-fg mb-2">Outcome</h5>
-                      <div className="space-y-1 text-xs text-pit-fg">
+                    <div className="p-3 border border-f1-border bg-f1-black">
+                      <h5 className="text-xs font-bold text-f1-white mb-2 uppercase tracking-widest">Outcome</h5>
+                      <div className="space-y-1 text-xs text-f1-secondary">
                         <div className="flex justify-between">
-                          <span className="text-pit-muted">Position</span>
+                          <span className="text-f1-muted uppercase tracking-widest">Position</span>
                           <span className="font-mono">{decision.outcome.resultPosition}</span>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-pit-muted">Gap to Leader</span>
+                          <span className="text-f1-muted uppercase tracking-widest">Gap to Leader</span>
                           <span className="font-mono">{decision.outcome.resultGap > 0 ? '+' : ''}{decision.outcome.resultGap.toFixed(1)}s</span>
                         </div>
-                        <div className="mt-2 text-pit-muted">{decision.outcome.notes}</div>
+                        <div className="mt-2 text-f1-muted">{decision.outcome.notes}</div>
                       </div>
                     </div>
                   )}
 
-                  {/* Annotation input/display */}
                   <div>
-                    <label className="block text-xs font-semibold text-pit-fg mb-2">Engineer Notes</label>
+                    <label className="block text-xs font-bold text-f1-white mb-2 uppercase tracking-widest">Engineer Notes</label>
                     {decision.annotation ? (
-                      <div className="p-3 rounded-lg bg-pit-accent/5 border border-pit-accent/20 text-xs text-pit-fg">
-                        {decision.annotation}
-                      </div>
+                      <div className="p-3 bg-f1-black border border-f1-border text-xs text-f1-secondary">{decision.annotation}</div>
                     ) : (
                       <div className="space-y-2">
                         <textarea
@@ -220,14 +216,14 @@ export const DecisionLog: React.FC<DecisionLogProps> = ({
                             }))
                           }
                           placeholder="Add notes about this decision..."
-                          className="w-full h-20 px-3 py-2 rounded-lg bg-black/30 border border-white/10 text-xs text-pit-fg placeholder:text-pit-muted focus:outline-none focus:border-pit-accent/50 resize-none"
+                          className="w-full h-20 px-3 py-2 bg-f1-black border border-f1-border text-xs text-f1-white placeholder:text-f1-muted focus:outline-none focus:border-f1-red resize-none"
                         />
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
                             handleAddAnnotation(decision.id);
                           }}
-                          className="px-3 py-1.5 rounded-lg bg-pit-accent text-white text-xs font-medium hover:bg-pit-accent/90 transition"
+                          className="px-3 py-1.5 bg-f1-red text-white text-xs font-bold uppercase tracking-widest hover:bg-f1-red-dark transition"
                         >
                           Save Note
                         </button>
@@ -235,10 +231,9 @@ export const DecisionLog: React.FC<DecisionLogProps> = ({
                     )}
                   </div>
 
-                  {/* Reasoning detail */}
-                  <div className="p-3 rounded-lg border border-white/10 bg-black/30">
-                    <h5 className="text-xs font-semibold text-pit-fg mb-2">Full Reasoning</h5>
-                    <p className="text-xs text-pit-fg">{decision.reasoning}</p>
+                  <div className="p-3 border border-f1-border bg-f1-black">
+                    <h5 className="text-xs font-bold text-f1-white mb-2 uppercase tracking-widest">Full Reasoning</h5>
+                    <p className="text-xs text-f1-secondary">{decision.reasoning}</p>
                   </div>
                 </div>
               )}
@@ -246,24 +241,19 @@ export const DecisionLog: React.FC<DecisionLogProps> = ({
           ))}
         </div>
 
-        {/* Summary stats */}
-        <div className="mt-8 pt-6 border-t border-white/10 grid grid-cols-3 gap-4">
+        <div className="mt-8 pt-6 border-t border-f1-border grid grid-cols-3 gap-4">
           <div className="text-center">
-            <div className="text-xs text-pit-muted mb-1">Total Calls</div>
-            <div className="text-2xl font-bold text-pit-fg">{decisions.length}</div>
+            <div className="text-xs text-f1-muted mb-1 uppercase tracking-widest">Total Calls</div>
+            <div className="text-2xl font-display font-black text-f1-white">{decisions.length}</div>
           </div>
           <div className="text-center">
-            <div className="text-xs text-pit-muted mb-1">Approved</div>
-            <div className="text-2xl font-bold text-emerald-400">{decisions.filter((d) => d.approved).length}</div>
+            <div className="text-xs text-f1-muted mb-1 uppercase tracking-widest">Approved</div>
+            <div className="text-2xl font-display font-black text-inter">{decisions.filter((d) => d.approved).length}</div>
           </div>
           <div className="text-center">
-            <div className="text-xs text-pit-muted mb-1">Avg Confidence</div>
-            <div className="text-2xl font-bold text-pit-accent">
-              {(
-                (decisions.reduce((sum, d) => sum + d.confidence, 0) / decisions.length) *
-                100
-              ).toFixed(0)}
-              %
+            <div className="text-xs text-f1-muted mb-1 uppercase tracking-widest">Avg Confidence</div>
+            <div className="text-2xl font-display font-black text-f1-red">
+              {((decisions.reduce((sum, d) => sum + d.confidence, 0) / decisions.length) * 100).toFixed(0)}%
             </div>
           </div>
         </div>

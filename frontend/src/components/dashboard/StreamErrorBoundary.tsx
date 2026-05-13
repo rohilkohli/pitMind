@@ -11,23 +11,23 @@ export const StreamErrorBoundary: React.FC<{ children: React.ReactNode }> = ({ c
         <div className="rounded-2xl border border-red-500/30 bg-red-500/10 p-8 max-w-md">
           <div className="flex items-center gap-3 mb-4">
             <AlertTriangle className="w-6 h-6 text-red-400" />
-            <h2 className="text-xl font-semibold text-pit-fg">Stream Connection Error</h2>
+            <h2 className="text-xl font-semibold text-white">Stream Connection Error</h2>
           </div>
 
-          <p className="text-sm text-pit-muted mb-6">
+          <p className="text-sm text-f1-muted mb-6">
             The connection to the telemetry stream has failed. Please check your network connection and try reconnecting.
           </p>
 
           {state.error && (
             <div className="mb-6 p-3 rounded-lg bg-black/20 border border-white/10">
-              <p className="text-xs font-mono text-pit-muted">{state.error.message}</p>
+              <p className="text-xs font-mono text-f1-muted">{state.error.message}</p>
             </div>
           )}
 
           <div className="flex gap-3">
             <button
               onClick={reconnect}
-              className="flex-1 px-4 py-2 rounded-lg bg-pit-accent hover:bg-pit-accent/80 text-white font-medium transition flex items-center justify-center gap-2"
+              className="flex-1 px-4 py-2 rounded-lg bg-f1-red hover:bg-f1-red-dark text-white font-medium transition flex items-center justify-center gap-2"
             >
               <RotateCcw className="w-4 h-4" />
               Reconnect

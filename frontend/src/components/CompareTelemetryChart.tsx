@@ -20,8 +20,8 @@ type Props = {
 export function CompareTelemetryChart({ title, data, metricLabel }: Props) {
   const labelId = `${title.replace(/\s+/g, "-").toLowerCase()}-title`;
   return (
-    <figure className="rounded-xl border border-pit-stroke bg-black/30 p-3" aria-labelledby={labelId}>
-      <figcaption id={labelId} className="mb-2 text-sm font-semibold text-pit-fg">
+    <figure className="rounded-xl border border-f1-border bg-black/30 p-3" aria-labelledby={labelId}>
+      <figcaption id={labelId} className="mb-2 text-sm font-semibold text-white">
         {title}
       </figcaption>
       <div className="h-64" role="img" aria-label={`${metricLabel} comparison chart`}>
@@ -39,10 +39,10 @@ export function CompareTelemetryChart({ title, data, metricLabel }: Props) {
           </LineChart>
         </ResponsiveContainer>
       </div>
-      <table className="mt-3 w-full text-left text-xs text-pit-muted" aria-label={`${metricLabel} table`}>
+      <table className="mt-3 w-full text-left text-xs text-f1-muted" aria-label={`${metricLabel} table`}>
         <caption className="sr-only">{metricLabel} sample rows</caption>
         <thead>
-          <tr className="border-b border-pit-stroke">
+          <tr className="border-b border-f1-border">
             <th scope="col" className="py-1 font-mono">
               Lap
             </th>
@@ -56,7 +56,7 @@ export function CompareTelemetryChart({ title, data, metricLabel }: Props) {
         </thead>
         <tbody>
           {data.slice(-6).map((row) => (
-            <tr key={row.lap} className="border-b border-pit-stroke/60">
+            <tr key={row.lap} className="border-b border-f1-border/60">
               <td className="py-1 font-mono">{row.lap}</td>
               <td className="py-1 font-mono">{row.a ?? "—"}</td>
               <td className="py-1 font-mono">{row.b ?? "—"}</td>

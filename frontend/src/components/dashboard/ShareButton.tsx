@@ -25,7 +25,7 @@ export const ShareButton: React.FC<ShareButtonProps> = ({ onCopyUrl, getShareUrl
       {/* Share button */}
       <Button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 bg-pit-accent text-white hover:bg-pit-accent/90"
+        className="flex items-center gap-2 bg-f1-red text-white hover:bg-f1-red-dark"
       >
         <Share2 className="w-4 h-4" />
         Share

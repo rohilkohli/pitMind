@@ -77,7 +77,7 @@ const MOCK_BATTLES: BattleCard[] = [
 const getIntensityColor = (intensity: string) => {
   switch (intensity) {
     case 'intense':
-      return 'border-pit-accent/50 bg-pit-accent/10';
+      return 'border-f1-red/50 bg-f1-red/10';
     case 'interesting':
       return 'border-amber-500/50 bg-amber-500/10';
     case 'developing':
@@ -124,11 +124,11 @@ export const FanBattleCards: React.FC<FanBattleCardsProps> = ({
   return (
     <Card className="border-white/10 bg-white/5 p-6">
       <div className="mb-6">
-        <h3 className="text-lg font-semibold text-pit-fg flex items-center gap-2">
-          <Crown className="w-5 h-5 text-pit-accent" />
+        <h3 className="text-lg font-semibold text-white flex items-center gap-2">
+          <Crown className="w-5 h-5 text-f1-red" />
           Race Battles
         </h3>
-        <p className="text-xs text-pit-muted mt-1">Live position battles and narrative highlights</p>
+        <p className="text-xs text-f1-muted mt-1">Live position battles and narrative highlights</p>
       </div>
 
       <div className="space-y-4">
@@ -141,20 +141,20 @@ export const FanBattleCards: React.FC<FanBattleCardsProps> = ({
             }}
             className={`cursor-pointer rounded-2xl border-2 p-4 transition-all ${
               selectedId === battle.id
-                ? 'border-pit-accent bg-pit-accent/15 ring-2 ring-pit-accent/40 shadow-lg'
+                ? 'border-f1-red bg-f1-red/15 ring-2 ring-f1-red/40 shadow-lg'
                 : getIntensityColor(battle.intensity)
             }`}
           >
             {/* Header with lap number and intensity badge */}
             <div className="flex items-start justify-between gap-3 mb-4">
               <div className="flex items-center gap-2">
-                <span className="text-xs font-bold text-pit-muted uppercase tracking-wider bg-white/5 px-2 py-1 rounded">
+                <span className="text-xs font-bold text-f1-muted uppercase tracking-wider bg-white/5 px-2 py-1 rounded">
                   Lap {battle.lap}
                 </span>
                 <span
                   className={`text-xs font-bold uppercase tracking-wider px-2 py-1 rounded ${
                     battle.intensity === 'intense'
-                      ? 'bg-pit-accent/30 text-pit-accent'
+                      ? 'bg-f1-red/30 text-f1-red'
                       : battle.intensity === 'interesting'
                       ? 'bg-amber-500/30 text-amber-300'
                       : battle.intensity === 'developing'
@@ -167,7 +167,7 @@ export const FanBattleCards: React.FC<FanBattleCardsProps> = ({
               </div>
 
               {battle.highlight && (
-                <p className="text-xs text-pit-accent font-semibold text-right">{battle.highlight}</p>
+                <p className="text-xs text-f1-red font-semibold text-right">{battle.highlight}</p>
               )}
             </div>
 
@@ -176,43 +176,43 @@ export const FanBattleCards: React.FC<FanBattleCardsProps> = ({
               <div className="grid grid-cols-[1fr_1fr] gap-4 mb-3">
                 {/* Driver 1 */}
                 <div className="text-center p-3 rounded-lg bg-black/20">
-                  <div className="text-lg font-bold text-pit-fg">{battle.driver1.name}</div>
-                  <div className="text-xs text-pit-muted mt-1">P{battle.driver1.position}</div>
-                  <div className="text-xs font-mono text-pit-accent mt-1">#{battle.driver1.number}</div>
+                  <div className="text-lg font-bold text-white">{battle.driver1.name}</div>
+                  <div className="text-xs text-f1-muted mt-1">P{battle.driver1.position}</div>
+                  <div className="text-xs font-mono text-f1-red mt-1">#{battle.driver1.number}</div>
                 </div>
 
                 {/* Driver 2 */}
                 <div className="text-center p-3 rounded-lg bg-black/20">
-                  <div className="text-lg font-bold text-pit-fg">{battle.driver2.name}</div>
-                  <div className="text-xs text-pit-muted mt-1">P{battle.driver2.position}</div>
-                  <div className="text-xs font-mono text-pit-accent mt-1">#{battle.driver2.number}</div>
+                  <div className="text-lg font-bold text-white">{battle.driver2.name}</div>
+                  <div className="text-xs text-f1-muted mt-1">P{battle.driver2.position}</div>
+                  <div className="text-xs font-mono text-f1-red mt-1">#{battle.driver2.number}</div>
                 </div>
               </div>
 
               {/* Gap indicator */}
-              <div className="flex items-center justify-between text-xs text-pit-muted">
+              <div className="flex items-center justify-between text-xs text-f1-muted">
                 <span>Gap</span>
-                <span className="font-mono text-pit-fg">
+                <span className="font-mono text-white">
                   {Math.abs(battle.driver1.gap - battle.driver2.gap).toFixed(2)}s
                 </span>
               </div>
 
               {/* Momentum */}
-              <div className="flex items-center justify-center gap-2 mt-3 text-xs font-semibold text-pit-accent">
+              <div className="flex items-center justify-center gap-2 mt-3 text-xs font-semibold text-f1-red">
                 {getMomentumIcon(battle.momentum)}
                 {getMomentumLabel(battle.momentum, battle.driver1.name, battle.driver2.name)}
               </div>
             </div>
 
             {/* Narrative */}
-            <p className="text-sm text-pit-fg leading-relaxed p-3 rounded-lg bg-black/30 border border-white/10">
+            <p className="text-sm text-white leading-relaxed p-3 rounded-lg bg-black/30 border border-white/10">
               {battle.narrative}
             </p>
 
             {/* Selection indicator */}
             {selectedId === battle.id && (
               <div className="mt-3 pt-3 border-t border-white/10">
-                <p className="text-xs text-pit-accent font-semibold">✓ Watching this battle</p>
+                <p className="text-xs text-f1-red font-semibold">✓ Watching this battle</p>
               </div>
             )}
           </div>
@@ -221,8 +221,8 @@ export const FanBattleCards: React.FC<FanBattleCardsProps> = ({
 
       {/* Fan engagement callout */}
       <div className="mt-6 p-4 rounded-lg border border-white/10 bg-black/20">
-        <p className="text-xs text-pit-muted">
-          <span className="font-semibold text-pit-fg">Pro tip:</span> Click any battle card to follow that storyline in detail. Track position changes, gaps, and narrative arcs as they unfold lap by lap.
+        <p className="text-xs text-f1-muted">
+          <span className="font-semibold text-white">Pro tip:</span> Click any battle card to follow that storyline in detail. Track position changes, gaps, and narrative arcs as they unfold lap by lap.
         </p>
       </div>
     </Card>

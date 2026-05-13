@@ -11,24 +11,30 @@ import logging
 logger = logging.getLogger(__name__)
 
 async def verify_token(authorization: str = Header(None)) -> str:
-    # Extreme fallback for local development
+    """Verify Firebase ID token or allow mock UID in development."""
     if not authorization:
-        logger.warning("No Authorization header provided. Using guest mock UID.")
-        return "guest_mock_uid"
+        logger.warning("Missing Authorization header")
+        raise HTTPException(status_code=401, detail="Missing or invalid Authorization header")
         
-    token = authorization.removeprefix("Bearer ")
+    token = authorization.removeprefix("Bearer ").strip()
+    if not token:
+        raise HTTPException(status_code=401, detail="Authorization header malformed")
     
+    # In development without Firebase, allow mock token for testing
     if firebase_auth is None:
-        return "mock_uid_123"
+        logger.warning("Firebase auth not configured; using mock UID for development")
+        # Only in non-production, allow dev testing
+        import os
+        if os.getenv("ENVIRONMENT") == "development" and token.startswith("dev_"):
+            return token.replace("Bearer ", "")
+        raise HTTPException(status_code=401, detail="Firebase authentication not configured")
         
     try:
         decoded = firebase_auth.verify_id_token(token)
         return decoded["uid"]
     except Exception as e:
-        # LOGGING IS KEY HERE
-        print(f"DEBUG: Firebase Auth Error: {e}")
-        logger.warning(f"Firebase token verification failed: {e}. Falling back to dev mock UID.")
-        return "dev_engineer_uid"
+        logger.warning(f"Token verification failed: {e}")
+        raise HTTPException(status_code=401, detail="Invalid or expired token") from e
 
 @router.get("/verify")
 async def verify_auth(uid: str = Depends(verify_token)):

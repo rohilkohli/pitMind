@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Wifi, WifiOff, AlertTriangle, RotateCcw } from 'lucide-react';
 import { useStream } from '../../contexts/StreamContext';
 
-export type ConnectionStatus = 'connected' | 'connecting' | 'disconnected' | 'error' | 'reconnecting';
+export type ConnectionStatus = 'connected' | 'connecting' | 'disconnected' | 'error' | 'reconnecting' | 'offline';
 
 export interface StreamHealth {
   status: ConnectionStatus;
@@ -29,6 +29,8 @@ const getStatusColor = (status: ConnectionStatus) => {
       return 'bg-red-500/20 border-red-500/30 text-red-300';
     case 'error':
       return 'bg-red-500/20 border-red-500/30 text-red-300';
+    case 'offline':
+      return 'bg-slate-500/20 border-slate-500/30 text-slate-300';
     default:
       return 'bg-slate-500/20 border-slate-500/30 text-slate-300';
   }
@@ -46,6 +48,8 @@ const getStatusLabel = (status: ConnectionStatus) => {
       return 'Disconnected';
     case 'error':
       return 'Connection Error';
+    case 'offline':
+      return 'Offline (Max Retries Exceeded)';
     default:
       return 'Unknown';
   }
@@ -61,6 +65,7 @@ const getStatusIcon = (status: ConnectionStatus) => {
       return <Wifi className="w-4 h-4 animate-pulse" />;
     case 'disconnected':
     case 'error':
+    case 'offline':
       return <WifiOff className="w-4 h-4" />;
     default:
       return null;

@@ -1,7 +1,6 @@
 import React from 'react';
 import { Card } from '../ui/card';
 import type { ConfidenceDecomposition } from '../../services/api';
-import { TrendingUp, Database, Brain, Activity } from 'lucide-react';
 
 interface ConfidenceDecompositionCardProps {
   decomposition?: ConfidenceDecomposition | null;
@@ -14,137 +13,80 @@ export const ConfidenceDecompositionCard: React.FC<ConfidenceDecompositionCardPr
 }) => {
   if (!decomposition) {
     return (
-      <Card className="p-6 text-center text-slate-500">
-        <div className="flex justify-center mb-3">
-          <Brain className="w-8 h-8 opacity-30" />
-        </div>
-        <p>Run strategy analysis to see confidence breakdown</p>
+      <Card className="p-6 text-center">
+        <p className="text-f1-muted text-sm">Run strategy analysis to see confidence breakdown</p>
       </Card>
     );
   }
 
-  const metrics = [
-    {
-      label: 'Data Quality',
-      value: decomposition.data_quality,
-      icon: Database,
-      color: 'text-blue-500',
-      bgColor: 'bg-blue-50',
-      borderColor: 'border-blue-200',
-      description: 'Telemetry completeness & reliability',
-    },
-    {
-      label: 'Model Certainty',
-      value: decomposition.model_certainty,
-      icon: Brain,
-      color: 'text-purple-500',
-      bgColor: 'bg-purple-50',
-      borderColor: 'border-purple-200',
-      description: 'Confidence in predictions',
-    },
-    {
-      label: 'Stability',
-      value: decomposition.stability,
-      icon: Activity,
-      color: 'text-emerald-500',
-      bgColor: 'bg-emerald-50',
-      borderColor: 'border-emerald-200',
-      description: 'Consistency across scenarios',
-    },
-    {
-      label: 'Regret Bound',
-      value: (1 - decomposition.regret_bound) * 100, // Convert to percentage for display
-      icon: TrendingUp,
-      color: 'text-amber-500',
-      bgColor: 'bg-amber-50',
-      borderColor: 'border-amber-200',
-      description: 'Expected optimality (higher is better)',
-    },
-  ];
+  const getConfidenceColor = (value: number) => {
+    if (value >= 70) return '#39B54A';
+    if (value >= 40) return '#FFC906';
+    return '#E10600';
+  };
 
   return (
     <Card className="p-6">
-      <div className="mb-6">
-        <h3 className="text-lg font-semibold text-slate-900 mb-2">Confidence Decomposition</h3>
-        <p className="text-sm text-slate-600">
-          Overall confidence: <span className="font-bold text-slate-900">{overallConfidence.toFixed(0)}%</span>
-        </p>
-      </div>
+      <h3 className="f1-section-title text-lg">Confidence Analysis</h3>
 
-      {/* Overall confidence bar */}
-      <div className="mb-6 p-4 bg-slate-50 rounded-lg">
+      <div className="mb-6">
         <div className="flex justify-between items-center mb-2">
-          <span className="text-sm font-medium text-slate-700">Confidence Score</span>
-          <span className="text-lg font-bold text-slate-900">{overallConfidence.toFixed(0)}%</span>
+          <span className="text-f1-muted text-xs font-bold uppercase tracking-widest">OVERALL CONFIDENCE</span>
+          <span className="font-display font-black text-f1-white text-lg">{overallConfidence.toFixed(0)}%</span>
         </div>
-        <div className="w-full h-3 bg-slate-200 rounded-full overflow-hidden">
+        <div className="w-full h-2 bg-f1-border">
           <div
-            className="h-full bg-gradient-to-r from-slate-600 to-slate-500 transition-all duration-300"
-            style={{ width: `${Math.min(overallConfidence, 100)}%` }}
+            className="h-full transition-all duration-300"
+            style={{ width: `${Math.min(overallConfidence, 100)}%`, backgroundColor: getConfidenceColor(overallConfidence) }}
           />
         </div>
       </div>
 
-      {/* Decomposition metrics grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {metrics.map((metric) => {
-          const Icon = metric.icon;
-          const percentage = Math.min(metric.value, 100);
-
-          return (
-            <div
-              key={metric.label}
-              className={`p-4 rounded-lg border-2 ${metric.borderColor} ${metric.bgColor}`}
-            >
-              <div className="flex items-start justify-between mb-3">
-                <div className="flex items-center gap-2">
-                  <Icon className={`w-5 h-5 ${metric.color}`} />
-                  <h4 className="font-semibold text-slate-900">{metric.label}</h4>
-                </div>
-                <span className="text-lg font-bold text-slate-900">{percentage.toFixed(0)}%</span>
-              </div>
-
-              <p className="text-xs text-slate-600 mb-3">{metric.description}</p>
-
-              {/* Mini bar chart */}
-              <div className="w-full h-2 bg-white rounded-full overflow-hidden border border-white/50">
-                <div
-                  className={`h-full transition-all duration-300 ${
-                    metric.label === 'Data Quality'
-                      ? 'bg-blue-500'
-                      : metric.label === 'Model Certainty'
-                      ? 'bg-purple-500'
-                      : metric.label === 'Stability'
-                      ? 'bg-emerald-500'
-                      : 'bg-amber-500'
-                  }`}
-                  style={{ width: `${percentage}%` }}
-                />
-              </div>
+      <div className="space-y-4">
+        <div className="border-l-2 border-f1-red pl-3">
+          <p className="text-f1-muted text-xs font-bold uppercase tracking-widest">Data Quality</p>
+          <div className="flex justify-between items-center mt-2">
+            <span className="font-display font-black text-f1-white text-base">{decomposition.data_quality.toFixed(0)}%</span>
+            <div className="flex-1 ml-4 h-1 bg-f1-border">
+              <div className="h-full" style={{ width: `${decomposition.data_quality}%`, backgroundColor: getConfidenceColor(decomposition.data_quality) }} />
             </div>
-          );
-        })}
+          </div>
+        </div>
+
+        <div className="border-l-2 border-f1-red pl-3">
+          <p className="text-f1-muted text-xs font-bold uppercase tracking-widest">Model Certainty</p>
+          <div className="flex justify-between items-center mt-2">
+            <span className="font-display font-black text-f1-white text-base">{decomposition.model_certainty.toFixed(0)}%</span>
+            <div className="flex-1 ml-4 h-1 bg-f1-border">
+              <div className="h-full" style={{ width: `${decomposition.model_certainty}%`, backgroundColor: getConfidenceColor(decomposition.model_certainty) }} />
+            </div>
+          </div>
+        </div>
+
+        <div className="border-l-2 border-f1-red pl-3">
+          <p className="text-f1-muted text-xs font-bold uppercase tracking-widest">Stability</p>
+          <div className="flex justify-between items-center mt-2">
+            <span className="font-display font-black text-f1-white text-base">{decomposition.stability.toFixed(0)}%</span>
+            <div className="flex-1 ml-4 h-1 bg-f1-border">
+              <div className="h-full" style={{ width: `${decomposition.stability}%`, backgroundColor: getConfidenceColor(decomposition.stability) }} />
+            </div>
+          </div>
+        </div>
       </div>
 
-      {/* Confidence interpretation */}
-      <div className="mt-6 p-4 bg-slate-50 rounded-lg border border-slate-200">
-        <p className="text-xs font-semibold text-slate-700 mb-2 uppercase tracking-wider">
-          Interpretation
-        </p>
-        {overallConfidence >= 80 ? (
-          <p className="text-sm text-slate-700">
-            <span className="font-semibold text-emerald-700">High confidence</span> — Strategy is well-supported by data
-            and consistent across scenarios. Safe to recommend immediate action.
+      <div className="mt-6 p-3 bg-f1-elevated border-l-2 border-f1-red">
+        <p className="text-xs font-bold uppercase tracking-widest text-f1-muted mb-2">Assessment</p>
+        {overallConfidence >= 70 ? (
+          <p className="text-sm text-f1-secondary">
+            <span className="font-bold">HIGH CONFIDENCE</span> — Strategy well-supported. Safe to execute immediately.
           </p>
-        ) : overallConfidence >= 60 ? (
-          <p className="text-sm text-slate-700">
-            <span className="font-semibold text-amber-700">Moderate confidence</span> — Reasonable strategy but some
-            uncertainty remains. Consider cross-checking with alternative strategies.
+        ) : overallConfidence >= 40 ? (
+          <p className="text-sm text-f1-secondary">
+            <span className="font-bold">MODERATE CONFIDENCE</span> — Good strategy. Consider alternatives.
           </p>
         ) : (
-          <p className="text-sm text-slate-700">
-            <span className="font-semibold text-red-700">Low confidence</span> — Significant uncertainty in
-            recommendation. Recommend collecting more data or manual review.
+          <p className="text-sm text-f1-secondary">
+            <span className="font-bold">LOW CONFIDENCE</span> — High uncertainty. Collect more telemetry.
           </p>
         )}
       </div>

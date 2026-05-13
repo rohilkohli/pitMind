@@ -20,8 +20,8 @@ export class ErrorBoundary extends Component<Props, State> {
     if (this.state.error) {
       return (
         <div className="mx-auto max-w-xl px-4 py-16 text-center">
-          <h1 className="text-xl font-semibold text-pit-fg">Something went wrong</h1>
-          <p className="mt-2 text-sm text-pit-muted">{this.state.error.message}</p>
+          <h1 className="text-xl font-semibold text-white">Something went wrong</h1>
+          <p className="mt-2 text-sm text-f1-muted">{this.state.error.message}</p>
           <Button className="mt-6" type="button" onClick={() => this.setState({ error: null })}>
             Try again
           </Button>

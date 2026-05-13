@@ -5,18 +5,19 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 
 const variants = cva(
-  "inline-flex items-center justify-center whitespace-nowrap rounded-lg font-extrabold uppercase tracking-wider transition-all duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-f1-red disabled:pointer-events-none disabled:opacity-40",
+  "inline-flex items-center justify-center whitespace-nowrap font-bold uppercase tracking-widest transition-all duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-f1-red disabled:pointer-events-none disabled:opacity-40 border-0",
   {
     variants: {
       variant: {
-        primary: "bg-f1-red text-white hover:shadow-glow-lg active:scale-95",
-        secondary: "bg-white/10 text-pit-fg hover:bg-white/20 border border-pit-stroke",
-        ghost: "bg-transparent text-pit-fg hover:bg-white/5 border border-pit-stroke",
+        primary: "bg-f1-red text-white hover:bg-f1-red-dark active:scale-95",
+        secondary: "bg-transparent border border-f1-red text-f1-red hover:bg-f1-red hover:text-white",
+        ghost: "bg-transparent text-f1-white border border-f1-border hover:border-f1-red hover:text-f1-red",
+        danger: "bg-f1-red-dark text-white hover:bg-f1-red",
       },
       size: {
-        sm: "h-10 px-4 text-xs",
-        md: "h-12 px-6 text-sm",
-        lg: "h-14 px-8 text-base",
+        sm: "h-8 px-4 text-xs",
+        md: "h-10 px-6 text-sm",
+        lg: "h-12 px-8 text-base",
       },
     },
     defaultVariants: {

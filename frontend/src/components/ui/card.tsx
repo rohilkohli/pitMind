@@ -6,14 +6,14 @@ export function Card({ className, ...props }: React.HTMLAttributes<HTMLDivElemen
   return (
     <div
       role="region"
-      className={cn("rounded-2xl border border-pit-stroke bg-pit-panel/90 backdrop-blur transition-all duration-300 hover:border-f1-red/30 hover:shadow-glow-lg", className)}
+      className={cn("f1-card", className)}
       {...props}
     />
   );
 }
 
 export function CardHeader({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
-  return <div className={cn("border-b border-pit-stroke px-6 py-4", className)} {...props} />;
+  return <div className={cn("border-b border-f1-border px-6 py-4", className)} {...props} />;
 }
 
 export function CardTitle({
@@ -23,7 +23,7 @@ export function CardTitle({
   ...props
 }: React.HTMLAttributes<HTMLHeadingElement> & { id?: string }) {
   return (
-    <h2 id={id} className={cn("text-xl font-extrabold tracking-tight text-pit-fg uppercase", className)} {...props}>
+    <h2 id={id} className={cn("text-sm font-bold tracking-widest text-f1-white uppercase font-display", className)} {...props}>
       {children}
     </h2>
   );

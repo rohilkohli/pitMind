@@ -46,17 +46,36 @@ async def granite_generate(system: str, user: str, max_tokens: int = 512) -> str
     settings = get_settings()
 
     # Try Watsonx first
-    if settings.watsonx_api_key and settings.watsonx_project_id:
-        text = await _watsonx_chat(system, user, max_tokens)
-        if text:
-            return text
+    if settings.watsonx_api_key.strip() and settings.watsonx_project_id.strip():
+        try:
+            text = await _watsonx_chat(system, user, max_tokens)
+            if text:
+                logger.info("Granite: Using Watsonx provider")
+                return text
+        except Exception as e:
+            logger.warning(f"Watsonx provider failed: {e}")
 
     # Fall back to HuggingFace
-    if settings.hf_api_token and settings.hf_model_id:
-        text = await _hf_run(system, user, max_tokens)
-        if text:
-            return text
+    if settings.hf_api_token.strip() and settings.hf_model_id.strip():
+        try:
+            text = await _hf_run(system, user, max_tokens)
+            if text:
+                logger.info("Granite: Using HuggingFace provider")
+                return text
+        except Exception as e:
+            logger.warning(f"HuggingFace provider failed: {e}")
 
+    # Fall back to Replicate (optional)
+    if settings.replicate_api_token.strip():
+        try:
+            text = await _replicate_run(system, user, max_tokens)
+            if text:
+                logger.info("Granite: Using Replicate provider")
+                return text
+        except Exception as e:
+            logger.warning(f"Replicate provider failed: {e}")
+
+    logger.warning("All AI providers unavailable; using local fallback")
     return _local_fallback_response(system, user)
 
 

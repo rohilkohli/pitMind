@@ -37,29 +37,32 @@ export function WhatIfSimulator({ raceState }: { raceState: RaceState | null }) 
   };
 
   return (
-    <div className="w-full rounded-xl border border-pit-stroke bg-black/40 p-4">
-      <h3 className="mb-4 text-xs font-semibold uppercase tracking-widest text-pit-muted">What-If Simulator</h3>
+    <div className="w-full rounded-3xl border border-white/10 bg-white/5 p-4 shadow-[0_12px_32px_rgba(0,0,0,0.28)] backdrop-blur">
+      <div className="mb-4">
+        <h3 className="text-[11px] font-semibold uppercase tracking-[0.32em] text-f1-muted">What-If Simulator</h3>
+        <p className="mt-1 text-xs text-f1-muted">Explore one alternative and see the likely narrative response</p>
+      </div>
       
-      <div className="flex flex-col gap-4 md:flex-row md:items-end">
+      <div className="grid gap-4 md:grid-cols-[1.1fr_1.1fr_0.8fr_auto] md:items-end">
         <div className="flex-1">
-          <label htmlFor="wif-driver" className="mb-1 block text-xs text-pit-muted">Driver</label>
+          <label htmlFor="wif-driver" className="mb-1 block text-xs text-f1-muted">Driver</label>
           <select 
             id="wif-driver"
             value={driver} 
             onChange={(e) => setDriver(e.target.value)}
-            className="w-full rounded-md border border-pit-stroke bg-carbon px-3 py-2 text-sm text-pit-fg focus-ring"
+            className="w-full rounded-md border border-f1-border bg-f1-black px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-f1-red/50"
           >
             {drivers.map(d => <option key={d} value={d}>{d}</option>)}
           </select>
         </div>
 
         <div className="flex-1">
-          <label htmlFor="wif-action" className="mb-1 block text-xs text-pit-muted">Action</label>
+          <label htmlFor="wif-action" className="mb-1 block text-xs text-f1-muted">Action</label>
           <select 
             id="wif-action"
             value={action} 
             onChange={(e) => setAction(e.target.value as "PIT" | "STAY_OUT")}
-            className="w-full rounded-md border border-pit-stroke bg-carbon px-3 py-2 text-sm text-pit-fg focus-ring"
+            className="w-full rounded-md border border-f1-border bg-f1-black px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-f1-red/50"
           >
             <option value="PIT">Pit for fresh tyres</option>
             <option value="STAY_OUT">Stay out (track position)</option>
@@ -67,27 +70,27 @@ export function WhatIfSimulator({ raceState }: { raceState: RaceState | null }) 
         </div>
 
         <div className="flex-1">
-          <label htmlFor="wif-laps" className="mb-1 block text-xs text-pit-muted">Predict Laps</label>
+          <label htmlFor="wif-laps" className="mb-1 block text-xs text-f1-muted">Predict Laps</label>
           <input 
             id="wif-laps"
             type="number" 
             min="1" max="20"
             value={laps}
             onChange={(e) => setLaps(parseInt(e.target.value))}
-            className="w-full rounded-md border border-pit-stroke bg-carbon px-3 py-2 text-sm text-pit-fg focus-ring"
+            className="w-full rounded-md border border-f1-border bg-f1-black px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-f1-red/50"
           />
         </div>
 
         <div className="w-full md:w-auto">
-          <Button onClick={handleSimulate} disabled={loading} className="w-full">
+          <Button onClick={handleSimulate} disabled={loading} className="w-full shadow-[0_16px_32px_rgba(225,6,0,0.18)]">
             {loading ? "Simulating..." : "Run"}
           </Button>
         </div>
       </div>
 
       {result && (
-        <div className="mt-4 rounded-lg bg-pit-accent/10 border border-pit-accent/30 p-3 text-sm text-pit-fg">
-          <span className="font-semibold text-pit-accent">AI Prediction: </span>
+        <div className="mt-4 rounded-2xl border border-f1-red/20 bg-f1-red/10 p-4 text-sm text-white">
+          <span className="font-semibold text-f1-red">AI Prediction: </span>
           {result}
         </div>
       )}

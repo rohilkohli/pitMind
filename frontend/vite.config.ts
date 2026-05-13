@@ -13,8 +13,36 @@ export default defineConfig({
     port: 5173,
     proxy: {
       "/api": {
-        target: "http://localhost:8001",
+        target: process.env.VITE_API_BASE_URL || "http://localhost:8000",
         changeOrigin: true,
+        secure: false,
+        ws: true,
+        rewrite: (path) => path,
+      },
+    },
+    headers: {
+      "Cross-Origin-Opener-Policy": "same-origin-allow-popups",
+      "Cross-Origin-Embedder-Policy": "require-corp",
+    },
+  },
+  build: {
+    chunkSizeWarningLimit: 1000,
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (!id.includes("node_modules")) {
+            return undefined;
+          }
+
+          if (id.includes("recharts")) return "vendor-charts";
+          if (id.includes("firebase")) return "vendor-firebase";
+          if (id.includes("@radix-ui") || id.includes("class-variance-authority") || id.includes("clsx") || id.includes("tailwind-merge")) {
+            return "vendor-ui";
+          }
+          if (id.includes("lucide-react")) return "vendor-icons";
+
+          return "vendor";
+        },
       },
     },
   },

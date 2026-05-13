@@ -23,8 +23,8 @@ export function TelemetryCharts({ wearSeries, gapSeries }: Props) {
 
   return (
     <div className="grid gap-6 lg:grid-cols-2">
-      <figure className="rounded-xl border border-pit-stroke bg-black/30 p-3" aria-labelledby={wearTableLabelId}>
-        <figcaption id={wearTableLabelId} className="mb-2 text-sm font-semibold text-pit-fg">
+      <figure className="rounded-xl border border-f1-border bg-black/30 p-3" aria-labelledby={wearTableLabelId}>
+        <figcaption id={wearTableLabelId} className="mb-2 text-sm font-semibold text-white">
           Tyre degradation curve
         </figcaption>
         <div className="h-64" role="img" aria-label="Tyre wear versus lap chart">
@@ -41,10 +41,10 @@ export function TelemetryCharts({ wearSeries, gapSeries }: Props) {
             </LineChart>
           </ResponsiveContainer>
         </div>
-        <table className="mt-3 w-full text-left text-xs text-pit-muted" aria-label="Tyre wear data table">
+        <table className="mt-3 w-full text-left text-xs text-f1-muted" aria-label="Tyre wear data table">
           <caption className="sr-only">Tyre wear per lap</caption>
           <thead>
-            <tr className="border-b border-pit-stroke">
+            <tr className="border-b border-f1-border">
               <th scope="col" className="py-1 font-mono">
                 Lap
               </th>
@@ -55,7 +55,7 @@ export function TelemetryCharts({ wearSeries, gapSeries }: Props) {
           </thead>
           <tbody>
             {wearSeries.slice(-6).map((row) => (
-              <tr key={row.lap} className="border-b border-pit-stroke/60">
+              <tr key={row.lap} className="border-b border-f1-border/60">
                 <td className="py-1 font-mono">{row.lap}</td>
                 <td className="py-1 font-mono">{row.wear ?? "—"}</td>
               </tr>
@@ -64,8 +64,8 @@ export function TelemetryCharts({ wearSeries, gapSeries }: Props) {
         </table>
       </figure>
 
-      <figure className="rounded-xl border border-pit-stroke bg-black/30 p-3" aria-labelledby={gapTableLabelId}>
-        <figcaption id={gapTableLabelId} className="mb-2 text-sm font-semibold text-pit-fg">
+      <figure className="rounded-xl border border-f1-border bg-black/30 p-3" aria-labelledby={gapTableLabelId}>
+        <figcaption id={gapTableLabelId} className="mb-2 text-sm font-semibold text-white">
           Gap delta ahead (seconds)
         </figcaption>
         <div className="h-64" role="img" aria-label="Gap ahead versus lap chart">
@@ -82,10 +82,10 @@ export function TelemetryCharts({ wearSeries, gapSeries }: Props) {
             </LineChart>
           </ResponsiveContainer>
         </div>
-        <table className="mt-3 w-full text-left text-xs text-pit-muted" aria-label="Gap data table">
+        <table className="mt-3 w-full text-left text-xs text-f1-muted" aria-label="Gap data table">
           <caption className="sr-only">Gap ahead per lap</caption>
           <thead>
-            <tr className="border-b border-pit-stroke">
+            <tr className="border-b border-f1-border">
               <th scope="col" className="py-1 font-mono">
                 Lap
               </th>
@@ -96,7 +96,7 @@ export function TelemetryCharts({ wearSeries, gapSeries }: Props) {
           </thead>
           <tbody>
             {gapSeries.slice(-6).map((row) => (
-              <tr key={row.lap} className="border-b border-pit-stroke/60">
+              <tr key={row.lap} className="border-b border-f1-border/60">
                 <td className="py-1 font-mono">{row.lap}</td>
                 <td className="py-1 font-mono">{row.gap ?? "—"}</td>
               </tr>

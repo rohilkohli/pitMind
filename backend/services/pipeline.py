@@ -145,6 +145,16 @@ async def run_strategy_pipeline(payload: TelemetryPayload) -> StrategyRecommenda
 
     granite_raw = await granite.granite_generate(system, user)
     explanation, evidence, assumptions, confidence, alternative = _merge_granite_explainability(granite_raw, base)
+    
+    # Build confidence decomposition based on data quality and model certainty
+    from models.strategy import ConfidenceDecomposition
+    confidence_decomposition = ConfidenceDecomposition(
+        data_quality=min(100.0, max(20.0, 50 + len([l for l in payload.laps if l.lap_time_s]) / len(payload.laps) * 40)) if payload.laps else 20,
+        model_certainty=confidence,
+        stability=min(100.0, max(40.0, 60 if base.scores.pit_urgency >= 62 else 40)),
+        regret_bound=max(0.0, min(1.0, (100 - confidence) / 100)),
+    )
+    
     return StrategyRecommendation(
         action=base.action,
         pit_this_lap=base.pit_this_lap,
@@ -157,6 +167,7 @@ async def run_strategy_pipeline(payload: TelemetryPayload) -> StrategyRecommenda
         confidence=confidence,
         alternative=alternative,
         pipeline_steps=base.pipeline_steps,
+        confidence_decomposition=confidence_decomposition,
     )
 
 

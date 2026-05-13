@@ -2,7 +2,6 @@ import { useFirebaseRaceState, type RaceState } from "../hooks/useFirebaseRaceSt
 import { LiveTrackMap } from "../components/fan/LiveTrackMap";
 import { WhatIfSimulator } from "../components/fan/WhatIfSimulator";
 import { demoDriverA } from "../data/demoTelemetry";
-import type { RaceState } from "../hooks/useFirebaseRaceState";
 
 // Simple fallback RaceState built from demo telemetry for local/dev when Firebase has no live data
 function buildDemoRaceState(): RaceState {

@@ -18,7 +18,26 @@ from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from slowapi.util import get_remote_address
 
-from config import cors_origin_list, get_settings
+try:
+    # When executed as a package module (e.g., `uvicorn backend.main:app`)
+    from .config import cors_origin_list, get_settings
+    from .models.chat import ChatRequest, ChatResponse, DebriefResponse
+    from .models.strategy import StrategyRecommendation, DriverCompareRequest, DriverCompareResponse
+    from .models.race_state import TelemetryPayload
+    from .services import sanitize
+    from .services import pipeline as pipeline_svc
+    from .services import granite
+    from .services.strategy_engine import predict_strategy
+except ImportError:
+    # When executed from the `backend/` directory (e.g., `uvicorn main:app`)
+    from config import cors_origin_list, get_settings
+    from models.chat import ChatRequest, ChatResponse, DebriefResponse
+    from models.strategy import StrategyRecommendation, DriverCompareRequest, DriverCompareResponse
+    from models.race_state import TelemetryPayload
+    from services import sanitize
+    from services import pipeline as pipeline_svc
+    from services import granite
+    from services.strategy_engine import predict_strategy
 
 try:
     # Use explicit project ID for local development if credentials aren't set
@@ -28,14 +47,6 @@ except ValueError:
     pass  # App already initialized
 except Exception as e:
     logging.warning(f"Firebase initialization failed: {e}")
-
-from models.chat import ChatRequest, ChatResponse, DebriefResponse
-from models.strategy import StrategyRecommendation, DriverCompareRequest, DriverCompareResponse
-from models.race_state import TelemetryPayload
-from services import sanitize
-from services import pipeline as pipeline_svc
-from services import granite
-from services.strategy_engine import predict_strategy
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -163,7 +174,10 @@ class ConnectionManager:
     def disconnect(self, websocket: WebSocket, session_id: str):
         """Unregister a disconnected WebSocket."""
         if session_id in self.active_connections:
-            self.active_connections[session_id].remove(websocket)
+            try:
+                self.active_connections[session_id].remove(websocket)
+            except ValueError:
+                pass
             if not self.active_connections[session_id]:
                 del self.active_connections[session_id]
                 del self.message_count[session_id]
@@ -173,11 +187,15 @@ class ConnectionManager:
         """Broadcast telemetry to all connected clients in a session."""
         if session_id in self.active_connections:
             self.message_count[session_id] += 1
-            for connection in self.active_connections[session_id]:
+            stale_connections: list[WebSocket] = []
+            for connection in list(self.active_connections[session_id]):
                 try:
                     await connection.send_json(telemetry)
                 except Exception as e:
                     logger.error(f"Error broadcasting telemetry: {e}")
+                    stale_connections.append(connection)
+            for stale in stale_connections:
+                self.disconnect(stale, session_id)
     
     async def send_to_one(self, websocket: WebSocket, message: dict[str, Any]):
         """Send a message to a single client."""
@@ -222,43 +240,49 @@ async def websocket_telemetry_stream(websocket: WebSocket):
         await manager.send_to_one(websocket, initial_telemetry)
         logger.info(f"Initial telemetry sent to {session_id}")
         
-        # Handle incoming messages and broadcast telemetry
-        while True:
-            # Receive client messages (heartbeat/ping)
-            data = await websocket.receive_text()
+        async def receive_handler():
             try:
-                message = json.loads(data)
-                
-                # Handle ping - respond with pong
-                if message.get("type") == "ping":
-                    await manager.send_to_one(websocket, {
-                        "type": "pong",
-                        "timestamp": message.get("timestamp"),
-                    })
-                
-            except json.JSONDecodeError:
-                logger.warning(f"Invalid JSON from client: {data}")
-                continue
-            
-            # Broadcast simulated telemetry every 1 second
-            await asyncio.sleep(1)
-            telemetry = {
-                "type": "telemetry",
-                "timestamp": datetime.now().isoformat(),
-                "lap": 27,
-                "driver": "demoDriverA",
-                "speed": 280 + (time.time() % 10),  # Simulate varying speed
-                "gear": 7,
-                "throttle": 90 + (time.time() % 10),  # Simulate varying throttle
-                "brake": 0,
-                "tyre_compound": "soft",
-                "tyre_wear": 85.2 + (time.time() % 5),  # Simulate wear progression
-                "fuel": 3.4 - (time.time() % 0.5),  # Simulate fuel consumption
-                "gap_to_leader": 0.0,
-                "gap_to_p2": 1.234 + (time.time() % 0.3),  # Simulate gap changes
-            }
-            await manager.broadcast_telemetry(session_id, telemetry)
-    
+                while True:
+                    data = await websocket.receive_text()
+                    try:
+                        message = json.loads(data)
+                        if message.get("type") == "ping":
+                            await manager.send_to_one(websocket, {
+                                "type": "pong",
+                                "timestamp": message.get("timestamp"),
+                            })
+                    except json.JSONDecodeError:
+                        logger.warning(f"Invalid JSON from client: {data}")
+            except WebSocketDisconnect:
+                pass
+            except Exception as e:
+                logger.error(f"Receive handler error: {e}")
+
+        async def broadcast_handler():
+            try:
+                while True:
+                    await asyncio.sleep(1)
+                    telemetry = {
+                        "type": "telemetry",
+                        "timestamp": datetime.now().isoformat(),
+                        "lap": 27,
+                        "driver": "demoDriverA",
+                        "speed": 280 + (time.time() % 10),
+                        "gear": 7,
+                        "throttle": 90 + (time.time() % 10),
+                        "brake": 0,
+                        "tyre_compound": "soft",
+                        "tyre_wear": 85.2 + (time.time() % 5),
+                        "fuel": 3.4 - (time.time() % 0.5),
+                        "gap_to_leader": 0.0,
+                        "gap_to_p2": 1.234 + (time.time() % 0.3),
+                    }
+                    await manager.broadcast_telemetry(session_id, telemetry)
+            except Exception as e:
+                logger.error(f"Broadcast handler error: {e}")
+
+        # Run both handlers concurrently
+        await asyncio.gather(receive_handler(), broadcast_handler())
     except WebSocketDisconnect:
         manager.disconnect(websocket, session_id)
         logger.info(f"WebSocket closed for session {session_id}")
@@ -309,7 +333,10 @@ async def get_session_events(session_id: str) -> dict[str, Any]:
     }
 
 
-from routes import strategy, commentary, fan, auth
+try:
+    from .routes import strategy, commentary, fan, auth
+except ImportError:
+    from routes import strategy, commentary, fan, auth
 
 app.include_router(strategy.router)
 app.include_router(commentary.router)

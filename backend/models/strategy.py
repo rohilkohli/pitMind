@@ -2,7 +2,10 @@ from typing import Any
 
 from pydantic import BaseModel, Field
 
-from models.race_state import TelemetryPayload
+try:
+    from .race_state import TelemetryPayload
+except ImportError:
+    from models.race_state import TelemetryPayload
 
 
 class StrategyScores(BaseModel):
@@ -42,3 +45,10 @@ class DriverCompareRequest(BaseModel):
 class DriverCompareResponse(BaseModel):
     chart_series: dict[str, Any]
     narrative: str
+
+
+class FastF1Request(BaseModel):
+    year: int = Field(..., ge=2018, le=2025)
+    event: str = Field(..., min_length=2)
+    session_type: str = Field(default="R", pattern="^(R|Q|S|FP1|FP2|FP3)$")
+    driver_code: str = Field(..., min_length=2, max_length=3)

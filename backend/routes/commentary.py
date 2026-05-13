@@ -2,14 +2,24 @@ import os
 import tempfile
 from fastapi import APIRouter, File, HTTPException, Request, UploadFile, Depends
 
-from models.chat import ChatRequest, ChatResponse, DebriefResponse
-from models.strategy import DriverCompareRequest, DriverCompareResponse
-from models.race_state import TelemetryPayload
-from routes.auth import verify_token
-from services import granite
-from services import pipeline as pipeline_svc
-from services import sanitize
-from services.strategy_engine import predict_strategy
+try:
+    from ..models.chat import ChatRequest, ChatResponse, DebriefResponse
+    from ..models.strategy import DriverCompareRequest, DriverCompareResponse
+    from ..models.race_state import TelemetryPayload
+    from .auth import verify_token
+    from ..services import granite
+    from ..services import pipeline as pipeline_svc
+    from ..services import sanitize
+    from ..services.strategy_engine import predict_strategy
+except ImportError:
+    from models.chat import ChatRequest, ChatResponse, DebriefResponse
+    from models.strategy import DriverCompareRequest, DriverCompareResponse
+    from models.race_state import TelemetryPayload
+    from routes.auth import verify_token
+    from services import granite
+    from services import pipeline as pipeline_svc
+    from services import sanitize
+    from services.strategy_engine import predict_strategy
 
 router = APIRouter(prefix="/api/v1", tags=["commentary"])
 

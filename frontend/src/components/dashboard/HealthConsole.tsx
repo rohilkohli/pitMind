@@ -25,7 +25,8 @@ export interface HealthSnapshot {
   uptime: HealthMetric;
   strategyCallCount: HealthMetric;
   errorRate: HealthMetric;
-  tlemetryDatapoints: HealthMetric;
+  telemetryDatapoints: HealthMetric;
+  ai: HealthMetric;
 }
 
 interface HealthConsoleProps {
@@ -84,12 +85,18 @@ const MOCK_HEALTH: HealthSnapshot = {
     threshold: 2.0,
     lastUpdated: '1 second ago',
   },
-  tlemetryDatapoints: {
+  telemetryDatapoints: {
     name: 'Telemetry Points',
     status: 'healthy',
     value: 2847,
     unit: 'pts',
     lastUpdated: '1 second ago',
+  },
+  ai: {
+    name: 'AI Engine',
+    status: 'healthy',
+    value: 'Optimal',
+    lastUpdated: 'Just now',
   },
 };
 
@@ -133,15 +140,36 @@ const getStatusLabel = (status: string) => {
 };
 
 export const HealthConsole: React.FC<HealthConsoleProps> = ({ onRefresh }) => {
-  const [health] = useState<HealthSnapshot>(MOCK_HEALTH);
+  const [health, setHealth] = useState<HealthSnapshot>(MOCK_HEALTH);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [expandedMetrics, setExpandedMetrics] = useState<Set<string>>(new Set());
 
-  const handleRefresh = async () => {
+  const fetchHealth = async () => {
     setIsRefreshing(true);
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 500));
-    setIsRefreshing(false);
+    try {
+      const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+      const response = await fetch(`${baseUrl}/api/v1/metrics/health`);
+      if (response.ok) {
+        const data = await response.json();
+        // Map backend response to frontend snapshot
+        // Backend keys match frontend keys now
+        setHealth(data);
+      }
+    } catch (error) {
+      console.error('Failed to fetch health metrics:', error);
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchHealth();
+    const interval = setInterval(fetchHealth, 10000); // Refresh every 10s
+    return () => clearInterval(interval);
+  }, []);
+
+  const handleRefresh = () => {
+    fetchHealth();
     onRefresh?.();
   };
 
@@ -163,7 +191,8 @@ export const HealthConsole: React.FC<HealthConsoleProps> = ({ onRefresh }) => {
     health.uptime,
     health.strategyCallCount,
     health.errorRate,
-    health.tlemetryDatapoints,
+    health.telemetryDatapoints,
+    health.ai,
   ];
 
   const healthyCount = metrics.filter((m) => m.status === 'healthy').length;

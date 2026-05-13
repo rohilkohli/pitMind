@@ -5,10 +5,16 @@ from __future__ import annotations
 import json
 from typing import Any
 
-from models.strategy import StrategyRecommendation
-from models.race_state import TelemetryPayload
-from services import granite, langflow_client
-from services.strategy_engine import build_recommendation
+try:
+    from ..models.strategy import StrategyRecommendation
+    from ..models.race_state import TelemetryPayload
+    from . import granite, langflow_client
+    from .strategy_engine import build_recommendation
+except ImportError:
+    from models.strategy import StrategyRecommendation
+    from models.race_state import TelemetryPayload
+    from services import granite, langflow_client
+    from services.strategy_engine import build_recommendation
 
 
 def _extract_granite_json(raw: str) -> dict[str, Any] | None:
@@ -147,7 +153,10 @@ async def run_strategy_pipeline(payload: TelemetryPayload) -> StrategyRecommenda
     explanation, evidence, assumptions, confidence, alternative = _merge_granite_explainability(granite_raw, base)
     
     # Build confidence decomposition based on data quality and model certainty
-    from models.strategy import ConfidenceDecomposition
+    try:
+        from ..models.strategy import ConfidenceDecomposition
+    except ImportError:
+        from models.strategy import ConfidenceDecomposition
     confidence_decomposition = ConfidenceDecomposition(
         data_quality=min(100.0, max(20.0, 50 + len([l for l in payload.laps if l.lap_time_s]) / len(payload.laps) * 40)) if payload.laps else 20,
         model_certainty=confidence,
@@ -179,8 +188,19 @@ async def compare_narrative(summary_a: str, summary_b: str) -> str:
 
 async def debrief_from_text(doc_text: str) -> str:
     system = (
-        "You are PitMind post-race chief strategist. Produce a concise markdown debrief: bullets for pace, "
-        "tyres, strategy calls, risks, and one 'next race' action. Under 250 words."
+        "You are PitMind, a Senior Chief Race Strategist for a Formula 1 team. "
+        "Your task is to analyze raw race data, telemetry excerpts, or session reports and produce a high-stakes, "
+        "technical post-race debrief. Focus on precise metrics (pace deltas, tyre degradation % per lap, "
+        "pit window efficiency, and undercut/overcut success). "
+        "Use Formula 1 terminology (e.g., 'dirty air', 'box-to-box', 'out-lap', 'ERS deployment').\n\n"
+        "Format the report in Markdown with the following sections:\n"
+        "# POST-RACE STRATEGIC DEBRIEF\n"
+        "## 1. PERFORMANCE & PACE ANALYSIS\n"
+        "## 2. TYRE MANAGEMENT & DEGRADATION\n"
+        "## 3. CRITICAL STRATEGY CALLS\n"
+        "## 4. RISK & INCIDENT ASSESSMENT\n"
+        "## 5. FORWARD-LOOKING ACTIONS (NEXT RACE)\n\n"
+        "Keep the tone professional, objective, and data-driven. Limit to 300 words."
     )
-    user = f"Parsed race document / CSV excerpt:\n{doc_text[:12000]}"
+    user = f"SESSION DATA EXCERPT:\n{doc_text[:15000]}"
     return (await granite.granite_generate(system, user)).strip()

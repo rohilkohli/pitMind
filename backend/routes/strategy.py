@@ -1,9 +1,19 @@
 from fastapi import APIRouter, File, HTTPException, Request, UploadFile, Depends
 
-from models.race_state import TelemetryPayload
-from routes.auth import verify_token
-from services import pipeline as pipeline_svc
-from services import sanitize
+try:
+    from ..models.race_state import TelemetryPayload
+    from ..models.strategy import FastF1Request
+    from .auth import verify_token
+    from ..services import pipeline as pipeline_svc
+    from ..services import sanitize
+    from ..services import fastf1_service
+except ImportError:
+    from models.race_state import TelemetryPayload
+    from models.strategy import FastF1Request
+    from routes.auth import verify_token
+    from services import pipeline as pipeline_svc
+    from services import sanitize
+    from services import fastf1_service
 
 router = APIRouter(prefix="/api/v1/strategy", tags=["strategy"])
 
@@ -37,3 +47,19 @@ async def upload_telemetry(request: Request, file: UploadFile = File(...), uid: 
         raise
     except Exception as exc:
         raise HTTPException(status_code=400, detail=f"File parsing error: {str(exc)}") from exc
+
+@router.post("/fastf1/load")
+async def load_fastf1_session(request: Request, body: FastF1Request, uid: str = Depends(verify_token)) -> TelemetryPayload:
+    """Fetch real session data from FastF1 API."""
+    try:
+        return await fastf1_service.fetch_session_telemetry(
+            body.year, body.event, body.session_type, body.driver_code
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except RuntimeError as e:
+        raise HTTPException(status_code=503, detail=str(e))
+    except Exception as e:
+        import logging
+        logging.error(f"FastF1 load failed: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Internal error fetching session data")

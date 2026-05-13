@@ -7,7 +7,10 @@ from typing import Any
 
 import httpx
 
-from config import get_settings
+try:
+    from ..config import get_settings
+except ImportError:
+    from config import get_settings
 
 logger = logging.getLogger(__name__)
 

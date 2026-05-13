@@ -9,7 +9,10 @@ from typing import Any
 
 import pandas as pd
 
-from models.race_state import LapPoint, TelemetryPayload
+try:
+    from ..models.race_state import LapPoint, TelemetryPayload
+except ImportError:
+    from models.race_state import LapPoint, TelemetryPayload
 
 MAX_UPLOAD_BYTES = 2 * 1024 * 1024
 _ALLOWED_COMPOUNDS = frozenset({"SOFT", "MEDIUM", "HARD", "INTER", "WET", "UNKNOWN"})

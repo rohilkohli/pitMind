@@ -14,7 +14,8 @@ const mockData = Array.from({ length: 30 }, (_, i) => {
   };
 });
 
-export function LapChart() {
+export function LapChart({ data }: { data?: any[] }) {
+  const chartData = data && data.length > 0 ? data : mockData;
   const CustomTooltip = ({ active, payload, label }: TooltipProps<ValueType, NameType>) => {
     if (active && payload && payload.length) {
       return (
@@ -49,7 +50,7 @@ export function LapChart() {
       
       <div className="min-h-[300px] flex-1 p-4">
         <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={mockData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+          <LineChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#38383F" vertical={false} opacity={0.5} />
             <XAxis 
               dataKey="lap" 

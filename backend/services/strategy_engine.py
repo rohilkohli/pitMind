@@ -4,8 +4,12 @@ from __future__ import annotations
 
 from statistics import mean
 
-from models.race_state import LapPoint, TelemetryPayload
-from models.strategy import StrategyRecommendation, StrategyScores
+try:
+    from ..models.race_state import LapPoint, TelemetryPayload
+    from ..models.strategy import StrategyRecommendation, StrategyScores
+except ImportError:
+    from models.race_state import LapPoint, TelemetryPayload
+    from models.strategy import StrategyRecommendation, StrategyScores
 
 
 def _latest_wear(laps: list[LapPoint]) -> float:

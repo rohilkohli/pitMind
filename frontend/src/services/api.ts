@@ -49,7 +49,21 @@ export type StrategyRecommendation = {
   confidence_decomposition?: ConfidenceDecomposition;
 };
 
-export async function postRecommend(payload: TelemetryPayload, token?: string) {
+export interface ChatResponse {
+  reply: string;
+}
+
+export interface CompareResponse {
+  chart_series: Record<string, unknown>;
+  narrative: string;
+}
+
+export interface DebriefResponse {
+  report_markdown: string;
+  source_note: string;
+}
+
+export async function postRecommend(payload: TelemetryPayload, token?: string): Promise<StrategyRecommendation> {
   const headers: Record<string, string> = { "Content-Type": "application/json" };
   if (token) headers["Authorization"] = `Bearer ${token}`;
 
@@ -59,10 +73,10 @@ export async function postRecommend(payload: TelemetryPayload, token?: string) {
     body: JSON.stringify(payload),
   });
   if (!res.ok) throw new Error(await res.text());
-  return res.json() as Promise<StrategyRecommendation>;
+  return res.json();
 }
 
-export async function postChat(messages: { role: "user" | "assistant"; content: string }[], ctx?: object, token?: string) {
+export async function postChat(messages: { role: "user" | "assistant"; content: string }[], ctx?: object, token?: string): Promise<ChatResponse> {
   const headers: Record<string, string> = { "Content-Type": "application/json" };
   if (token) headers["Authorization"] = `Bearer ${token}`;
 
@@ -72,10 +86,10 @@ export async function postChat(messages: { role: "user" | "assistant"; content: 
     body: JSON.stringify({ messages, telemetry_context: ctx }),
   });
   if (!res.ok) throw new Error(await res.text());
-  return res.json() as Promise<{ reply: string }>;
+  return res.json();
 }
 
-export async function postCompare(a: TelemetryPayload, b: TelemetryPayload, token?: string) {
+export async function postCompare(a: TelemetryPayload, b: TelemetryPayload, token?: string): Promise<CompareResponse> {
   const headers: Record<string, string> = { "Content-Type": "application/json" };
   if (token) headers["Authorization"] = `Bearer ${token}`;
 
@@ -85,7 +99,7 @@ export async function postCompare(a: TelemetryPayload, b: TelemetryPayload, toke
     body: JSON.stringify({ driver_a: a, driver_b: b }),
   });
   if (!res.ok) throw new Error(await res.text());
-  return res.json() as Promise<{ chart_series: Record<string, unknown>; narrative: string }>;
+  return res.json();
 }
 
 export async function uploadTelemetry(file: File, token?: string): Promise<TelemetryPayload> {
@@ -95,7 +109,7 @@ export async function uploadTelemetry(file: File, token?: string): Promise<Telem
   const headers: Record<string, string> = {};
   if (token) headers["Authorization"] = `Bearer ${token}`;
 
-  const res = await fetch(`${BASE}/api/v1/telemetry/upload`, {
+  const res = await fetch(`${BASE}/api/v1/strategy/telemetry/upload`, {
     method: "POST",
     headers,
     body: fd,
@@ -104,7 +118,27 @@ export async function uploadTelemetry(file: File, token?: string): Promise<Telem
   return res.json();
 }
 
-export async function uploadDebrief(file: File, token?: string): Promise<{ report_markdown: string; source_note: string }> {
+export interface FastF1Request {
+  year: number;
+  event: string;
+  session_type: "R" | "Q" | "S" | "FP1" | "FP2" | "FP3";
+  driver_code: string;
+}
+
+export async function postLoadFastF1(body: FastF1Request, token?: string): Promise<TelemetryPayload> {
+  const headers: Record<string, string> = { "Content-Type": "application/json" };
+  if (token) headers["Authorization"] = `Bearer ${token}`;
+
+  const res = await fetch(`${BASE}/api/v1/strategy/fastf1/load`, {
+    method: "POST",
+    headers,
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+
+export async function uploadDebrief(file: File, token?: string): Promise<DebriefResponse> {
   const fd = new FormData();
   fd.append("file", file);
 

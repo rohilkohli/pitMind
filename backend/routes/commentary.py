@@ -15,6 +15,11 @@ router = APIRouter(prefix="/api/v1", tags=["commentary"])
 
 DEBRIEF_MAX_BYTES = 5 * 1024 * 1024
 
+MAX_CHAT_MESSAGES = 20
+MAX_CHAT_CHARS_TOTAL = 12000
+MAX_CONTEXT_CHARS = 4000
+
+
 @router.post("/compare/drivers")
 async def compare_drivers(request: Request, body: DriverCompareRequest, uid: str = Depends(verify_token)) -> DriverCompareResponse:
     series_a = _series_from_payload(body.driver_a)
@@ -35,11 +40,19 @@ async def chat_explain(request: Request, body: ChatRequest, uid: str = Depends(v
         "You are PitMind Granite assistant: concise motorsport strategy explanations only. "
         "Refuse unrelated topics."
     )
-    transcript = "\\n".join(f"{m.role}: {m.content}" for m in body.messages[-12:])
+    if len(body.messages) > MAX_CHAT_MESSAGES:
+        raise HTTPException(status_code=400, detail=f"Too many messages; max {MAX_CHAT_MESSAGES}.")
+
+    total_chars = sum(len(m.content) for m in body.messages)
+    if total_chars > MAX_CHAT_CHARS_TOTAL:
+        raise HTTPException(status_code=400, detail="Chat payload too large.")
+
+    transcript = "\n".join(f"{m.role}: {m.content.strip()}" for m in body.messages[-12:])
     extra = ""
     if body.telemetry_context:
-        extra = f"\\nContext JSON: {body.telemetry_context}"
-    user = transcript + extra
+        safe_context = str(body.telemetry_context)[:MAX_CONTEXT_CHARS]
+        extra = f"\nContext JSON: {safe_context}"
+    user = (transcript + extra)[:MAX_CHAT_CHARS_TOTAL + MAX_CONTEXT_CHARS]
     reply = await granite.granite_generate(system, user)
     return ChatResponse(reply=reply)
 

@@ -79,6 +79,8 @@ flowchart LR
 
 - Docker / Docker Compose **or** Python 3.12 + Node 20
 - API keys as needed: Watsonx **or** Replicate for Granite, optional Langflow API URL, Google Maps key, Firebase web credentials, GA measurement ID
+- For Watsonx, set **all three** backend env vars: `WATSONX_API_KEY`, `WATSONX_PROJECT_ID`, and `WATSONX_URL` (for example `https://us-south.ml.cloud.ibm.com`).
+- If chat still falls back, open `GET /health` and check `missing_requirements` in the JSON response.
 
 ### Docker Compose (preferred)
 

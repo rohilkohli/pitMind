@@ -107,7 +107,7 @@ export function Dashboard() {
     setRecoLoading(true);
     setRecoError(null);
     try {
-      const token = await auth.currentUser?.getIdToken();
+      const token = await auth?.currentUser?.getIdToken();
       const data = await postRecommend(payload, token);
       setReco(data);
     } catch (e) {
@@ -135,7 +135,7 @@ export function Dashboard() {
     setChat([...next, { id: assistantMessageId, role: "assistant", content: "Thinking...", streaming: true }]);
     setIsChatThinking(true);
     try {
-      const token = await auth.currentUser?.getIdToken();
+      const token = await auth?.currentUser?.getIdToken();
       const ctx = { recommendation: reco, telemetry: { laps: payload.laps.length, circuit: payload.circuit } };
       const { reply } = await postChat(next, ctx, token);
       await streamAssistantReply(assistantMessageId, reply);

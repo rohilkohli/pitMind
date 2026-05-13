@@ -33,7 +33,10 @@ export function useFirebaseRaceState(raceId: string = "current_race") {
   const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
-    if (!raceId) return;
+    if (!raceId || !database) {
+      setLoading(false);
+      return;
+    }
 
     const raceRef = ref(database, `races/${raceId}`);
     

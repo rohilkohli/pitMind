@@ -1,5 +1,4 @@
-import { auth } from "../../lib/firebase";
-import { useAuthState } from "react-firebase-hooks/auth";
+import { useOptionalAuthUser } from "../../hooks/useOptionalAuthUser";
 import { Link, useLocation } from "react-router-dom";
 
 // F1 Logo SVG
@@ -12,7 +11,7 @@ const F1LogoIcon = () => (
 );
 
 export function NavBar() {
-  const [user] = useAuthState(auth);
+  const { user } = useOptionalAuthUser();
   const location = useLocation();
   const isEngineer = location.pathname.includes("dashboard");
 

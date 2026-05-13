@@ -2,19 +2,21 @@
 
 from __future__ import annotations
 
-import logging
 import asyncio
 import json
+import logging
 import time
 from datetime import datetime
+from typing import Any
 
 from fastapi import FastAPI, File, HTTPException, Request, UploadFile, WebSocket, WebSocketDisconnect
 from fastapi.responses import Response
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import Response
+import firebase_admin
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from slowapi.util import get_remote_address
-import firebase_admin
 
 from config import cors_origin_list, get_settings
 
@@ -23,11 +25,10 @@ try:
     settings = get_settings()
     firebase_admin.initialize_app(options={"projectId": settings.firebase_project_id})
 except ValueError:
-    pass # App already initialized
+    pass  # App already initialized
 except Exception as e:
     logging.warning(f"Firebase initialization failed: {e}")
 
-from config import cors_origin_list, get_settings
 from models.chat import ChatRequest, ChatResponse, DebriefResponse
 from models.strategy import StrategyRecommendation, DriverCompareRequest, DriverCompareResponse
 from models.race_state import TelemetryPayload
@@ -63,8 +64,6 @@ async def add_security_headers(request: Request, call_next):
     response.headers["Permissions-Policy"] = "geolocation=(), microphone=(), camera=()"
     response.headers["Cache-Control"] = "no-store"
     return response
-
-from typing import Any
 
 
 @app.get("/health")

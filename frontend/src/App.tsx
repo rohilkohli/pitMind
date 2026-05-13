@@ -1,7 +1,6 @@
 import React, { Suspense } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { useAuthState } from "react-firebase-hooks/auth";
-import { auth } from "./lib/firebase";
+import { useOptionalAuthUser } from "./hooks/useOptionalAuthUser";
 import { RoleProvider } from "./contexts/RoleContext";
 import { StreamProvider } from "./contexts/StreamContext";
 import { PageShell } from "./components/layout/PageShell";
@@ -24,7 +23,7 @@ function PageLoader({ label }: { label: string }) {
 }
 
 function RequireAuth({ children }: { children: React.ReactElement }) {
-  const [user, loading] = useAuthState(auth);
+  const { user, loading } = useOptionalAuthUser();
 
   if (loading) {
     return <div className="flex h-screen items-center justify-center bg-f1-black text-f1-muted">Checking authentication...</div>;

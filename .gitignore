@@ -34,3 +34,6 @@ Thumbs.db
 
 # FastF1 cache (if generated locally)
 .cache/
+ 
+# Backend virtualenv (accidentally committed)
+backend/.venv_fix/

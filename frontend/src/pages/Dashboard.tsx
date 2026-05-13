@@ -28,7 +28,7 @@ export function Dashboard() {
     setRecoLoading(true);
     setRecoError(null);
     try {
-      const token = await auth.currentUser?.getIdToken();
+      const token = await auth?.currentUser?.getIdToken();
       const data = await postRecommend(payload, token);
       setReco(data);
     } catch (e) {
@@ -46,7 +46,7 @@ export function Dashboard() {
     setDraft("");
     setChat(next);
     try {
-      const token = await auth.currentUser?.getIdToken();
+      const token = await auth?.currentUser?.getIdToken();
       const ctx = { recommendation: reco, telemetry: { laps: payload.laps.length, circuit: payload.circuit } };
       const { reply } = await postChat(next, ctx, token);
       setChat([...next, { role: "assistant", content: reply }]);

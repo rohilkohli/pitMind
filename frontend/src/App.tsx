@@ -1,14 +1,13 @@
 import React from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { useAuthState } from "react-firebase-hooks/auth";
-import { auth } from "./lib/firebase";
+import { useOptionalAuthUser } from "./hooks/useOptionalAuthUser";
 import { PageShell } from "./components/layout/PageShell";
 import { Dashboard } from "./pages/Dashboard";
 import { FanMode } from "./pages/FanMode";
 import { Login } from "./pages/Login";
 
 function RequireAuth({ children }: { children: React.ReactElement }) {
-  const [user, loading] = useAuthState(auth);
+  const { user, loading } = useOptionalAuthUser();
 
   if (loading) {
     return <div className="flex h-screen items-center justify-center bg-carbon text-pit-muted">Checking authentication...</div>;

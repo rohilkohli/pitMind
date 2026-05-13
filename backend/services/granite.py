@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import logging
+import re
 from typing import Any
 
 import httpx
@@ -56,12 +57,12 @@ async def granite_generate(system: str, user: str, max_tokens: int = 512) -> str
         if text:
             return text
 
-    return _offline_stub(system, user)
+    return _local_fallback_response(system, user)
 
 
 def get_ai_status() -> dict[str, Any]:
     settings = get_settings()
-    watsonx_ready = bool(settings.watsonx_api_key.strip() and settings.watsonx_project_id.strip())
+    watsonx_ready = bool(settings.watsonx_api_key.strip() and settings.watsonx_project_id.strip() and settings.watsonx_url.strip())
     hf_ready = bool(settings.hf_api_token.strip() and settings.hf_model_id.strip())
     
     if watsonx_ready:
@@ -76,6 +77,16 @@ def get_ai_status() -> dict[str, Any]:
         "watsonx_configured": watsonx_ready,
         "hf_token_loaded": hf_ready,
         "hf_model_id": settings.hf_model_id,
+        "watsonx_url": settings.watsonx_url,
+        "missing_requirements": [
+            name
+            for name, present in {
+                "WATSONX_API_KEY": bool(settings.watsonx_api_key.strip()),
+                "WATSONX_PROJECT_ID": bool(settings.watsonx_project_id.strip()),
+                "WATSONX_URL": bool(settings.watsonx_url.strip()),
+            }.items()
+            if not present
+        ],
     }
 
 
@@ -345,9 +356,16 @@ def _coerce_confidence(value: Any) -> int:
     return max(0, min(100, int(round(number))))
 
 
-def _offline_stub(system: str, user: str) -> str:
+def _local_fallback_response(system: str, user: str) -> str:
+    """Deterministic offline fallback to avoid exposing stub errors in UX."""
+    cleaned = re.sub(r"\s+", " ", user).strip()
+    if not cleaned:
+        return "No chat context was provided. Share telemetry or a strategy question to continue."
+
+    preview = cleaned[:420]
     return (
-        "[Granite offline stub — configure HF_API_TOKEN in backend/.env] "
-        "Summary based on embedded telemetry context:\n"
-        f"{user[:1200]}"
+        "AI provider is not configured, so PitMind is running in secure local fallback mode. "
+        "Based on your latest chat context, prioritize tyre wear trend, lap-time delta, and gap evolution "
+        "before committing a pit call. "
+        f"Context preview: {preview}"
     )

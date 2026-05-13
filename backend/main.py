@@ -3,19 +3,21 @@
 from __future__ import annotations
 
 import logging
+from typing import Any
 
 from fastapi import FastAPI, File, HTTPException, Request, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import Response
+import firebase_admin
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from slowapi.util import get_remote_address
-import firebase_admin
 
 try:
     # This will use GOOGLE_APPLICATION_CREDENTIALS environment variable
     firebase_admin.initialize_app()
 except ValueError:
-    pass # App already initialized or no credentials provided
+    pass  # App already initialized or no credentials provided
 
 from config import cors_origin_list, get_settings
 from models.chat import ChatRequest, ChatResponse, DebriefResponse
@@ -44,8 +46,15 @@ app.add_middleware(
 )
 
 
-from typing import Any
-
+@app.middleware("http")
+async def add_security_headers(request: Request, call_next):
+    response: Response = await call_next(request)
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["Referrer-Policy"] = "no-referrer"
+    response.headers["Permissions-Policy"] = "geolocation=(), microphone=(), camera=()"
+    response.headers["Cache-Control"] = "no-store"
+    return response
 
 @app.get("/health")
 async def health() -> dict[str, Any]:

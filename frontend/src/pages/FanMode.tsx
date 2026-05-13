@@ -2,9 +2,10 @@ import { useFirebaseRaceState } from "../hooks/useFirebaseRaceState";
 import { LiveTrackMap } from "../components/fan/LiveTrackMap";
 import { WhatIfSimulator } from "../components/fan/WhatIfSimulator";
 import { demoDriverA } from "../data/demoTelemetry";
+import type { RaceState } from "../hooks/useFirebaseRaceState";
 
 // Simple fallback RaceState built from demo telemetry for local/dev when Firebase has no live data
-function buildDemoRaceState() {
+function buildDemoRaceState(): RaceState {
   const lastLap = demoDriverA.laps[demoDriverA.laps.length - 1];
   return {
     session_status: "LIVE",
@@ -12,7 +13,7 @@ function buildDemoRaceState() {
     total_laps: demoDriverA.laps.length,
     safety_car_active: false,
     drs_open: true,
-    fastest_lap: { driver: demoDriverA.driver, lap_time_s: lastLap.lap_time_s },
+    fastest_lap: { driver: demoDriverA.driver, lap_time_s: lastLap.lap_time_s ?? 0 },
     standings: [
       {
         driver: demoDriverA.driver,
@@ -20,7 +21,7 @@ function buildDemoRaceState() {
         gap_ahead_s: null,
         gap_leader_s: 0,
         lap: lastLap.lap,
-        lap_time_s: lastLap.lap_time_s,
+        lap_time_s: lastLap.lap_time_s ?? null,
         tyre_compound: lastLap.tyre_compound || "MEDIUM",
         tyre_age_laps: 1,
         team_color: "#f87171",

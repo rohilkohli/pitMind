@@ -9,6 +9,10 @@ export function Login() {
 
   const handleLogin = async () => {
     try {
+      if (!auth) {
+        setError("Firebase auth is not configured. Set VITE_FIREBASE_API_KEY/VITE_FIREBASE_WEB_API_KEY and related Firebase env vars.");
+        return;
+      }
       await signInWithPopup(auth, googleProvider);
       navigate("/dashboard");
     } catch (err: unknown) {

@@ -13,8 +13,8 @@ export const ConfidenceDecompositionCard: React.FC<ConfidenceDecompositionCardPr
 }) => {
   if (!decomposition) {
     return (
-      <Card className="p-6 text-center">
-        <p className="text-f1-muted text-sm">Run strategy analysis to see confidence breakdown</p>
+      <Card className="p-6 text-center border-white/10 bg-white/5">
+        <p className="text-f1-secondary text-sm font-medium">Run strategy analysis to see confidence breakdown</p>
       </Card>
     );
   }
@@ -31,7 +31,7 @@ export const ConfidenceDecompositionCard: React.FC<ConfidenceDecompositionCardPr
 
       <div className="mb-6">
         <div className="flex justify-between items-center mb-2">
-          <span className="text-f1-muted text-xs font-bold uppercase tracking-widest">OVERALL CONFIDENCE</span>
+          <span className="text-f1-secondary text-[10px] font-black uppercase tracking-widest opacity-80">OVERALL CONFIDENCE</span>
           <span className="font-display font-black text-f1-white text-lg">{overallConfidence.toFixed(0)}%</span>
         </div>
         <div className="w-full h-2 bg-f1-border">
@@ -44,7 +44,7 @@ export const ConfidenceDecompositionCard: React.FC<ConfidenceDecompositionCardPr
 
       <div className="space-y-4">
         <div className="border-l-2 border-f1-red pl-3">
-          <p className="text-f1-muted text-xs font-bold uppercase tracking-widest">Data Quality</p>
+          <p className="text-f1-secondary text-[10px] font-black uppercase tracking-widest opacity-80">Data Quality</p>
           <div className="flex justify-between items-center mt-2">
             <span className="font-display font-black text-f1-white text-base">{decomposition.data_quality.toFixed(0)}%</span>
             <div className="flex-1 ml-4 h-1 bg-f1-border">
@@ -54,7 +54,7 @@ export const ConfidenceDecompositionCard: React.FC<ConfidenceDecompositionCardPr
         </div>
 
         <div className="border-l-2 border-f1-red pl-3">
-          <p className="text-f1-muted text-xs font-bold uppercase tracking-widest">Model Certainty</p>
+          <p className="text-f1-secondary text-[10px] font-black uppercase tracking-widest opacity-80">Model Certainty</p>
           <div className="flex justify-between items-center mt-2">
             <span className="font-display font-black text-f1-white text-base">{decomposition.model_certainty.toFixed(0)}%</span>
             <div className="flex-1 ml-4 h-1 bg-f1-border">
@@ -64,7 +64,7 @@ export const ConfidenceDecompositionCard: React.FC<ConfidenceDecompositionCardPr
         </div>
 
         <div className="border-l-2 border-f1-red pl-3">
-          <p className="text-f1-muted text-xs font-bold uppercase tracking-widest">Stability</p>
+          <p className="text-f1-secondary text-[10px] font-black uppercase tracking-widest opacity-80">Stability</p>
           <div className="flex justify-between items-center mt-2">
             <span className="font-display font-black text-f1-white text-base">{decomposition.stability.toFixed(0)}%</span>
             <div className="flex-1 ml-4 h-1 bg-f1-border">
@@ -75,7 +75,7 @@ export const ConfidenceDecompositionCard: React.FC<ConfidenceDecompositionCardPr
       </div>
 
       <div className="mt-6 p-3 bg-f1-elevated border-l-2 border-f1-red">
-        <p className="text-xs font-bold uppercase tracking-widest text-f1-muted mb-2">Assessment</p>
+        <p className="text-[10px] font-black uppercase tracking-widest text-f1-secondary opacity-80 mb-2">Assessment</p>
         {overallConfidence >= 70 ? (
           <p className="text-sm text-f1-secondary">
             <span className="font-bold">HIGH CONFIDENCE</span> — Strategy well-supported. Safe to execute immediately.

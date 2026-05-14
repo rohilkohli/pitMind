@@ -5,6 +5,7 @@ import { useRole } from "../contexts/RoleContext";
 import { KpiStrip } from "../components/dashboard/KpiStrip";
 import { StandingsTable } from "../components/dashboard/StandingsTable";
 import { StrategyTimeline } from "../components/dashboard/StrategyTimeline";
+import type { StrategyPanelCommitPayload } from "../components/dashboard/StrategyTimeline";
 import { EventTimeline } from "../components/dashboard/EventTimeline";
 import { ConfidenceDecompositionCard } from "../components/dashboard/ConfidenceDecompositionCard";
 import { ShareButton } from "../components/dashboard/ShareButton";
@@ -12,7 +13,7 @@ import { RoleSwitcher } from "../components/dashboard/RoleSwitcher";
 import { StreamHealthMonitor } from "../components/dashboard/StreamHealthMonitor";
 import { useTelemetry } from "../hooks/useTelemetry";
 import { demoDriverA } from "../data/demoTelemetry";
-import { postRecommend, postChat, uploadTelemetry, type StrategyRecommendation, type TelemetryPayload } from "../services/api";
+import { postRecommend, postChat, postCommitStrategy, uploadTelemetry, type StrategyRecommendation, type TelemetryPayload } from "../services/api";
 import { Button } from "../components/ui/button";
 import { auth } from "../lib/firebase";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
@@ -188,280 +189,301 @@ export function Dashboard() {
     console.log(`Exporting decisions as ${format}`);
   }
 
+  function handleInjectBriefToChat(brief: string) {
+    setDraft(brief);
+  }
+
+  async function handleCommitStrategy(payload: StrategyPanelCommitPayload) {
+    if (!reco) {
+      throw new Error("No recommendation available to commit");
+    }
+
+    const token = await auth?.currentUser?.getIdToken(true);
+    return postCommitStrategy(
+      {
+        recommendation: reco,
+        checklist: {
+          pit_crew_ready: payload.checklist.pitCrewReady,
+          tyre_set_confirmed: payload.checklist.tyreSetConfirmed,
+          radio_call_prepared: payload.checklist.radioCallPrepared,
+        },
+        execution_brief: payload.executionBrief,
+        session_context: {
+          circuit: localPayload.circuit,
+          session_label: localPayload.session_label,
+          driver: localPayload.driver,
+          lap_count: localPayload.laps.length,
+          current_lap: raceState?.current_lap,
+          session_status: raceState?.session_status,
+        },
+      },
+      token,
+    );
+  }
+
   return (
-    <div className="relative mx-auto flex h-[calc(100vh-56px)] max-w-[1600px] flex-col gap-2 px-3 py-3 lg:px-4 overflow-hidden">
-      {/* Race Header Banner - Refined for Alignment */}
-      <div className="f1-card shrink-0 border-b-2 border-f1-red p-0 overflow-hidden shadow-md">
-        <div className="f1-stripe" />
-        <CardContent className="grid gap-4 p-3 lg:grid-cols-[1fr_auto] lg:items-center">
+    <div className="relative min-h-screen w-full bg-f1-black text-f1-white overflow-x-hidden pb-32">
+      {/* Dynamic Header Banner */}
+      <div className="border-b border-f1-red/30 bg-f1-black/90 px-6 py-4 backdrop-blur-md sticky top-0 z-[100]">
+        <div className="flex items-center justify-between">
           <div className="flex items-center gap-6">
-            <div>
-              <div className="flex items-center gap-3">
-                <span className="bg-f1-red px-2 py-0.5 text-[8px] font-black text-white uppercase tracking-widest">Live</span>
-                <p className="text-f1-muted text-[8px] font-bold uppercase tracking-widest">{localPayload.circuit} 2024</p>
-              </div>
-              <h1 className="mt-1 text-xl font-display font-black uppercase text-f1-white leading-none">Monaco Grand Prix</h1>
+            <div className="flex flex-col">
+              <span className="text-[10px] font-black uppercase tracking-[0.4em] text-f1-red">PitMind Mission Control</span>
+              <h1 className="text-xl font-black uppercase tracking-tighter text-white">Strategy Console <span className="ml-3 text-f1-muted text-xs">v1.2.5</span></h1>
             </div>
-            <div className="hidden xl:flex gap-1 border-l border-white/10 pl-6">
-              {[
-                { label: 'Session', val: raceState?.session_status ?? "LIVE" },
-                { label: 'Laps', val: localPayload.laps.length },
-                { label: 'Strategy', val: reco?.action ?? "—" },
-              ].map((stat, i) => (
-                <div key={i} className="min-w-[70px] px-2">
-                  <div className="text-f1-muted text-[7px] font-bold uppercase">{stat.label}</div>
-                  <div className="font-display text-[10px] font-black text-f1-white truncate">{stat.val}</div>
-                </div>
-              ))}
+            <div className="h-10 w-px bg-white/10 mx-2" />
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-3 px-4 py-1.5 rounded-sm bg-f1-red/10 border border-f1-red/20 shadow-[0_0_20px_rgba(225,6,0,0.1)]">
+                <div className="h-2.5 w-2.5 rounded-full bg-f1-red animate-pulse" />
+                <span className="text-[11px] font-black text-white uppercase tracking-widest">Live Sync Active</span>
+              </div>
+              <RoleSwitcher currentRole={currentRole} onRoleChange={setRole} />
             </div>
           </div>
-          <div className="flex items-center gap-4">
-            <div className="w-full max-w-[200px]">
-              <StreamHealthMonitor showMetrics={false} />
+          <div className="flex items-center gap-6">
+            <div className="hidden xl:flex items-center gap-8 border-r border-white/10 pr-8">
+              <div className="flex flex-col items-end">
+                <span className="text-[10px] font-bold text-f1-muted uppercase tracking-wider">Circuit</span>
+                <span className="text-sm font-black text-white uppercase">{localPayload.circuit}</span>
+              </div>
+              <div className="flex flex-col items-end">
+                <span className="text-[10px] font-bold text-f1-muted uppercase tracking-wider">Session Status</span>
+                <span className="text-sm font-black text-f1-red uppercase">{raceState?.session_status ?? "RACE_LIVE"}</span>
+              </div>
             </div>
-            <div className="flex items-center gap-2 border-l border-white/10 pl-4">
-              <RoleSwitcher currentRole={currentRole} onRoleChange={setRole} />
+            <div className="flex items-center justify-center gap-6">
+              <StreamHealthMonitor showMetrics={false} />
               <ShareButton onCopyUrl={copyShareableUrl} getShareUrl={getShareableUrl} />
             </div>
           </div>
-        </CardContent>
+        </div>
       </div>
 
-      {raceState && <KpiStrip raceState={raceState} />}
+      <div className="mx-auto max-w-[1920px] p-6 h-[calc(100vh-120px)]">
+        <Group orientation="horizontal" className="h-full gap-6">
+          {/* Left Column: Standings & System Logs */}
+          <Panel defaultSize={25} minSize={20} className="h-full">
+            <div className="space-y-6 h-full overflow-y-auto pr-2 scrollbar-thin">
+              <Card className="border-[#38383F] bg-[#1F1F27] overflow-hidden shadow-2xl">
+                <CardHeader className="py-4 px-5 border-b border-[#38383F] bg-[#1F1F27]">
+                  <CardTitle className="f1-section-title">
+                    <Activity className="w-3.5 h-3.5 text-f1-red" />
+                    Live Standings
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-0">
+                  <StandingsTable standings={raceState?.standings} />
+                </CardContent>
+              </Card>
 
-      {/* Main Analysis Grid - Resizable Implementation */}
-      <div className="flex-1 min-h-0 overflow-hidden bg-f1-black/50">
-        <Group orientation="horizontal" className="h-full w-full">
-          {/* Left Column: Awareness */}
-          <Panel defaultSize={20} minSize={15} className="flex flex-col">
-            <Group orientation="vertical" className="h-full">
-              <Panel defaultSize={50} minSize={20} className="flex flex-col pb-2">
-                <Card className="flex flex-col overflow-hidden border-white/10 bg-white/5 h-full">
-                  <CardHeader className="py-3 px-4 border-b border-white/5 bg-white/5">
-                    <CardTitle className="text-[10px] font-black uppercase tracking-widest text-f1-muted">Driver Standings</CardTitle>
-                  </CardHeader>
-                  <CardContent className="min-h-0 flex-1 p-0 overflow-y-auto scrollbar-thin scrollbar-thumb-f1-red/20">
-                    <StandingsTable standings={raceState?.standings} />
-                  </CardContent>
-                </Card>
-              </Panel>
-              <ResizeHandle direction="vertical" />
-              <Panel defaultSize={35} minSize={20} className="flex flex-col pt-2">
-                <div className="flex-1 min-h-0">
-                  <Suspense fallback={<Skeleton className="h-full w-full" />}>
-                    <LiveSystemFeed />
-                  </Suspense>
-                </div>
-              </Panel>
-              
-              <ResizeHandle direction="vertical" />
-              <Panel defaultSize={25} minSize={15} className="flex flex-col pt-2">
+              <Card className="border-[#38383F] bg-[#1F1F27] overflow-hidden h-[450px] flex flex-col shadow-2xl">
                 <Suspense fallback={<Skeleton className="h-full w-full" />}>
-                  <HealthConsole />
+                  <LiveSystemFeed />
                 </Suspense>
-              </Panel>
-            </Group>
+              </Card>
+              
+              <Suspense fallback={<Skeleton className="h-96 w-full" />}>
+                <HealthConsole />
+              </Suspense>
+            </div>
           </Panel>
 
-          <ResizeHandle direction="horizontal" />
-          
-          {/* Center Column: Core Analytics */}
-          <Panel defaultSize={55} minSize={30} className="flex flex-col px-2">
-            <Group orientation="vertical" className="h-full">
-              <Panel defaultSize={60} minSize={30} className="flex flex-col pb-2">
-                <Card className="flex flex-col overflow-hidden border-white/10 bg-white/5 h-full">
-                  <CardHeader className="flex flex-row items-center justify-between gap-4 py-3 px-4 border-b border-white/5 bg-white/5">
-                    <div className="flex items-center gap-3">
-                      <CardTitle className="text-[10px] font-black uppercase tracking-widest text-f1-muted">Live Telemetry Trace</CardTitle>
-                      <div className="relative overflow-hidden group">
-                        <input
-                          type="file"
-                          onChange={handleUploadTelemetry}
-                          className="absolute inset-0 opacity-0 cursor-pointer z-10"
-                          accept=".csv,.json"
-                        />
-                        <button className="flex items-center gap-1.5 px-2 py-1 rounded border border-f1-border bg-f1-dark text-[9px] text-f1-muted font-bold uppercase group-hover:text-white transition">
-                          <Upload className="w-3 h-3" />
-                          {isUploading ? "..." : "Upload"}
-                        </button>
-                      </div>
+          <ResizeHandle />
+
+          {/* Center Column: Telemetry & Core Logic */}
+          <Panel defaultSize={50} minSize={30} className="h-full">
+            <div className="space-y-6 h-full overflow-y-auto px-2 scrollbar-thin">
+              <Card className="overflow-hidden border-[#38383F] bg-[#1F1F27] min-h-[600px] flex flex-col shadow-2xl">
+                <CardHeader className="flex flex-row items-center justify-between gap-6 py-4 px-5 border-b border-[#38383F] bg-[#1F1F27]">
+                  <div className="flex items-center gap-4">
+                    <CardTitle className="f1-section-title">Telemetry Analysis</CardTitle>
+                    <div className="relative overflow-hidden group">
+                      <input
+                        type="file"
+                        onChange={handleUploadTelemetry}
+                        className="absolute inset-0 opacity-0 cursor-pointer z-10"
+                        accept=".csv,.json"
+                      />
+                      <button className="flex items-center gap-2 px-3 py-1.5 rounded-none border border-f1-red/30 bg-f1-red/5 text-[10px] text-f1-red font-black uppercase group-hover:bg-f1-red group-hover:text-white transition-all duration-300">
+                        <Upload className="w-3.5 h-3.5" />
+                        Ingest Data
+                      </button>
                     </div>
-                    <div className="flex items-center gap-3">
-                      <div className="flex gap-1.5">
-                        <span className="rounded-sm bg-f1-red/10 px-2 py-0.5 text-[9px] font-bold uppercase text-f1-red border border-f1-red/20">{localPayload.circuit}</span>
-                        <span className="rounded-sm bg-white/5 px-2 py-0.5 text-[9px] font-bold uppercase text-f1-muted border border-white/10">{localPayload.driver}</span>
-                      </div>
-                      <div className="flex items-center gap-1 border-l border-white/10 pl-3">
-                        <button onClick={() => handleExportTelemetry('csv')} className="p-1 text-f1-muted hover:text-white transition-colors" title="CSV"><Download className="w-3 h-3" /></button>
-                        <button onClick={() => handleExportTelemetry('json')} className="text-[9px] font-bold text-f1-muted hover:text-white transition-colors px-1">JSON</button>
-                      </div>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <div className="flex gap-2">
+                      <span className="bg-f1-red/10 px-3 py-1 text-[10px] font-black uppercase text-f1-red border border-f1-red/20">{localPayload.driver}</span>
+                      <span className="bg-white/5 px-3 py-1 text-[10px] font-black uppercase text-[#67676D] border border-[#38383F]">Laps: {localPayload.laps.length}</span>
                     </div>
-                  </CardHeader>
-                  <CardContent className="p-0 flex-1 min-h-0 overflow-y-auto scrollbar-thin scrollbar-thumb-f1-red/20">
-                    {localPayload.laps.length > 0 ? (
-                      <Suspense fallback={<div className="h-full flex items-center justify-center"><Loader2 className="animate-spin text-f1-red" /></div>}>
-                        <LapChart data={localPayload.laps} />
-                      </Suspense>
-                    ) : (
-                      <div className="h-full flex items-center justify-center p-6 text-center">
-                        <div>
-                          <p className="text-xs font-bold text-f1-muted uppercase tracking-widest">Awaiting Data stream</p>
-                          <p className="mt-1 text-[10px] text-f1-muted">Upload a telemetry file to initialize analysis.</p>
-                        </div>
+                    <div className="flex items-center gap-2 border-l border-[#38383F] pl-4">
+                      <button onClick={() => handleExportTelemetry('csv')} className="p-2 text-[#67676D] hover:text-white transition-colors" title="Export CSV"><Download className="w-4 h-4" /></button>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent className="p-0 flex-1 min-h-[450px]">
+                  <Suspense fallback={<div className="h-[450px] flex items-center justify-center bg-f1-black/20"><Loader2 className="animate-spin text-f1-red w-8 h-8" /></div>}>
+                    <LapChart data={localPayload.laps} />
+                  </Suspense>
+                </CardContent>
+              </Card>
+              
+              <Card className={`relative overflow-hidden group shadow-[0_20px_50px_rgba(0,0,0,0.5)] transition-all duration-500 border-[#38383F] bg-[#1F1F27] ${recoLoading ? 'ring-2 ring-f1-red animate-pulse' : ''}`}>
+                {/* Animated Background Glow */}
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(225,6,0,0.05),transparent_70%)] animate-subtle-glow pointer-events-none" />
+                
+                <CardHeader className="py-4 px-6 border-b border-[#38383F] flex items-center justify-between bg-[#1F1F27]">
+                  <div className="flex items-center gap-3">
+                    <Zap className={`w-4 h-4 text-f1-red ${recoLoading ? 'animate-bounce' : ''}`} />
+                    <CardTitle className="text-[12px] font-black uppercase tracking-[0.2em] text-white">AI Strategy Oracle</CardTitle>
+                  </div>
+                  {recoError && <span className="text-[10px] font-black text-f1-red uppercase animate-pulse tracking-wider bg-f1-red/10 px-3 py-1 rounded">{recoError}</span>}
+                </CardHeader>
+                <CardContent className="p-8 space-y-6 relative z-10">
+                  <div>
+                    <p className="text-[13px] text-[#C4C4C4] leading-relaxed font-medium italic">Predictive model analyzing tyre degradation, fuel delta, and safety car probability based on live telemetry snapshots.</p>
+                    {reco && (
+                      <div className="mt-6 p-5 bg-f1-red/10 border border-f1-red/20 rounded-none shadow-inner">
+                        <p className="text-[10px] font-black text-[#67676D] uppercase tracking-[0.3em] mb-2">Generated Directive</p>
+                        <p className="text-3xl font-black text-white uppercase tracking-tighter leading-none italic">{reco.action}</p>
                       </div>
                     )}
-                  </CardContent>
-                </Card>
-              </Panel>
-              
-              <ResizeHandle direction="vertical" className="my-1" />
-              
-              <Panel defaultSize={25} minSize={15} className="flex flex-col gap-4">
-                <Card className="border-f1-red/20 bg-f1-red/5 relative overflow-hidden group h-full">
-                  <div className="absolute top-0 right-0 p-2 opacity-5">
-                    <Activity className="w-20 h-20 text-f1-red" />
                   </div>
-                  <CardHeader className="py-2 px-4 border-b border-f1-red/10 flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Zap className="w-3 h-3 text-f1-red" />
-                      <CardTitle className="text-[10px] font-black uppercase tracking-widest">AI Strategy Engine</CardTitle>
-                    </div>
-                    {recoError && <span className="text-[9px] font-bold text-f1-red uppercase animate-pulse">{recoError}</span>}
-                  </CardHeader>
-                  <CardContent className="p-4 grid gap-4 sm:grid-cols-[1fr_auto] sm:items-center overflow-y-auto scrollbar-thin scrollbar-thumb-f1-red/20">
-                    <div>
-                      <p className="text-[11px] text-f1-secondary leading-tight">AI will process the telemetry snapshot to determine optimal pit windows.</p>
-                      {reco && <p className="mt-2 text-xs font-bold text-white uppercase tracking-wide">Command: <span className="text-f1-red">{reco.action}</span></p>}
-                    </div>
+                  
+                  <div className="space-y-4">
                     <Button 
                       onClick={onRecommend} 
                       disabled={recoLoading}
-                      className="h-10 px-8 bg-f1-red text-white text-[10px] font-bold uppercase tracking-widest shadow-[0_12px_24px_rgba(225,6,0,0.2)] hover:bg-f1-red-dark active:scale-95 transition-all"
+                      className="w-full h-14 bg-f1-red text-white text-[12px] font-black uppercase tracking-[0.3em] shadow-[0_15px_30px_rgba(225,6,0,0.4)] hover:bg-f1-red-dark active:scale-[0.98] transition-all duration-300 rounded-none border-b-4 border-f1-red-dark"
                     >
-                      {recoLoading ? "Analyzing..." : "Generate AI Recommendation"}
+                      {recoLoading ? "Processing Inference..." : "Execute Command"}
                     </Button>
-                  </CardContent>
-                </Card>
-              </Panel>
+                    <div className="text-center">
+                      <span className="text-[11px] font-bold text-[#67676D] uppercase tracking-widest">
+                        AI READY — GRANITE v1.3 — IBM WATSONX
+                      </span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
               
-              <ResizeHandle direction="vertical" />
-              
-              <Panel defaultSize={15} minSize={10} className="flex flex-col pt-2">
-                <Suspense fallback={<Skeleton className="h-full w-full" />}>
+              <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                <Suspense fallback={<Skeleton className="h-[400px] w-full" />}>
                   <FastF1Loader onDataLoaded={(data) => setLocalPayload(data)} />
                 </Suspense>
-              </Panel>
 
-              <ResizeHandle direction="vertical" />
-              <Panel defaultSize={15} minSize={10} className="flex flex-col pt-2">
-                <Card className="border-white/10 bg-white/5 h-full overflow-hidden">
-                  <CardHeader className="py-2 px-4 border-b border-white/5">
-                    <CardTitle className="text-[10px] font-black uppercase tracking-widest text-f1-muted">Race Timeline</CardTitle>
+                <Card className="border-[#38383F] bg-[#1F1F27] overflow-hidden flex flex-col shadow-2xl">
+                  <CardHeader className="py-3 px-5 border-b border-[#38383F] bg-[#1F1F27]">
+                    <CardTitle className="f1-section-title">Live Race Timeline</CardTitle>
                   </CardHeader>
-                  <CardContent className="p-0 overflow-y-auto scrollbar-thin">
+                  <CardContent className="p-0 flex-1 overflow-y-auto min-h-[350px] scrollbar-thin">
                     <EventTimeline />
                   </CardContent>
                 </Card>
-              </Panel>
-            </Group>
+              </div>
+            </div>
           </Panel>
 
-          <ResizeHandle direction="horizontal" />
+          <ResizeHandle />
 
-          {/* Right Column: Reasoning & Communication */}
-          <Panel defaultSize={25} minSize={20} className="flex flex-col pl-2">
-            <Group orientation="vertical" className="h-full">
-              <Panel defaultSize={40} minSize={20} className="flex flex-col pb-2">
-                <Card className="flex flex-col overflow-hidden border-white/10 bg-white/5 h-full">
-                  <CardHeader className="py-2 px-4 border-b border-white/5 bg-white/5">
-                    <CardTitle className="text-[10px] font-black uppercase tracking-widest text-f1-muted">Reasoning Trace</CardTitle>
-                  </CardHeader>
-                  <CardContent className="min-h-0 flex-1 p-0 overflow-y-auto scrollbar-thin scrollbar-thumb-f1-red/20">
-                    <StrategyTimeline reco={reco} />
-                  </CardContent>
-                </Card>
-              </Panel>
+          {/* Right Column: AI Reasoning & Support */}
+          <Panel defaultSize={25} minSize={20} className="h-full">
+            <div className="space-y-6 h-full overflow-y-auto pl-2 scrollbar-thin">
+              <Card className="border-[#38383F] bg-[#1F1F27] overflow-hidden flex flex-col min-h-[400px] shadow-2xl">
+                <CardHeader className="py-3 px-5 border-b border-[#38383F] bg-[#1F1F27]">
+                  <CardTitle className="f1-section-title">Reasoning Trace</CardTitle>
+                </CardHeader>
+                <CardContent className="p-0 flex-1 overflow-y-auto max-h-[500px] scrollbar-thin">
+                  <StrategyTimeline
+                    reco={reco}
+                    strategyChecklistKey={`pitmind.strategy.checklist.${localPayload.circuit}.${localPayload.session_label}.${localPayload.driver}`}
+                    onInjectBriefToChat={handleInjectBriefToChat}
+                    onCommitStrategy={handleCommitStrategy}
+                  />
+                </CardContent>
+              </Card>
 
-              <ResizeHandle direction="vertical" />
+              <ConfidenceDecompositionCard 
+                decomposition={reco?.confidence_decomposition} 
+                overallConfidence={reco?.confidence ?? 0}
+              />
 
-              <Panel defaultSize={20} minSize={15} className="py-2 overflow-y-auto scrollbar-thin scrollbar-thumb-f1-red/20">
-                <ConfidenceDecompositionCard 
-                  decomposition={reco?.confidence_decomposition} 
-                  overallConfidence={reco?.confidence ?? 0}
-                />
-              </Panel>
-
-              <ResizeHandle direction="vertical" />
-
-              <Panel defaultSize={42} minSize={25} className="flex flex-col pt-2">
-                <Card className="flex flex-col overflow-hidden border-white/10 bg-white/5 h-full">
-                  <CardHeader className="py-3 px-4 border-b border-white/5 bg-white/5 flex items-center justify-between">
-                    <CardTitle className="text-[10px] font-black uppercase tracking-widest text-f1-muted">Copilot Assistant</CardTitle>
-                    <span className="text-[8px] font-bold text-f1-red uppercase tracking-[0.2em] px-2 py-0.5 bg-f1-red/10 border border-f1-red/20">Active</span>
-                  </CardHeader>
-                  <CardContent className="flex min-h-0 flex-1 flex-col p-0 overflow-hidden">
-                    <div className="border-b border-white/5 px-4 pb-2 pt-3">
-                      <div className="flex flex-wrap gap-1.5">
-                        {promptChips.map((chip) => (
-                          <button
-                            key={chip}
-                            onClick={() => setDraft(chip)}
-                            className="rounded-sm border border-white/10 bg-white/5 px-2 py-1 text-[9px] text-f1-muted uppercase font-bold hover:bg-f1-red/10 hover:text-white transition-colors"
-                          >
-                            {chip}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div className="flex-1 space-y-3 overflow-y-auto px-4 py-4 scrollbar-thin scrollbar-thumb-f1-red/20">
-                      {chat.map((m, idx) => (
-                        <div key={idx} className={`max-w-[90%] rounded-lg border p-3 text-xs leading-relaxed ${m.role === "user" ? "ml-auto border-white/5 bg-white/5" : "border-f1-red/10 bg-f1-red/5"}`}>
-                          <p className="mb-1 text-[8px] font-black uppercase tracking-widest text-f1-muted">{m.role === "user" ? "User" : "PitMind AI"}</p>
-                          <p className="text-f1-secondary">{m.content}{m.streaming && <span className="ml-1 animate-pulse text-f1-red">▍</span>}</p>
-                        </div>
+              <Card className="border-[#38383F] bg-[#1F1F27] overflow-hidden flex flex-col min-h-[550px] shadow-2xl">
+                <CardHeader className="py-4 px-5 border-b border-[#38383F] bg-[#1F1F27] flex items-center justify-between">
+                  <CardTitle className="text-[11px] font-black uppercase tracking-widest text-[#67676D]">PitMind Assistant</CardTitle>
+                  <div className="flex items-center gap-2 px-3 py-1 bg-[#2D2D35] border border-[#38383F]">
+                    <div className="w-1.5 h-1.5 rounded-full bg-[#39B54A] animate-pulse-dot" />
+                    <span className="text-[9px] font-black text-[#39B54A] uppercase tracking-[0.2em]">Online</span>
+                  </div>
+                </CardHeader>
+                <CardContent className="flex flex-1 flex-col p-0">
+                  <div className="border-b border-[#38383F] px-5 py-4 bg-[#15151E]/40">
+                    <div className="flex flex-wrap gap-2">
+                      {promptChips.map((chip) => (
+                        <button
+                          key={chip}
+                          onClick={() => setDraft(chip)}
+                          className="f1-chip"
+                        >
+                          {chip}
+                        </button>
                       ))}
                     </div>
+                  </div>
 
-                    <div className="p-3 border-t border-white/5 bg-f1-dark/20">
-                      <div className="flex gap-2 bg-black/20 p-1 rounded border border-white/5">
-                        <input
-                          value={draft}
-                          onChange={(e) => setDraft(e.target.value)}
-                          onKeyDown={(e) => e.key === 'Enter' && onSendChat()}
-                          placeholder="Ask Strategy..."
-                          className="flex-1 bg-transparent px-3 py-1.5 text-xs text-white placeholder:text-f1-muted outline-none"
-                          disabled={isChatThinking}
-                        />
-                        <Button onClick={onSendChat} disabled={isChatThinking} size="sm" className="bg-f1-red/80 hover:bg-f1-red text-[10px] h-8 font-bold px-4">Send</Button>
+                  <div className="flex-1 space-y-4 overflow-y-auto px-5 py-6 max-h-[400px] scrollbar-thin">
+                    {chat.map((m, idx) => (
+                      <div key={idx} className={`max-w-[90%] rounded-none border p-4 text-[13px] leading-relaxed shadow-lg ${m.role === "user" ? "ml-auto border-[#38383F] bg-[#2D2D35] text-white" : "border-f1-red/20 bg-f1-red/5 text-white"}`}>
+                        <p className="mb-2 text-[9px] font-black uppercase tracking-[0.2em] text-[#67676D]">{m.role === "user" ? "Primary Engineer" : "System Oracle"}</p>
+                        <p className="font-medium tracking-tight">{m.content}{m.streaming && <span className="ml-1 animate-pulse text-f1-red">▍</span>}</p>
                       </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </Panel>
+                    ))}
+                  </div>
 
-              <ResizeHandle direction="vertical" />
-              <Panel defaultSize={15} minSize={10} className="flex flex-col pt-2">
-                <Suspense fallback={<Skeleton className="h-full w-full" />}>
-                  <DecisionLog onExportSession={() => handleExportDecisions('csv')} />
-                </Suspense>
-              </Panel>
-            </Group>
+                  <div className="p-5 border-t border-[#38383F] bg-[#1F1F27]">
+                    <div className="flex gap-0 bg-[#2D2D35] border border-[#38383F] focus-within:border-f1-red transition-colors">
+                      <input
+                        value={draft}
+                        onChange={(e) => setDraft(e.target.value)}
+                        onKeyDown={(e) => e.key === 'Enter' && onSendChat()}
+                        placeholder="ENTER STRATEGY QUERY..."
+                        className="flex-1 bg-transparent px-4 py-3.5 text-[13px] text-white placeholder:text-[#67676D] outline-none font-medium uppercase tracking-tight"
+                        disabled={isChatThinking}
+                      />
+                      <button 
+                        onClick={onSendChat} 
+                        disabled={isChatThinking} 
+                        className="bg-f1-red hover:bg-f1-red-dark text-white w-12 flex items-center justify-center transition-all active:scale-95"
+                      >
+                        <Activity className="w-5 h-5 rotate-90" />
+                      </button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Suspense fallback={<Skeleton className="h-80 w-full" />}>
+                <DecisionLog onExportSession={() => handleExportDecisions('csv')} />
+              </Suspense>
+            </div>
           </Panel>
         </Group>
       </div>
 
-      {/* Role-based Context (Floating/Overlaid if needed, but here simple) */}
+      {/* Persistent Role Identity */}
       {currentRole !== 'engineer' && (
-        <div className="absolute bottom-6 right-6 z-50 max-w-md animate-in fade-in slide-in-from-bottom-4">
-          <Card className="border-f1-red/20 bg-f1-black/90 backdrop-blur shadow-2xl">
-            <CardHeader className="py-2 px-4 border-b border-f1-red/10">
-              <CardTitle className="text-[10px] font-black uppercase text-f1-red">{currentRole} Context</CardTitle>
-            </CardHeader>
-            <CardContent className="p-4 text-[11px] text-f1-secondary leading-relaxed">
-              {currentRole === 'strategist' ? "Focus on long-term race planning, compound selection, and scenario analysis." : "Focus on race narrative, position battles, and fan engagement."}
-            </CardContent>
-          </Card>
+        <div className="fixed bottom-8 left-8 z-[200] max-w-sm animate-in fade-in slide-in-from-bottom-8 duration-500">
+          <div className="relative group">
+            <div className="absolute -inset-1 bg-gradient-to-r from-f1-red to-f1-red-dark rounded-lg blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200"></div>
+            <Card className="relative border-f1-red/30 bg-f1-black/95 backdrop-blur-xl shadow-3xl">
+              <CardHeader className="py-3 px-5 border-b border-f1-red/20 flex items-center justify-between">
+                <CardTitle className="text-[11px] font-black uppercase text-f1-red tracking-[0.2em]">{currentRole} Context</CardTitle>
+                <div className="h-1.5 w-1.5 rounded-full bg-f1-red animate-ping" />
+              </CardHeader>
+              <CardContent className="p-5 text-[12px] text-f1-secondary leading-relaxed font-bold italic">
+                {currentRole === 'strategist' ? "Strategic Overwatch: Prioritize lap delta and tyre degradation cycles." : "Broadcast Feed: Focus on narrative arc and head-to-head performance battles."}
+              </CardContent>
+            </Card>
+          </div>
         </div>
       )}
     </div>

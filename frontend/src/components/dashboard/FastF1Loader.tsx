@@ -37,51 +37,51 @@ export const FastF1Loader: React.FC<FastF1LoaderProps> = ({ onDataLoaded }) => {
   };
 
   return (
-    <Card className="border-f1-border bg-f1-black h-full">
-      <CardHeader className="pb-3">
-        <CardTitle className="text-sm font-bold text-f1-white flex items-center gap-2 uppercase tracking-widest">
+    <Card className="border-[#38383F] bg-[#1F1F27] rounded-none h-full shadow-2xl">
+      <CardHeader className="pb-3 border-b border-[#38383F] mb-4">
+        <CardTitle className="text-[12px] font-display font-extrabold text-white flex items-center gap-2 uppercase tracking-[0.2em]">
           <Database className="w-4 h-4 text-f1-red" />
-          Real-Session Data (FastF1)
+          REAL-SESSION DATA (FastF1)
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-2 gap-3">
-          <div className="space-y-1">
-            <label className="text-[10px] text-f1-muted uppercase font-bold">Year</label>
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-1.5">
+            <label className="text-[10px] text-[#67676D] uppercase font-bold tracking-wider">Year</label>
             <select 
               value={year} 
               onChange={(e) => setYear(parseInt(e.target.value))}
-              className="w-full bg-f1-dark border border-f1-border text-xs text-white p-2 rounded focus:border-f1-red outline-none"
+              className="w-full"
             >
               {[2025, 2024, 2023, 2022, 2021, 2020, 2019, 2018].map(y => (
                 <option key={y} value={y}>{y}</option>
               ))}
             </select>
           </div>
-          <div className="space-y-1">
-            <label className="text-[10px] text-f1-muted uppercase font-bold">Driver</label>
+          <div className="space-y-1.5">
+            <label className="text-[10px] text-[#67676D] uppercase font-bold tracking-wider">Driver</label>
             <input 
               value={driver}
               onChange={(e) => setDriver(e.target.value.toUpperCase())}
-              placeholder="VER, HAM, LEC..."
-              className="w-full bg-f1-dark border border-f1-border text-xs text-white p-2 rounded focus:border-f1-red outline-none"
+              placeholder="VER"
+              className="w-full bg-[#2D2D35] border border-[#38383F] text-[13px] text-white p-2 rounded-none focus:border-f1-red outline-none font-display font-semibold uppercase"
             />
           </div>
-          <div className="space-y-1">
-            <label className="text-[10px] text-f1-muted uppercase font-bold">Event</label>
+          <div className="space-y-1.5">
+            <label className="text-[10px] text-[#67676D] uppercase font-bold tracking-wider">Event</label>
             <input 
               value={event}
               onChange={(e) => setEvent(e.target.value)}
-              placeholder="Monza, Silverstone..."
-              className="w-full bg-f1-dark border border-f1-border text-xs text-white p-2 rounded focus:border-f1-red outline-none"
+              placeholder="Monza"
+              className="w-full bg-[#2D2D35] border border-[#38383F] text-[13px] text-white p-2 rounded-none focus:border-f1-red outline-none font-display font-semibold uppercase"
             />
           </div>
-          <div className="space-y-1">
-            <label className="text-[10px] text-f1-muted uppercase font-bold">Session</label>
+          <div className="space-y-1.5">
+            <label className="text-[10px] text-[#67676D] uppercase font-bold tracking-wider">Session</label>
             <select 
               value={sessionType} 
               onChange={(e) => setSessionType(e.target.value as any)}
-              className="w-full bg-f1-dark border border-f1-border text-xs text-white p-2 rounded focus:border-f1-red outline-none"
+              className="w-full"
             >
               <option value="R">Race</option>
               <option value="Q">Qualifying</option>
@@ -96,17 +96,26 @@ export const FastF1Loader: React.FC<FastF1LoaderProps> = ({ onDataLoaded }) => {
         <button
           onClick={handleLoad}
           disabled={loading}
-          className="w-full mt-4 py-2 bg-f1-red text-white text-[10px] font-bold uppercase tracking-widest hover:bg-f1-red-dark transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+          className="w-full mt-6 h-12 bg-f1-red text-white text-[12px] font-display font-extrabold uppercase tracking-[0.2em] hover:bg-f1-red-dark transition-all flex items-center justify-center gap-2 disabled:opacity-50 rounded-none shadow-[0_10px_20px_rgba(225,6,0,0.2)]"
         >
-          {loading ? <Loader2 className="w-3 h-3 animate-spin" /> : <Play className="w-3 h-3" />}
-          {loading ? 'Bootstrapping...' : 'Pull Official Data'}
+          {loading ? (
+            <>
+              <Loader2 className="w-4 h-4 animate-spin" />
+              <span>BOOTSTRAPPING...</span>
+            </>
+          ) : (
+            <>
+              <Play className="w-4 h-4 fill-current" />
+              <span>PULL OFFICIAL DATA</span>
+            </>
+          )}
         </button>
 
         {error && (
-          <p className="mt-2 text-[10px] text-f1-red uppercase font-medium">{error}</p>
+          <p className="mt-4 text-[10px] text-f1-red uppercase font-black text-center bg-f1-red/10 py-2 border border-f1-red/20">{error}</p>
         )}
         
-        <p className="mt-3 text-[9px] text-f1-muted leading-tight uppercase">
+        <p className="mt-4 text-[10px] text-[#67676D] leading-relaxed uppercase font-medium italic">
           Note: Outbound connection required. First load of an event may take 30-60s to bootstrap the F1 timing cache.
         </p>
       </CardContent>

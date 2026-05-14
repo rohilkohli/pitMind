@@ -52,3 +52,23 @@ class FastF1Request(BaseModel):
     event: str = Field(..., min_length=2)
     session_type: str = Field(default="R", pattern="^(R|Q|S|FP1|FP2|FP3)$")
     driver_code: str = Field(..., min_length=2, max_length=3)
+
+
+class StrategyChecklist(BaseModel):
+    pit_crew_ready: bool = False
+    tyre_set_confirmed: bool = False
+    radio_call_prepared: bool = False
+
+
+class StrategyCommitRequest(BaseModel):
+    recommendation: StrategyRecommendation
+    checklist: StrategyChecklist
+    execution_brief: str = Field(..., min_length=1)
+    session_context: dict[str, Any] = Field(default_factory=dict)
+
+
+class StrategyCommitResponse(BaseModel):
+    audit_id: str
+    status: str
+    message: str
+    committed_at: str

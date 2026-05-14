@@ -134,6 +134,10 @@ export const useStreamConnection = (config: StreamConnectionConfig) => {
 
       ws.onerror = (event) => {
         if (!isComponentMounted.current) return;
+        const isTransientHandshakeError = ws.readyState === WebSocket.CONNECTING;
+        if (isTransientHandshakeError) {
+          return;
+        }
         // Only log errors if not at max retries and we didn't just unmount
         const maxRetries = config.maxRetries || 5;
         if (reconnectAttemptsRef.current < maxRetries && isComponentMounted.current) {
@@ -213,12 +217,19 @@ export const useStreamConnection = (config: StreamConnectionConfig) => {
     clearInterval(heartbeatIntervalRef.current);
     
     if (wsRef.current) {
-      // Suppress the "closed before established" error by checking readyState
+      // Avoid closing while CONNECTING to prevent browser-level
+      // "closed before the connection is established" warnings.
       if (wsRef.current.readyState === WebSocket.CONNECTING) {
-        // Just let it close silently
+        const pendingSocket = wsRef.current;
+        pendingSocket.onopen = () => pendingSocket.close();
+        pendingSocket.onmessage = null;
+        pendingSocket.onerror = null;
+        pendingSocket.onclose = null;
+        wsRef.current = null;
+      } else {
+        wsRef.current.close();
+        wsRef.current = null;
       }
-      wsRef.current.close();
-      wsRef.current = null;
     }
     
     setState((prev) => ({

@@ -1,3 +1,4 @@
+import React, { useState } from "react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
 import type { TooltipProps } from "recharts";
 import type { ValueType, NameType } from "recharts/types/component/DefaultTooltipContent";
@@ -15,9 +16,25 @@ const mockData = Array.from({ length: 30 }, (_, i) => {
 });
 
 export function LapChart({ data }: { data?: any[] }) {
-  const chartData = data && data.length > 0 ? data : mockData;
+  const [selectedDrivers, setSelectedDrivers] = useState<string[]>(["VER", "LEC", "NOR"]);
+  
+  const isEmpty = !data || data.length === 0;
+  const chartData = !isEmpty ? data : Array.from({ length: 57 }, (_, i) => ({
+    lap: i + 1,
+    ghost1: 90 + Math.sin(i / 5) * 2,
+    ghost2: 92 + Math.cos(i / 6) * 1.5,
+    ghost3: 88 + Math.sin(i / 4) * 3,
+  }));
+
+  const drivers = [
+    { id: "VER", color: "#3671C6", name: "Verstappen" },
+    { id: "LEC", color: "#E8002D", name: "Leclerc" },
+    { id: "NOR", color: "#FF8000", name: "Norris" },
+    { id: "HAM", color: "#27F4D2", name: "Hamilton" },
+  ];
+
   const CustomTooltip = ({ active, payload, label }: TooltipProps<ValueType, NameType>) => {
-    if (active && payload && payload.length) {
+    if (active && payload && payload.length && !isEmpty) {
       return (
         <div className="border border-f1-border bg-f1-dark p-3 shadow-[0_12px_36px_rgba(0,0,0,0.45)]">
           <p className="mb-2 text-xs font-bold uppercase text-f1-muted">Lap {label}</p>
@@ -37,43 +54,78 @@ export function LapChart({ data }: { data?: any[] }) {
   };
 
   return (
-    <div className="flex h-full flex-col">
-      <div className="sticky top-0 z-10 bg-f1-dark pb-2 pt-4 border-b border-f1-border">
-        <div className="flex items-center justify-between px-4">
-          <div>
-            <h2 className="text-xs font-bold uppercase tracking-widest text-f1-muted">Lap Time Trace</h2>
-            <p className="mt-1 text-xs text-f1-muted">Live telemetry analysis</p>
-          </div>
-          <span className="border border-f1-border bg-f1-elevated px-3 py-1 text-xs text-f1-muted">Live</span>
+    <div className="flex h-full flex-col p-6">
+      <div className="mb-6">
+        <h2 className="f1-section-title !mb-4">Lap Time Trace</h2>
+        
+        <div className="flex flex-wrap gap-2 mb-4">
+          {drivers.map((d) => (
+            <button
+              key={d.id}
+              onClick={() => setSelectedDrivers(prev => prev.includes(d.id) ? prev.filter(id => id !== d.id) : [...prev, d.id])}
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-full border text-[11px] font-bold uppercase transition-all ${
+                selectedDrivers.includes(d.id) 
+                ? "bg-f1-red/10 border-f1-red text-white" 
+                : "bg-transparent border-[#38383F] text-[#67676D] hover:border-[#67676D]"
+              }`}
+            >
+              <div className="w-2 h-2 rounded-full" style={{ backgroundColor: d.color }} />
+              {d.id}
+            </button>
+          ))}
         </div>
       </div>
       
-      <div className="min-h-[300px] flex-1 p-4">
+      <div className="relative min-h-[400px] flex-1">
+        {isEmpty && (
+          <div className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none">
+            <p className="text-[18px] font-display font-semibold text-[#67676D] uppercase tracking-widest">
+              Upload Telemetry to Begin
+            </p>
+          </div>
+        )}
+        
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#38383F" vertical={false} opacity={0.5} />
+            <CartesianGrid strokeDasharray="3 3" stroke="#38383F" vertical={false} opacity={0.3} />
             <XAxis 
               dataKey="lap" 
               stroke="#67676D" 
-              fontSize={11} 
+              fontSize={10} 
               tickLine={false} 
               axisLine={false}
+              domain={[1, 57]}
             />
-            {/* Inverse Y-axis so faster (lower) times are higher on the chart visually */}
             <YAxis 
               stroke="#67676D" 
-              fontSize={11} 
+              fontSize={10} 
               tickLine={false} 
               axisLine={false}
-              domain={['dataMin - 1', 'dataMax + 1']}
-              tickFormatter={(val) => val.toFixed(1)}
+              domain={[85, 100]}
+              tickFormatter={(val) => val.toFixed(0) + 's'}
               reversed={true}
             />
-            <Tooltip content={<CustomTooltip />} />
-            <Legend wrapperStyle={{ fontSize: '12px', color: '#67676D' }} />
-            <Line type="monotone" dataKey="VER" stroke="#0600ef" strokeWidth={2} dot={false} activeDot={{ r: 6 }} />
-            <Line type="monotone" dataKey="LEC" stroke="#dc0000" strokeWidth={2} dot={false} activeDot={{ r: 6 }} />
-            <Line type="monotone" dataKey="NOR" stroke="#FF8000" strokeWidth={2} dot={false} activeDot={{ r: 6 }} />
+            {!isEmpty && <Tooltip content={<CustomTooltip />} />}
+            
+            {isEmpty ? (
+              <>
+                <Line type="monotone" dataKey="ghost1" stroke="#38383F" strokeWidth={1} dot={false} opacity={0.2} />
+                <Line type="monotone" dataKey="ghost2" stroke="#38383F" strokeWidth={1} dot={false} opacity={0.2} />
+                <Line type="monotone" dataKey="ghost3" stroke="#38383F" strokeWidth={1} dot={false} opacity={0.2} />
+              </>
+            ) : (
+              drivers.filter(d => selectedDrivers.includes(d.id)).map(d => (
+                <Line 
+                  key={d.id}
+                  type="monotone" 
+                  dataKey={d.id} 
+                  stroke={d.color} 
+                  strokeWidth={2} 
+                  dot={false} 
+                  activeDot={{ r: 6 }} 
+                />
+              ))
+            )}
           </LineChart>
         </ResponsiveContainer>
       </div>

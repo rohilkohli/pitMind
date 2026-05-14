@@ -151,8 +151,6 @@ export const HealthConsole: React.FC<HealthConsoleProps> = ({ onRefresh }) => {
       const response = await fetch(`${baseUrl}/api/v1/metrics/health`);
       if (response.ok) {
         const data = await response.json();
-        // Map backend response to frontend snapshot
-        // Backend keys match frontend keys now
         setHealth(data);
       }
     } catch (error) {
@@ -171,16 +169,6 @@ export const HealthConsole: React.FC<HealthConsoleProps> = ({ onRefresh }) => {
   const handleRefresh = () => {
     fetchHealth();
     onRefresh?.();
-  };
-
-  const toggleExpanded = (name: string) => {
-    const newExpanded = new Set(expandedMetrics);
-    if (newExpanded.has(name)) {
-      newExpanded.delete(name);
-    } else {
-      newExpanded.add(name);
-    }
-    setExpandedMetrics(newExpanded);
   };
 
   const metrics = [
@@ -202,146 +190,117 @@ export const HealthConsole: React.FC<HealthConsoleProps> = ({ onRefresh }) => {
     ? 'warning'
     : 'healthy';
 
+  const getLatencyColor = (latency: number) => {
+    if (latency < 200) return 'text-[#39B54A]';
+    if (latency < 500) return 'text-[#FFC906]';
+    return 'text-[#E10600]';
+  };
+
   return (
-    <Card className="border-f1-border bg-f1-black p-6">
+    <Card className="border-f1-border bg-[#1F1F27] p-6">
       {/* Header */}
-      <div className="flex items-center justify-between mb-8">
-        <div className="flex items-center gap-4">
-          <Activity className="w-6 h-6 text-f1-red" />
-          <div>
-            <h3 className="text-2xl font-display font-black text-f1-white uppercase tracking-widest">System Health</h3>
-            <p className="text-xs text-f1-muted mt-2 font-bold uppercase tracking-widest">Real-time observability and diagnostics</p>
-          </div>
+      <div className="flex items-center justify-between mb-6 border-b border-f1-red pb-4">
+        <div className="flex items-center gap-3">
+          <div className="w-3 h-3 rounded-full bg-[#39B54A] animate-pulse-dot" />
+          <h3 className="text-[24px] font-display font-extrabold text-white uppercase tracking-tight">
+            {getStatusLabel(overallStatus)} - {healthyCount}/{metrics.length} SYSTEMS
+          </h3>
         </div>
 
         <button
           onClick={handleRefresh}
           disabled={isRefreshing}
-          className={`p-3 border border-f1-border bg-f1-dark hover:border-f1-red/40 transition-all duration-200 ${
-            isRefreshing ? 'opacity-60 cursor-not-allowed' : ''
-          }`}
+          className="p-2 transition-all duration-200"
         >
           <RotateCcw className={`w-5 h-5 text-f1-red ${isRefreshing ? 'animate-spin' : ''}`} />
         </button>
       </div>
 
-      {/* Overall status */}
-      <div className={`mb-8 p-5 border-2 transition-all duration-200 ${getStatusColor(overallStatus)}`}>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            {getStatusIcon(overallStatus)}
-            <span className="font-display font-black text-f1-white text-lg uppercase tracking-widest">
-              {getStatusLabel(overallStatus)} · {healthyCount}/{metrics.length} Systems
-            </span>
-          </div>
-          <div className="text-sm font-mono text-f1-muted font-bold">Last: {MOCK_HEALTH.api.lastUpdated}</div>
-        </div>
-      </div>
-
       {/* Metrics grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8 animate-fade-in">
-        {metrics.map((metric, idx) => (
+      <div className="grid grid-cols-2 gap-3 mb-8">
+        {metrics.filter(m => m).map((metric, idx) => (
           <div
             key={idx}
-            onClick={() => toggleExpanded(metric.name)}
-            className={`cursor-pointer p-5 border-2 transition-all duration-200 ${getStatusColor(metric.status)}`}
+            className="p-3 border border-[#38383F] bg-[#2D2D35] relative overflow-hidden"
           >
-            <div className="flex items-start justify-between mb-3">
-              <h4 className="text-xs font-black text-f1-muted uppercase tracking-widest">{metric.name}</h4>
-              {getStatusIcon(metric.status)}
-            </div>
-
-            <div className="mb-3">
-              <div className="text-3xl font-black text-f1-red">
+            <h4 className="text-[10px] font-bold text-[#67676D] uppercase tracking-wider mb-1">{metric.name || 'System Metric'}</h4>
+            <div className="text-[22px] font-display font-bold text-white leading-none mb-2">
+              <span className={metric.name?.toLowerCase()?.includes('latency') ? getLatencyColor(Number(metric.value)) : ''}>
                 {metric.value}
-                {metric.unit && <span className="text-xs text-f1-muted ml-2">{metric.unit}</span>}
-              </div>
+              </span>
+              {metric.unit && <span className="text-[10px] text-[#67676D] ml-1 uppercase">{metric.unit}</span>}
             </div>
-
-            {metric.threshold && (
-              <div className="text-xs text-f1-muted font-semibold">
-                Threshold: {metric.threshold}
-                {metric.unit}
-              </div>
-            )}
-
-            {metric.lastUpdated && (
-              <div className="text-xs text-f1-muted mt-3 font-semibold">{metric.lastUpdated}</div>
-            )}
+            
+            {/* Threshold indicator */}
+            <div className="absolute bottom-0 left-0 w-full h-[3px] bg-[#38383F]">
+              {metric.threshold && (
+                <div 
+                  className={`h-full ${metric.status === 'healthy' ? 'bg-[#39B54A]' : metric.status === 'warning' ? 'bg-[#FFC906]' : 'bg-[#E10600]'}`}
+                  style={{ width: `${Math.min(100, (Number(metric.value) / Number(metric.threshold)) * 100)}%` }}
+                />
+              )}
+            </div>
+            
+            <div className="text-[9px] text-[#67676D] font-medium uppercase mt-1">
+              {metric.lastUpdated?.replace(/seconds? ago/, 's ago').replace(/minutes? ago/, 'm ago').replace('Just now', '0s ago')}
+            </div>
           </div>
         ))}
       </div>
 
-      {/* Performance indicators */}
-      <div className="p-5 border border-f1-border bg-f1-dark">
-        <h4 className="text-base font-black text-f1-white mb-5 flex items-center gap-3 uppercase tracking-widest">
-          <Gauge className="w-5 h-5 text-f1-red" />
-          Performance Timeline
+      {/* Performance Timeline */}
+      <div className="space-y-6">
+        <h4 className="text-[14px] font-display font-extrabold text-white uppercase tracking-wider border-b border-[#38383F] pb-2 mb-4">
+          PERFORMANCE TIMELINE
         </h4>
 
-        <div className="space-y-5">
-          {/* API Latency Chart */}
-          <div>
-            <div className="flex justify-between items-center mb-2">
-              <span className="text-xs font-bold text-f1-muted uppercase tracking-widest">API Latency (ms)</span>
-              <span className="text-sm font-mono text-f1-red font-black">142ms</span>
+        <div className="space-y-4">
+          {/* API Latency */}
+          <div className="group">
+            <div className="flex justify-between items-end mb-1">
+              <span className="text-[11px] font-semibold text-[#67676D] uppercase min-w-[180px]">API Latency</span>
+              <span className={`text-[12px] font-mono font-bold ${getLatencyColor(Number(health.latency?.value || 0))}`}>
+                {health.latency?.value || 0}ms
+              </span>
             </div>
-            <div className="h-2 bg-f1-border overflow-hidden">
+            <div className="relative h-[4px] bg-[#2D2D35] w-full">
               <div
-                className="h-full bg-f1-red transition-all duration-500"
-                style={{ width: '28%' }}
+                className={`h-full transition-all duration-600 ease-out ${Number(health.latency?.value || 0) < 200 ? 'bg-[#39B54A]' : Number(health.latency?.value || 0) < 500 ? 'bg-[#FFC906]' : 'bg-[#E10600]'}`}
+                style={{ width: `${Math.min(100, (Number(health.latency?.value || 0) / 500) * 100)}%` }}
               />
+              <div className="absolute top-0 bottom-0 w-[1px] bg-white/30" style={{ left: '40%' }} title="Threshold: 200ms" />
             </div>
-            <div className="text-xs text-f1-muted mt-2 font-semibold">500ms threshold</div>
           </div>
 
           {/* Data Quality */}
-          <div>
-            <div className="flex justify-between items-center mb-2">
-              <span className="text-xs font-bold text-f1-muted uppercase tracking-widest">Data Quality Score</span>
-              <span className="text-sm font-mono text-f1-red font-black">96.8%</span>
+          <div className="group">
+            <div className="flex justify-between items-end mb-1">
+              <span className="text-[11px] font-semibold text-[#67676D] uppercase min-w-[180px]">Data Quality Score</span>
+              <span className="text-[12px] font-mono font-bold text-white">{health.dataQuality?.value || 0}%</span>
             </div>
-            <div className="h-2 bg-f1-border overflow-hidden">
+            <div className="relative h-[4px] bg-[#2D2D35] w-full">
               <div
-                className="h-full bg-inter transition-all duration-500"
-                style={{ width: '96.8%' }}
+                className="h-full bg-[#39B54A] transition-all duration-600 ease-out"
+                style={{ width: `${health.dataQuality?.value || 0}%` }}
               />
+              <div className="absolute top-0 bottom-0 w-[1px] bg-white/30" style={{ left: '90%' }} title="Threshold: 90%" />
             </div>
-            <div className="text-xs text-f1-muted mt-2 font-semibold">90% threshold</div>
           </div>
 
           {/* Error Rate */}
-          <div>
-            <div className="flex justify-between items-center mb-2">
-              <span className="text-xs font-bold text-f1-muted uppercase tracking-widest">Error Rate</span>
-              <span className="text-sm font-mono text-f1-red font-black">0.3%</span>
+          <div className="group">
+            <div className="flex justify-between items-end mb-1">
+              <span className="text-[11px] font-semibold text-[#67676D] uppercase min-w-[180px]">Error Rate</span>
+              <span className="text-[12px] font-mono font-bold text-white">{health.errorRate?.value || 0}%</span>
             </div>
-            <div className="h-2 bg-f1-border overflow-hidden">
-              <div className="h-full bg-inter transition-all duration-500" style={{ width: '15%' }} />
+            <div className="relative h-[4px] bg-[#2D2D35] w-full">
+              <div
+                className="h-full bg-[#39B54A] transition-all duration-600 ease-out"
+                style={{ width: `${(Number(health.errorRate?.value || 0) / 2) * 100}%` }}
+              />
+              <div className="absolute top-0 bottom-0 w-[1px] bg-white/30" style={{ left: '50%' }} title="Threshold: 1.0%" />
             </div>
-            <div className="text-xs text-f1-muted mt-2 font-semibold">2% threshold</div>
           </div>
-        </div>
-      </div>
-
-      {/* System info */}
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-8">
-        <div className="p-4 border border-f1-border bg-f1-dark transition-all duration-200 hover:border-f1-red/30">
-          <div className="text-xs text-f1-muted mb-2 font-bold uppercase tracking-widest">Strategy Engine</div>
-          <div className="text-lg font-black text-f1-red">Granite v1.2</div>
-          <div className="text-xs text-f1-muted mt-2 font-semibold">IBM Watsonx</div>
-        </div>
-
-        <div className="p-4 border border-f1-border bg-f1-dark transition-all duration-200 hover:border-f1-red/30">
-          <div className="text-xs text-f1-muted mb-2 font-bold uppercase tracking-widest">Session</div>
-          <div className="text-lg font-black text-f1-red">Monza 2026</div>
-          <div className="text-xs text-f1-muted mt-2 font-semibold">Lap 27 / 51</div>
-        </div>
-
-        <div className="p-4 border border-f1-border bg-f1-dark transition-all duration-200 hover:border-f1-red/30">
-          <div className="text-xs text-f1-muted mb-2 font-bold uppercase tracking-widest">Feed Status</div>
-          <div className="text-lg font-black text-inter">Live</div>
-          <div className="text-xs text-inter mt-2 font-semibold">Connected</div>
         </div>
       </div>
     </Card>

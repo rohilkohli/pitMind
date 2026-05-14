@@ -49,6 +49,26 @@ export type StrategyRecommendation = {
   confidence_decomposition?: ConfidenceDecomposition;
 };
 
+export type StrategyChecklist = {
+  pit_crew_ready: boolean;
+  tyre_set_confirmed: boolean;
+  radio_call_prepared: boolean;
+};
+
+export type StrategyCommitRequest = {
+  recommendation: StrategyRecommendation;
+  checklist: StrategyChecklist;
+  execution_brief: string;
+  session_context?: Record<string, unknown>;
+};
+
+export type StrategyCommitResponse = {
+  audit_id: string;
+  status: string;
+  message: string;
+  committed_at: string;
+};
+
 export interface ChatResponse {
   reply: string;
 }
@@ -112,6 +132,19 @@ export async function postLoadFastF1(body: FastF1Request, token?: string): Promi
   if (token) headers["Authorization"] = `Bearer ${token}`;
 
   const res = await fetch(`${BASE}/api/v1/strategy/fastf1/load`, {
+    method: "POST",
+    headers,
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+
+export async function postCommitStrategy(body: StrategyCommitRequest, token?: string): Promise<StrategyCommitResponse> {
+  const headers: Record<string, string> = { "Content-Type": "application/json" };
+  if (token) headers["Authorization"] = `Bearer ${token}`;
+
+  const res = await fetch(`${BASE}/api/v1/strategy/commit`, {
     method: "POST",
     headers,
     body: JSON.stringify(body),

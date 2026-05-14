@@ -93,19 +93,23 @@ export const StreamHealthMonitor: React.FC<StreamHealthMonitorProps> = ({
   };
 
   return (
-    <div className={`rounded-xl border-2 p-4 ${getStatusColor(state.status)}`}>
-      <div className="flex items-center justify-between mb-3">
+    <div className={`rounded-sm border p-2 ${showMetrics ? 'p-4 border-2 rounded-xl' : 'p-2 border-1'} ${getStatusColor(state.status)} transition-all duration-300`}>
+      <div className={`flex items-center justify-between ${showMetrics ? 'mb-3' : 'mb-0'} gap-4`}>
         <div className="flex items-center gap-2">
-          {getStatusIcon(state.status)}
-          <span className="font-semibold text-sm">{getStatusLabel(state.status)}</span>
+          <div className={`${showMetrics ? '' : 'scale-75'}`}>
+            {getStatusIcon(state.status)}
+          </div>
+          <span className={`font-black uppercase tracking-widest ${showMetrics ? 'text-sm' : 'text-[10px]'}`}>
+            {getStatusLabel(state.status)}
+          </span>
         </div>
 
         {(state.status === 'disconnected' || state.status === 'error') && (
           <button
             onClick={reconnect}
-            className="px-2 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-xs font-medium transition flex items-center gap-1"
+            className="px-2 py-1 rounded-sm bg-white/10 hover:bg-white/20 text-[9px] font-black uppercase transition flex items-center gap-1"
           >
-            <RotateCcw className="w-3 h-3" />
+            <RotateCcw className="w-2.5 h-2.5" />
             Reconnect
           </button>
         )}

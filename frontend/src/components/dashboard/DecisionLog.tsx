@@ -96,144 +96,99 @@ export const DecisionLog: React.FC<DecisionLogProps> = ({
     }
   };
 
-  const getConfidenceColor = (confidence: number) => {
-    if (confidence >= 0.8) return 'bg-inter/20 text-inter border-inter/30';
-    if (confidence >= 0.65) return 'bg-medium/20 text-medium border-medium/30';
-    return 'bg-f1-red/20 text-f1-red border-f1-red/30';
+  const getConfidenceBadgeStyle = (confidence: number) => {
+    const pct = confidence * 100;
+    if (pct >= 70) return 'background: #1A3C1A; color: #39B54A; border: 1px solid #39B54A';
+    if (pct >= 40) return 'background: #3C3000; color: #FFC906; border: 1px solid #FFC906';
+    return 'background: #3C0000; color: #E10600; border: 1px solid #E10600';
   };
 
+  const avgConfidence = decisions.length > 0 
+    ? (decisions.reduce((sum, d) => sum + d.confidence, 0) / decisions.length) * 100 
+    : 0;
+
   return (
-    <Card className="border-f1-border bg-f1-black">
+    <Card className="border-[#38383F] bg-[#1F1F27] rounded-none shadow-2xl">
       <div className="p-6">
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center justify-between mb-8 border-b border-f1-red pb-4">
           <div>
-            <h3 className="text-lg font-bold text-f1-white flex items-center gap-2 uppercase tracking-widest">
+            <h3 className="text-[18px] font-display font-extrabold text-white flex items-center gap-2 uppercase tracking-tight">
               <FileText className="w-5 h-5 text-f1-red" />
-              Decision Log
+              DECISION LOG
             </h3>
-            <p className="text-xs text-f1-muted mt-1 uppercase tracking-widest">All strategy calls and outcomes from this session</p>
           </div>
           <button
             onClick={onExportSession}
-            className="flex items-center gap-2 px-3 py-2 border border-f1-border bg-f1-dark text-f1-white text-sm font-bold uppercase tracking-widest hover:bg-f1-elevated transition"
+            className="flex items-center gap-2 px-4 py-2 border border-[#38383F] bg-[#2D2D35] text-white text-[11px] font-bold uppercase tracking-[0.2em] hover:bg-[#38383F] transition-all"
           >
             <Download className="w-4 h-4" />
-            Export
+            EXPORT
           </button>
         </div>
 
         <div className="space-y-4">
-          {decisions.map((decision, index) => (
+          {decisions.map((decision) => (
             <div
               key={decision.id}
-              className={`relative pb-6 ${index < decisions.length - 1 ? 'border-b border-f1-border' : ''}`}
+              className="p-4 bg-[#1F1F27] border-l-[4px] border-f1-red border border-[#38383F] transition-all hover:bg-[#2D2D35]"
             >
-              <div className="absolute left-0 top-1 w-4 h-4 bg-f1-red border border-f1-red" />
-
               <div
-                className="ml-8 cursor-pointer"
+                className="cursor-pointer"
                 onClick={() => setExpandedId(expandedId === decision.id ? null : decision.id)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    setExpandedId(expandedId === decision.id ? null : decision.id);
-                  }
-                }}
-                role="button"
-                tabIndex={0}
-                aria-expanded={expandedId === decision.id}
               >
-                <div className="flex items-start justify-between gap-3 mb-2">
+                <div className="flex items-start justify-between gap-4 mb-3">
                   <div className="flex-1">
-                    <h4 className="font-bold text-f1-white uppercase tracking-widest">{decision.action}</h4>
-                    <div className="flex items-center gap-2 mt-1 text-xs text-f1-muted uppercase tracking-widest">
-                      <span>Lap {decision.lap}</span>
-                      <span>•</span>
-                      <span>{decision.timestamp}</span>
+                    <h4 className="text-[16px] font-display font-extrabold text-white uppercase tracking-tight">
+                      {decision.action}
+                    </h4>
+                    <div className="flex items-center gap-2 mt-1">
+                      <span className="text-[10px] font-bold text-[#FFC906] uppercase tracking-wider">
+                        {decision.confidence * 100 < 40 ? 'RISKY CALL' : decision.confidence * 100 < 70 ? 'BORDERLINE CALL' : 'OPTIMAL CALL'}
+                      </span>
+                      <span className="text-[10px] text-[#67676D] font-mono">
+                        LAP {decision.lap} • {decision.timestamp}
+                      </span>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-2">
-                    {decision.approved && <CheckCircle className="w-4 h-4 text-inter" />}
-                    <div className={`px-2.5 py-1 text-[11px] font-bold border uppercase tracking-widest ${getConfidenceColor(decision.confidence)}`}>
-                      {(decision.confidence * 100).toFixed(0)}%
-                    </div>
+                  <div 
+                    className="px-3 py-1 text-[12px] font-display font-bold uppercase"
+                    style={{ cssText: getConfidenceBadgeStyle(decision.confidence) }}
+                  >
+                    {(decision.confidence * 100).toFixed(0)}%
                   </div>
                 </div>
 
-                <p className="text-sm text-f1-secondary mb-2">{decision.reasoning}</p>
+                <p className="text-[13px] font-body text-[#C4C4C4] leading-relaxed mb-3">
+                  {decision.reasoning}
+                </p>
 
-                {decision.annotation && (
-                  <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-f1-dark border border-f1-border text-[11px] text-f1-red font-bold uppercase tracking-widest">
-                    <MessageSquare className="w-3 h-3" />
-                    {decision.annotation}
-                  </div>
-                )}
-
-                <div className="text-xs text-f1-muted mt-2 uppercase tracking-widest">
-                  {expandedId === decision.id ? '▼' : '▶'} Details
+                <div className="flex items-center justify-between">
+                  <button 
+                    className="text-[11px] font-semibold text-f1-red uppercase tracking-wider hover:underline"
+                  >
+                    {expandedId === decision.id ? 'HIDE DETAILS' : 'VIEW DETAILS'}
+                  </button>
+                  {decision.annotation && (
+                    <div className="flex items-center gap-1.5 text-[10px] text-[#67676D] font-bold uppercase">
+                      <MessageSquare className="w-3 h-3" />
+                      {decision.annotation.length > 20 ? decision.annotation.slice(0, 20) + '...' : decision.annotation}
+                    </div>
+                  )}
                 </div>
               </div>
 
               {expandedId === decision.id && (
-                <div className="ml-8 mt-4 space-y-4 p-4 border border-f1-border bg-f1-dark">
+                <div className="mt-4 pt-4 border-t border-[#38383F] space-y-4">
                   {decision.approved && (
-                    <div className="flex items-center gap-2 text-xs text-inter uppercase tracking-widest">
+                    <div className="flex items-center gap-2 text-[11px] font-bold text-[#39B54A] uppercase tracking-wider">
                       <CheckCircle className="w-4 h-4" />
                       <span>Approved by {decision.approvedBy}</span>
                     </div>
                   )}
-
-                  {decision.outcome && (
-                    <div className="p-3 border border-f1-border bg-f1-black">
-                      <h5 className="text-xs font-bold text-f1-white mb-2 uppercase tracking-widest">Outcome</h5>
-                      <div className="space-y-1 text-xs text-f1-secondary">
-                        <div className="flex justify-between">
-                          <span className="text-f1-muted uppercase tracking-widest">Position</span>
-                          <span className="font-mono">{decision.outcome.resultPosition}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-f1-muted uppercase tracking-widest">Gap to Leader</span>
-                          <span className="font-mono">{decision.outcome.resultGap > 0 ? '+' : ''}{decision.outcome.resultGap.toFixed(1)}s</span>
-                        </div>
-                        <div className="mt-2 text-f1-muted">{decision.outcome.notes}</div>
-                      </div>
-                    </div>
-                  )}
-
-                  <div>
-                    <label className="block text-xs font-bold text-f1-white mb-2 uppercase tracking-widest">Engineer Notes</label>
-                    {decision.annotation ? (
-                      <div className="p-3 bg-f1-black border border-f1-border text-xs text-f1-secondary">{decision.annotation}</div>
-                    ) : (
-                      <div className="space-y-2">
-                        <textarea
-                          value={annotationDraft[decision.id] || ''}
-                          onChange={(e) =>
-                            setAnnotationDraft((prev) => ({
-                              ...prev,
-                              [decision.id]: e.target.value,
-                            }))
-                          }
-                          placeholder="Add notes about this decision..."
-                          className="w-full h-20 px-3 py-2 bg-f1-black border border-f1-border text-xs text-f1-white placeholder:text-f1-muted focus:outline-none focus:border-f1-red resize-none"
-                        />
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleAddAnnotation(decision.id);
-                          }}
-                          className="px-3 py-1.5 bg-f1-red text-white text-xs font-bold uppercase tracking-widest hover:bg-f1-red-dark transition"
-                        >
-                          Save Note
-                        </button>
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="p-3 border border-f1-border bg-f1-black">
-                    <h5 className="text-xs font-bold text-f1-white mb-2 uppercase tracking-widest">Full Reasoning</h5>
-                    <p className="text-xs text-f1-secondary">{decision.reasoning}</p>
+                  <div className="bg-[#15151E] p-3 border border-[#38383F]">
+                    <h5 className="text-[10px] font-bold text-[#67676D] uppercase mb-2">Detailed Reasoning</h5>
+                    <p className="text-[12px] text-[#C4C4C4] leading-relaxed">{decision.reasoning}</p>
                   </div>
                 </div>
               )}
@@ -241,20 +196,22 @@ export const DecisionLog: React.FC<DecisionLogProps> = ({
           ))}
         </div>
 
-        <div className="mt-8 pt-6 border-t border-f1-border grid grid-cols-3 gap-4">
-          <div className="text-center">
-            <div className="text-xs text-f1-muted mb-1 uppercase tracking-widest">Total Calls</div>
-            <div className="text-2xl font-display font-black text-f1-white">{decisions.length}</div>
+        <div className="mt-8 pt-6 border-t border-[#38383F] grid grid-cols-3 divide-x divide-[#38383F]">
+          <div className="text-center px-4">
+            <div className="text-[28px] font-display font-extrabold text-white leading-none mb-1">{decisions.length}</div>
+            <div className="text-[11px] font-semibold text-[#67676D] uppercase tracking-wider">Total Calls</div>
           </div>
-          <div className="text-center">
-            <div className="text-xs text-f1-muted mb-1 uppercase tracking-widest">Approved</div>
-            <div className="text-2xl font-display font-black text-inter">{decisions.filter((d) => d.approved).length}</div>
-          </div>
-          <div className="text-center">
-            <div className="text-xs text-f1-muted mb-1 uppercase tracking-widest">Avg Confidence</div>
-            <div className="text-2xl font-display font-black text-f1-red">
-              {((decisions.reduce((sum, d) => sum + d.confidence, 0) / decisions.length) * 100).toFixed(0)}%
+          <div className="text-center px-4">
+            <div className="text-[28px] font-display font-extrabold text-[#39B54A] leading-none mb-1">
+              {decisions.filter((d) => d.approved).length}
             </div>
+            <div className="text-[11px] font-semibold text-[#67676D] uppercase tracking-wider">Approved</div>
+          </div>
+          <div className="text-center px-4">
+            <div className="text-[28px] font-display font-extrabold text-white leading-none mb-1">
+              {avgConfidence.toFixed(0)}%
+            </div>
+            <div className="text-[11px] font-semibold text-[#67676D] uppercase tracking-wider">Avg Confidence</div>
           </div>
         </div>
       </div>

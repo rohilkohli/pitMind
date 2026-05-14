@@ -1,6 +1,6 @@
 import { initializeApp, type FirebaseApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider, type Auth } from "firebase/auth";
-import { getDatabase, type Database } from "firebase/database";
+import { forceWebSockets, getDatabase, type Database } from "firebase/database";
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY || import.meta.env.VITE_FIREBASE_WEB_API_KEY,
@@ -23,6 +23,7 @@ let database: Database | null = null;
 if (hasFirebaseConfig()) {
   app = initializeApp(firebaseConfig);
   auth = getAuth(app);
+  forceWebSockets();
   database = getDatabase(app);
 }
 

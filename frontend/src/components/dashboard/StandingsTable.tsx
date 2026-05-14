@@ -2,7 +2,17 @@ import type { DriverState } from "../../hooks/useFirebaseRaceState";
 
 export function StandingsTable({ standings }: { standings: DriverState[] | undefined }) {
   if (!standings || standings.length === 0) {
-    return <div className="rounded-2xl border border-white/10 bg-white/5 p-4 text-sm text-f1-muted">No standings data available.</div>;
+    return (
+      <div className="bg-f1-black p-4 space-y-2">
+        <div className="flex items-center gap-2 mb-4">
+          <div className="w-2 h-2 rounded-full bg-amber-500 animate-pulse-dot" />
+          <span className="text-[10px] font-black uppercase tracking-[0.2em] text-amber-500">Waiting for Data</span>
+        </div>
+        {[...Array(5)].map((_, i) => (
+          <div key={i} className="skeleton-row" />
+        ))}
+      </div>
+    );
   }
 
   // Helper to map tyre compound to a CSS variable class (defined in tailwind config or index.css)
@@ -26,7 +36,7 @@ export function StandingsTable({ standings }: { standings: DriverState[] | undef
         </div>
       </div>
       
-      <div className="flex-1 overflow-y-auto px-2 py-2">
+      <div className="flex-1 overflow-y-auto px-2 py-2 scrollbar-thin scrollbar-thumb-f1-red/20">
         <table className="w-full text-left text-sm">
           <thead className="sr-only">
             <tr>

@@ -97,22 +97,28 @@ const getEventIcon = (type: RaceEvent['type']) => {
   }
 };
 
-const getEventColor = (type: RaceEvent['type'], severity?: string) => {
-  if (severity === 'critical') return 'border-l-4 border-l-f1-red bg-f1-dark';
-  if (severity === 'warning') return 'border-l-4 border-l-medium bg-f1-dark';
-  
+const getDriverColor = (driver?: string) => {
+  if (!driver) return '#67676D';
+  const d = driver.toUpperCase();
+  if (d.includes('VER')) return '#3671C6';
+  if (d.includes('LEC')) return '#E8002D';
+  if (d.includes('HAM')) return '#27F4D2';
+  if (d.includes('NOR')) return '#FF8000';
+  return '#E10600';
+};
+
+const getEventBorderColor = (type: RaceEvent['type']) => {
   switch (type) {
+    case 'incident':
     case 'safety_car':
     case 'vsc':
-      return 'border-l-4 border-l-f1-red bg-f1-dark';
-    case 'incident':
-      return 'border-l-4 border-l-medium bg-f1-dark';
+      return '#E10600'; // red
+    case 'flag':
+      return '#FFC906'; // yellow
     case 'pit_stop':
-      return 'border-l-4 border-l-inter bg-f1-dark';
-    case 'weather':
-      return 'border-l-4 border-l-inter bg-f1-dark';
+      return '#3671C6'; // blue
     default:
-      return 'border-l-4 border-l-f1-border bg-f1-dark';
+      return '#38383F';
   }
 };
 
@@ -129,94 +135,74 @@ export const EventTimeline: React.FC<EventTimelineProps> = ({
 
   if (events.length === 0) {
     return (
-      <Card className="p-6 text-center text-f1-muted">
-        <Clock className="w-8 h-8 mx-auto mb-2 opacity-50" />
-        <p className="font-bold uppercase tracking-widest">No race events recorded yet</p>
-      </Card>
+      <div className="p-8 text-center bg-[#1F1F27] border border-[#38383F]">
+        <Clock className="w-12 h-12 mx-auto mb-4 text-[#67676D] opacity-20" />
+        <p className="text-[14px] font-display font-bold text-[#67676D] uppercase tracking-widest">Awaiting Race Events</p>
+      </div>
     );
   }
 
   return (
-    <Card className="p-6">
-      <h3 className="f1-section-title text-xl mb-8">Race Timeline</h3>
-      
-      {/* Timeline container */}
-      <div className="space-y-4 max-h-96 overflow-y-auto">
-        {events.map((event, index) => (
+    <div className="flex flex-col h-full bg-[#15151E]">
+      <div className="flex-1 space-y-3 overflow-y-auto p-4 scrollbar-thin">
+        {events.map((event) => (
           <div
             key={event.id}
-            className="flex gap-4 items-start"
             onClick={() => handleEventClick(event)}
+            className={`flex flex-col p-3 cursor-pointer transition-all bg-[#1F1F27] border-l-[4px] border-[#38383F] ${
+              selectedEvent === event.id ? 'ring-1 ring-f1-red' : 'hover:bg-[#2D2D35]'
+            }`}
+            style={{ borderLeftColor: getEventBorderColor(event.type) }}
           >
-            {/* Timeline connector */}
-            <div className="flex flex-col items-center">
-                <div className="w-10 h-10 bg-f1-dark border border-f1-border flex items-center justify-center flex-shrink-0">
-                {getEventIcon(event.type)}
+            <div className="flex justify-between items-start mb-2">
+              <div className="flex flex-wrap items-center gap-2">
+                <h4 className="text-[15px] font-display font-bold text-white uppercase tracking-tight">{event.title}</h4>
+                {event.driver && (
+                  <span 
+                    className="text-[10px] font-bold px-2 py-0.5 text-white uppercase tracking-wider"
+                    style={{ backgroundColor: getDriverColor(event.driver) }}
+                  >
+                    {event.driver}
+                  </span>
+                )}
               </div>
-              {index < events.length - 1 && (
-                  <div className="w-0.5 h-12 bg-f1-border mt-2" />
-              )}
-            </div>
-
-            {/* Event content */}
-            <div
-              className={`flex-1 p-4 cursor-pointer transition-all ${getEventColor(
-                event.type,
-                event.severity
-              )} ${
-                selectedEvent === event.id
-                  ? 'ring-1 ring-f1-red'
-                  : 'hover:bg-f1-elevated'
-              }`}
-            >
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-1">
-                    <h4 className="font-bold text-f1-white uppercase tracking-widest">{event.title}</h4>
-                    {event.driver && (
-                      <span className="text-xs font-bold px-2 py-1 bg-f1-border text-f1-white uppercase tracking-widest">
-                        {event.driver}
-                      </span>
-                    )}
-                  </div>
-                  <p className="text-sm text-f1-secondary mb-2">{event.description}</p>
-                  <div className="flex items-center gap-3 text-xs text-f1-muted uppercase tracking-widest">
-                    <span>Lap {event.lap}</span>
-                    <span>•</span>
-                    <span>{event.time}</span>
-                  </div>
-                </div>
+              <div className="text-[11px] font-mono text-[#67676D] uppercase text-right leading-none">
+                <div>LAP {event.lap}</div>
+                <div className="mt-1">{event.time}</div>
               </div>
             </div>
+            <p className="text-[12px] font-normal text-[#C4C4C4] leading-relaxed font-body">
+              {event.description}
+            </p>
           </div>
         ))}
       </div>
 
-      {/* Summary stats */}
-      <div className="mt-6 pt-4 border-t border-f1-border grid grid-cols-4 gap-4">
-        <div className="text-center">
-          <div className="text-xs text-f1-muted mb-1 uppercase tracking-widest">Total Events</div>
-          <div className="text-lg font-display font-black text-f1-white">{events.length}</div>
+      {/* Footer Stat Pills */}
+      <div className="p-4 bg-[#15151E] border-t border-[#38383F] flex flex-wrap gap-2">
+        <div className="px-3 py-2 bg-[#2D2D35] flex items-center gap-2">
+          <span className="text-[11px] font-bold text-[#67676D] uppercase">Events</span>
+          <span className="text-[13px] font-display font-bold text-white">{events.length}</span>
         </div>
-        <div className="text-center">
-          <div className="text-xs text-f1-muted mb-1 uppercase tracking-widest">Critical</div>
-          <div className="text-lg font-display font-black text-f1-red">
+        <div className="px-3 py-2 bg-[#2D2D35] flex items-center gap-2">
+          <span className="text-[11px] font-bold text-[#67676D] uppercase">Critical</span>
+          <span className="text-[13px] font-display font-bold text-[#E10600]">
             {events.filter((e) => e.severity === 'critical').length}
-          </div>
+          </span>
         </div>
-        <div className="text-center">
-          <div className="text-xs text-f1-muted mb-1 uppercase tracking-widest">Pit Stops</div>
-          <div className="text-lg font-display font-black text-inter">
+        <div className="px-3 py-2 bg-[#2D2D35] flex items-center gap-2">
+          <span className="text-[11px] font-bold text-[#67676D] uppercase">Pit Stops</span>
+          <span className="text-[13px] font-display font-bold text-[#3671C6]">
             {events.filter((e) => e.type === 'pit_stop').length}
-          </div>
+          </span>
         </div>
-        <div className="text-center">
-          <div className="text-xs text-f1-muted mb-1 uppercase tracking-widest">Incidents</div>
-          <div className="text-lg font-display font-black text-medium">
+        <div className="px-3 py-2 bg-[#2D2D35] flex items-center gap-2">
+          <span className="text-[11px] font-bold text-[#67676D] uppercase">Incidents</span>
+          <span className="text-[13px] font-display font-bold text-[#FFC906]">
             {events.filter((e) => e.type === 'incident').length}
-          </div>
+          </span>
         </div>
       </div>
-    </Card>
+    </div>
   );
 };

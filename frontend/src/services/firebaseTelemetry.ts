@@ -1,5 +1,5 @@
 import { initializeApp, type FirebaseApp } from "firebase/app";
-import { getDatabase, onValue, ref, type Database } from "firebase/database";
+import { forceWebSockets, getDatabase, onValue, ref, type Database } from "firebase/database";
 
 let app: FirebaseApp | null = null;
 let db: Database | null = null;
@@ -14,6 +14,7 @@ export function initFirebaseFromEnv(): Database | null {
         apiKey,
         databaseURL: url,
       });
+      forceWebSockets();
       db = getDatabase(app);
     } catch {
       app = null;

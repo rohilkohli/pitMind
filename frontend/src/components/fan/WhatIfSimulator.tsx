@@ -1,5 +1,6 @@
 import { useState } from "react";
 import type { RaceState } from "../../hooks/useFirebaseRaceState";
+import { postFanPredict, type FanPredictRequest, type FanPredictResponse } from "../../services/api";
 import { Button } from "../ui/button";
 
 export function WhatIfSimulator({ raceState }: { raceState: RaceState | null }) {
@@ -16,23 +17,20 @@ export function WhatIfSimulator({ raceState }: { raceState: RaceState | null }) 
     setResult(null);
     
     try {
-      // For Fan Mode, we hit the open fan endpoint to simulate without Engineer credentials
-      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/v1/fan/predict`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ driver, action, predict_laps: laps })
-      });
+      const request: FanPredictRequest = {
+        driver,
+        action,
+        predict_laps: laps,
+      };
       
-      if (!res.ok) throw new Error("Simulation failed");
-      
-      const data = await res.json() as { narrative?: string };
-      setResult(data.narrative || `If ${driver} chooses to ${action}, they will likely emerge P${Math.floor(Math.random() * 5) + 1}.`);
-    } catch {
+      const response: FanPredictResponse = await postFanPredict(request);
+      setResult(response.narrative || `If ${driver} chooses to ${action}, they will likely emerge P${Math.floor(Math.random() * 5) + 1}.`);
+    } catch (error) {
+      console.error('Fan prediction failed:', error);
       // Fallback for demo if backend endpoint isn't fully ready
-      setTimeout(() => {
-        setResult(`Simulation complete: If ${driver} executes a ${action} strategy, they will emerge into clean air. Tyre deg will drop by 40% but they sacrifice track position.`);
-        setLoading(false);
-      }, 1000);
+      setResult(`Simulation complete: If ${driver} executes a ${action} strategy, they will emerge into clean air. Tyre deg will drop by 40% but they sacrifice track position.`);
+    } finally {
+      setLoading(false);
     }
   };
 

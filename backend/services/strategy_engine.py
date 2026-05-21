@@ -2,14 +2,32 @@
 
 from __future__ import annotations
 
+import logging
 from statistics import mean
+from typing import Optional
 
 try:
+    from ..config import get_settings
     from ..models.race_state import LapPoint, TelemetryPayload
     from ..models.strategy import StrategyRecommendation, StrategyScores
+    from .cache_manager import (
+        generate_heuristic_cache_key,
+        generate_strategy_cache_key,
+        get_cached_strategy,
+        set_cached_strategy,
+    )
 except ImportError:
+    from config import get_settings
     from models.race_state import LapPoint, TelemetryPayload
     from models.strategy import StrategyRecommendation, StrategyScores
+    from services.cache_manager import (
+        generate_heuristic_cache_key,
+        generate_strategy_cache_key,
+        get_cached_strategy,
+        set_cached_strategy,
+    )
+
+logger = logging.getLogger(__name__)
 
 
 def _latest_wear(laps: list[LapPoint]) -> float:
@@ -35,7 +53,39 @@ def _gap_volatility(laps: list[LapPoint]) -> float:
     return min(1.0, var**0.5 / max(0.5, abs(m) + 0.5))
 
 
-def predict_strategy(payload: TelemetryPayload) -> tuple[StrategyScores, list[str], dict]:
+async def predict_strategy(
+    payload: TelemetryPayload,
+    session_id: Optional[str] = None,
+    bypass_cache: bool = False,
+) -> tuple[StrategyScores, list[str], dict]:
+    """
+    Predict strategy with caching support.
+    
+    Args:
+        payload: Telemetry payload
+        session_id: Optional session identifier for cache scoping
+        bypass_cache: If True, skip cache and force fresh computation
+        
+    Returns:
+        Tuple of (scores, reasons, metadata)
+    """
+    settings = get_settings()
+    
+    # Check cache first (unless bypassed or disabled)
+    if settings.cache_enabled and not bypass_cache:
+        cache_key = generate_heuristic_cache_key(payload, session_id)
+        cached_result = await get_cached_strategy(cache_key)
+        
+        if cached_result is not None:
+            logger.info(f"Cache HIT for heuristic scoring: {cache_key[:32]}...")
+            # Extract cached data
+            if isinstance(cached_result, dict) and "data" in cached_result:
+                data = cached_result["data"]
+                if isinstance(data, dict):
+                    scores = StrategyScores(**data["scores"])
+                    return scores, data["reasons"], data["meta"]
+    
+    # Cache miss or bypassed - compute fresh
     laps = sorted(payload.laps, key=lambda x: x.lap)
     wear = _latest_wear(laps)
     degradation = _lap_time_trend(laps)
@@ -96,11 +146,38 @@ def predict_strategy(payload: TelemetryPayload) -> tuple[StrategyScores, list[st
         overtake_risk=round(overtake_risk, 2),
         recommended_window_laps=(window_start, window_end),
     )
+    
+    # Cache the result
+    if settings.cache_enabled and not bypass_cache:
+        cache_key = generate_heuristic_cache_key(payload, session_id)
+        cache_data = {
+            "scores": scores.model_dump(),
+            "reasons": reasons,
+            "meta": meta,
+        }
+        await set_cached_strategy(cache_key, cache_data, ttl=settings.cache_ttl_strategy)
+        logger.info(f"Cached heuristic scoring: {cache_key[:32]}...")
+    
     return scores, reasons, meta
 
 
-def build_recommendation(payload: TelemetryPayload) -> StrategyRecommendation:
-    scores, reasons, meta = predict_strategy(payload)
+async def build_recommendation(
+    payload: TelemetryPayload,
+    session_id: Optional[str] = None,
+    bypass_cache: bool = False,
+) -> StrategyRecommendation:
+    """
+    Build strategy recommendation with caching support.
+    
+    Args:
+        payload: Telemetry payload
+        session_id: Optional session identifier for cache scoping
+        bypass_cache: If True, skip cache and force fresh computation
+        
+    Returns:
+        Complete strategy recommendation
+    """
+    scores, reasons, meta = await predict_strategy(payload, session_id, bypass_cache)
 
     pit_now = scores.pit_urgency >= 78
     action = "PIT THIS LAP" if pit_now else "STAY OUT — PREPARE WINDOW"

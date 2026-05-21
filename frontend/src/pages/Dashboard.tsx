@@ -2,7 +2,6 @@ import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { useFirebaseRaceState } from "../hooks/useFirebaseRaceState";
 import { useDashboardState } from "../hooks/useDashboardState";
 import { useRole } from "../contexts/RoleContext";
-import { KpiStrip } from "../components/dashboard/KpiStrip";
 import { StandingsTable } from "../components/dashboard/StandingsTable";
 import { StrategyTimeline } from "../components/dashboard/StrategyTimeline";
 import type { StrategyPanelCommitPayload } from "../components/dashboard/StrategyTimeline";
@@ -304,9 +303,16 @@ export function Dashboard() {
                         className="absolute inset-0 opacity-0 cursor-pointer z-10"
                         accept=".csv,.json"
                       />
-                      <button className="flex items-center gap-2 px-3 py-1.5 rounded-none border border-f1-red/30 bg-f1-red/5 text-[10px] text-f1-red font-black uppercase group-hover:bg-f1-red group-hover:text-white transition-all duration-300">
-                        <Upload className="w-3.5 h-3.5" />
-                        Ingest Data
+                      <button 
+                        disabled={isUploading}
+                        className="flex items-center gap-2 px-3 py-1.5 rounded-none border border-f1-red/30 bg-f1-red/5 text-[10px] text-f1-red font-black uppercase group-hover:bg-f1-red group-hover:text-white transition-all duration-300 disabled:opacity-50"
+                      >
+                        {isUploading ? (
+                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        ) : (
+                          <Upload className="w-3.5 h-3.5" />
+                        )}
+                        {isUploading ? "Ingesting..." : "Ingest Data"}
                       </button>
                     </div>
                   </div>

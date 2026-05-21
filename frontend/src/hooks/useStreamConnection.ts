@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
+import type { WebSocketMessage, WebSocketMessageType } from '../types/api';
 
 export type WebSocketStatus = 'connecting' | 'connected' | 'disconnected' | 'reconnecting' | 'error' | 'offline';
 
@@ -8,6 +9,7 @@ export interface StreamConnectionConfig {
   initialBackoffMs?: number;
   maxBackoffMs?: number;
   heartbeatIntervalMs?: number;
+  onMessage?: (message: WebSocketMessage) => void;
 }
 
 export interface StreamConnectionState {
@@ -116,16 +118,21 @@ export const useStreamConnection = (config: StreamConnectionConfig) => {
       ws.onmessage = (event) => {
         if (!isComponentMounted.current) return;
         try {
-          const message = JSON.parse(event.data);
+          const message = JSON.parse(event.data) as WebSocketMessage;
           
-          // Handle pong response
+          // Handle pong response for latency measurement
           if (message.type === 'pong' && message.timestamp) {
-            const latency = Date.now() - message.timestamp;
+            const latency = Date.now() - new Date(message.timestamp).getTime();
             setLatencyMeasurements((prev) => {
               const updated = [...prev, latency];
               // Keep only last 10 measurements
               return updated.slice(-10);
             });
+          }
+          
+          // Call user-provided message handler
+          if (config.onMessage) {
+            config.onMessage(message);
           }
         } catch (e) {
           console.error('[Stream] Failed to parse message:', e);
@@ -252,10 +259,15 @@ export const useStreamConnection = (config: StreamConnectionConfig) => {
     connect();
   }, [connect, disconnect]);
 
-  // Send message
-  const send = useCallback((data: unknown) => {
+  // Send typed message
+  const send = useCallback(<T = unknown>(type: WebSocketMessageType, data: T) => {
     if (wsRef.current?.readyState === WebSocket.OPEN) {
-      wsRef.current.send(JSON.stringify(data));
+      const message: WebSocketMessage<T> = {
+        type,
+        data,
+        timestamp: new Date().toISOString(),
+      };
+      wsRef.current.send(JSON.stringify(message));
       setTotalMessages((prev) => prev + 1);
     } else {
       console.warn('[Stream] WebSocket not connected');

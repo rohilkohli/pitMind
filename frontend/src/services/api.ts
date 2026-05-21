@@ -1,170 +1,289 @@
+/**
+ * API Service for PitMind Frontend
+ *
+ * This module provides type-safe API functions for interacting with the backend.
+ * All functions use proper TypeScript types from types/api.ts to ensure type safety.
+ *
+ * @module services/api
+ */
+
+import type {
+  TelemetryPayload,
+  StrategyRecommendation,
+  StrategyCommitRequest,
+  StrategyCommitResponse,
+  ChatMessage,
+  ChatRequest,
+  ChatResponse,
+  DebriefResponse,
+  FastF1Request,
+  DriverCompareRequest,
+  DriverCompareResponse,
+  FanPredictRequest,
+  FanPredictResponse,
+  FanStatusResponse,
+  AuditHistoryResponse,
+  AuditHistoryParams,
+} from '../types/api';
+
+// Re-export types for backward compatibility
+export type {
+  LapPoint,
+  TelemetryPayload,
+  StrategyScores,
+  ConfidenceDecomposition,
+  StrategyRecommendation,
+  StrategyChecklist,
+  StrategyCommitRequest,
+  StrategyCommitResponse,
+  ChatMessage,
+  ChatResponse,
+  DebriefResponse,
+  FastF1Request,
+  FanPredictRequest,
+  FanPredictResponse,
+  FanStatusResponse,
+  DriverCompareRequest,
+  DriverCompareResponse,
+  AuditHistoryResponse,
+  AuditHistoryParams,
+} from '../types/api';
+
 const BASE = import.meta.env.VITE_API_BASE_URL?.replace(/\/$/, "") ?? "";
 
-export type LapPoint = {
-  lap: number;
-  lap_time_s?: number | null;
-  sector1_s?: number | null;
-  sector2_s?: number | null;
-  sector3_s?: number | null;
-  tyre_wear_pct?: number | null;
-  tyre_compound?: string | null;
-  fuel_kg?: number | null;
-  gap_ahead_s?: number | null;
-  gap_behind_s?: number | null;
-};
-
-export type TelemetryPayload = {
-  circuit: string;
-  session_label: string;
-  driver: string;
-  laps: LapPoint[];
-};
-
-export type StrategyScores = {
-  pit_urgency: number;
-  sc_probability_next_3_laps: number;
-  overtake_risk: number;
-  recommended_window_laps: [number, number];
-};
-
-export type ConfidenceDecomposition = {
-  data_quality: number; // 0-100: % completeness and reliability of telemetry inputs
-  model_certainty: number; // 0-100: confidence in model predictions
-  stability: number; // 0-100: consistency across similar scenarios
-  regret_bound: number; // 0-1: max expected loss vs optimal (lower is better)
-};
-
-export type StrategyRecommendation = {
-  action: string;
-  pit_this_lap: boolean;
-  suggested_compound: string;
-  scores: StrategyScores;
-  structured_reasons: string[];
-  explanation: string;
-  evidence: string[];
-  assumptions: string[];
-  confidence: number;
-  alternative: string;
-  pipeline_steps: string[];
-  confidence_decomposition?: ConfidenceDecomposition;
-};
-
-export type StrategyChecklist = {
-  pit_crew_ready: boolean;
-  tyre_set_confirmed: boolean;
-  radio_call_prepared: boolean;
-};
-
-export type StrategyCommitRequest = {
-  recommendation: StrategyRecommendation;
-  checklist: StrategyChecklist;
-  execution_brief: string;
-  session_context?: Record<string, unknown>;
-};
-
-export type StrategyCommitResponse = {
-  audit_id: string;
-  status: string;
-  message: string;
-  committed_at: string;
-};
-
-export interface ChatResponse {
-  reply: string;
+/**
+ * Helper function to build headers with optional authentication
+ */
+function buildHeaders(token?: string, includeContentType = true): Record<string, string> {
+  const headers: Record<string, string> = {};
+  if (includeContentType) {
+    headers["Content-Type"] = "application/json";
+  }
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+  return headers;
 }
 
-export interface DebriefResponse {
-  report_markdown: string;
-  source_note: string;
+/**
+ * Helper function to handle API errors
+ */
+async function handleResponse<T>(response: Response): Promise<T> {
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(errorText || `HTTP ${response.status}: ${response.statusText}`);
+  }
+  return response.json() as Promise<T>;
 }
 
-export async function postRecommend(payload: TelemetryPayload, token?: string): Promise<StrategyRecommendation> {
-  const headers: Record<string, string> = { "Content-Type": "application/json" };
-  if (token) headers["Authorization"] = `Bearer ${token}`;
+// ============================================================================
+// Strategy API Functions
+// ============================================================================
 
-  const res = await fetch(`${BASE}/api/v1/strategy/recommend`, {
+/**
+ * Generate strategy recommendation from telemetry data
+ *
+ * @param payload - Telemetry data for analysis
+ * @param token - Optional authentication token
+ * @returns Strategy recommendation with confidence scores
+ */
+export async function postRecommend(
+  payload: TelemetryPayload,
+  token?: string
+): Promise<StrategyRecommendation> {
+  const response = await fetch(`${BASE}/api/v1/strategy/recommend`, {
     method: "POST",
-    headers,
+    headers: buildHeaders(token),
     body: JSON.stringify(payload),
   });
-  if (!res.ok) throw new Error(await res.text());
-  return res.json();
+  return handleResponse<StrategyRecommendation>(response);
 }
 
-export async function postChat(messages: { role: "user" | "assistant"; content: string }[], ctx?: object, token?: string): Promise<ChatResponse> {
-  const headers: Record<string, string> = { "Content-Type": "application/json" };
-  if (token) headers["Authorization"] = `Bearer ${token}`;
+/**
+ * Upload telemetry file (CSV or JSON) for analysis
+ *
+ * @param file - Telemetry file to upload
+ * @param token - Optional authentication token
+ * @returns Parsed telemetry payload
+ */
+export async function uploadTelemetry(
+  file: File,
+  token?: string
+): Promise<TelemetryPayload> {
+  const formData = new FormData();
+  formData.append("file", file);
 
-  const res = await fetch(`${BASE}/api/v1/chat/explain`, {
+  const response = await fetch(`${BASE}/api/v1/strategy/telemetry/upload`, {
     method: "POST",
-    headers,
-    body: JSON.stringify({ messages, telemetry_context: ctx }),
+    headers: buildHeaders(token, false),
+    body: formData,
   });
-  if (!res.ok) throw new Error(await res.text());
-  return res.json();
+  return handleResponse<TelemetryPayload>(response);
 }
 
-export async function uploadTelemetry(file: File, token?: string): Promise<TelemetryPayload> {
-  const fd = new FormData();
-  fd.append("file", file);
-  
-  const headers: Record<string, string> = {};
-  if (token) headers["Authorization"] = `Bearer ${token}`;
-
-  const res = await fetch(`${BASE}/api/v1/strategy/telemetry/upload`, {
+/**
+ * Load telemetry data from FastF1 API
+ *
+ * @param request - FastF1 session parameters
+ * @param token - Optional authentication token
+ * @returns Telemetry data from FastF1
+ */
+export async function postLoadFastF1(
+  request: FastF1Request,
+  token?: string
+): Promise<TelemetryPayload> {
+  const response = await fetch(`${BASE}/api/v1/strategy/fastf1/load`, {
     method: "POST",
-    headers,
-    body: fd,
+    headers: buildHeaders(token),
+    body: JSON.stringify(request),
   });
-  if (!res.ok) throw new Error(await res.text());
-  return res.json();
+  return handleResponse<TelemetryPayload>(response);
 }
 
-export interface FastF1Request {
-  year: number;
-  event: string;
-  session_type: "R" | "Q" | "S" | "FP1" | "FP2" | "FP3";
-  driver_code: string;
-}
-
-export async function postLoadFastF1(body: FastF1Request, token?: string): Promise<TelemetryPayload> {
-  const headers: Record<string, string> = { "Content-Type": "application/json" };
-  if (token) headers["Authorization"] = `Bearer ${token}`;
-
-  const res = await fetch(`${BASE}/api/v1/strategy/fastf1/load`, {
+/**
+ * Commit a strategy decision to the audit log
+ *
+ * @param request - Strategy commit payload with checklist
+ * @param token - Optional authentication token
+ * @returns Commit confirmation with audit ID
+ */
+export async function postCommitStrategy(
+  request: StrategyCommitRequest,
+  token?: string
+): Promise<StrategyCommitResponse> {
+  const response = await fetch(`${BASE}/api/v1/strategy/commit`, {
     method: "POST",
-    headers,
-    body: JSON.stringify(body),
+    headers: buildHeaders(token),
+    body: JSON.stringify(request),
   });
-  if (!res.ok) throw new Error(await res.text());
-  return res.json();
+  return handleResponse<StrategyCommitResponse>(response);
 }
 
-export async function postCommitStrategy(body: StrategyCommitRequest, token?: string): Promise<StrategyCommitResponse> {
-  const headers: Record<string, string> = { "Content-Type": "application/json" };
-  if (token) headers["Authorization"] = `Bearer ${token}`;
-
-  const res = await fetch(`${BASE}/api/v1/strategy/commit`, {
+/**
+ * Compare two drivers' telemetry data
+ *
+ * @param request - Driver comparison request
+ * @param token - Optional authentication token
+ * @returns Comparison chart data and narrative
+ */
+export async function postCompareDrivers(
+  request: DriverCompareRequest,
+  token?: string
+): Promise<DriverCompareResponse> {
+  const response = await fetch(`${BASE}/api/v1/compare/drivers`, {
     method: "POST",
-    headers,
-    body: JSON.stringify(body),
+    headers: buildHeaders(token),
+    body: JSON.stringify(request),
   });
-  if (!res.ok) throw new Error(await res.text());
-  return res.json();
+  return handleResponse<DriverCompareResponse>(response);
 }
 
-export async function uploadDebrief(file: File, token?: string): Promise<DebriefResponse> {
-  const fd = new FormData();
-  fd.append("file", file);
+/**
+ * Get audit history with optional filters
+ *
+ * @param params - Query parameters for filtering and pagination
+ * @param token - Optional authentication token
+ * @returns Paginated audit log entries
+ */
+export async function getAuditHistory(
+  params: AuditHistoryParams = {},
+  token?: string
+): Promise<AuditHistoryResponse> {
+  const queryParams = new URLSearchParams();
+  if (params.session_id) queryParams.append('session_id', params.session_id);
+  if (params.driver) queryParams.append('driver', params.driver);
+  if (params.limit) queryParams.append('limit', params.limit.toString());
+  if (params.offset) queryParams.append('offset', params.offset.toString());
 
-  const headers: Record<string, string> = {};
-  if (token) headers["Authorization"] = `Bearer ${token}`;
-
-  const res = await fetch(`${BASE}/api/v1/debrief/upload`, {
-    method: "POST",
-    headers,
-    body: fd,
+  const url = `${BASE}/api/v1/strategy/audit/history${queryParams.toString() ? '?' + queryParams.toString() : ''}`;
+  const response = await fetch(url, {
+    method: "GET",
+    headers: buildHeaders(token, false),
   });
-  if (!res.ok) throw new Error(await res.text());
-  return res.json();
+  return handleResponse<AuditHistoryResponse>(response);
+}
+
+// ============================================================================
+// Chat & Commentary API Functions
+// ============================================================================
+
+/**
+ * Send chat message to AI copilot for strategy explanation
+ *
+ * @param messages - Chat message history
+ * @param telemetryContext - Optional telemetry context for the chat
+ * @param token - Optional authentication token
+ * @returns AI response message
+ */
+export async function postChat(
+  messages: ChatMessage[],
+  telemetryContext?: Record<string, unknown>,
+  token?: string
+): Promise<ChatResponse> {
+  const request: ChatRequest = {
+    messages,
+    telemetry_context: telemetryContext ?? null,
+  };
+
+  const response = await fetch(`${BASE}/api/v1/chat/explain`, {
+    method: "POST",
+    headers: buildHeaders(token),
+    body: JSON.stringify(request),
+  });
+  return handleResponse<ChatResponse>(response);
+}
+
+/**
+ * Upload post-race debrief file for AI analysis
+ *
+ * @param file - Debrief file (PDF, CSV, JSON, or TXT)
+ * @param token - Optional authentication token
+ * @returns AI-generated debrief report in markdown
+ */
+export async function uploadDebrief(
+  file: File,
+  token?: string
+): Promise<DebriefResponse> {
+  const formData = new FormData();
+  formData.append("file", file);
+
+  const response = await fetch(`${BASE}/api/v1/debrief/upload`, {
+    method: "POST",
+    headers: buildHeaders(token, false),
+    body: formData,
+  });
+  return handleResponse<DebriefResponse>(response);
+}
+
+// ============================================================================
+// Fan Engagement API Functions
+// ============================================================================
+
+/**
+ * Get fan mode status
+ *
+ * @returns Current fan mode status
+ */
+export async function getFanStatus(): Promise<FanStatusResponse> {
+  const response = await fetch(`${BASE}/api/v1/fan/status`, {
+    method: "GET",
+  });
+  return handleResponse<FanStatusResponse>(response);
+}
+
+/**
+ * Submit fan prediction for what-if scenario
+ *
+ * @param request - Fan prediction parameters
+ * @returns Prediction narrative and outcome
+ */
+export async function postFanPredict(
+  request: FanPredictRequest
+): Promise<FanPredictResponse> {
+  const response = await fetch(`${BASE}/api/v1/fan/predict`, {
+    method: "POST",
+    headers: buildHeaders(undefined),
+    body: JSON.stringify(request),
+  });
+  return handleResponse<FanPredictResponse>(response);
 }

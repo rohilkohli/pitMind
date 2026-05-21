@@ -82,25 +82,16 @@ const MOCK_DECISIONS: StrategyDecision[] = [
 
 export const DecisionLog: React.FC<DecisionLogProps> = ({
   decisions = MOCK_DECISIONS,
-  onAddAnnotation,
+  onAddAnnotation: _onAddAnnotation,
   onExportSession,
 }) => {
   const [expandedId, setExpandedId] = useState<string | null>(null);
-  const [annotationDraft, setAnnotationDraft] = useState<Record<string, string>>({});
 
-  const handleAddAnnotation = (decisionId: string) => {
-    const text = annotationDraft[decisionId];
-    if (text?.trim()) {
-      onAddAnnotation?.(decisionId, text);
-      setAnnotationDraft((prev) => ({ ...prev, [decisionId]: '' }));
-    }
-  };
-
-  const getConfidenceBadgeStyle = (confidence: number) => {
+  const getConfidenceBadgeStyle = (confidence: number): React.CSSProperties => {
     const pct = confidence * 100;
-    if (pct >= 70) return 'background: #1A3C1A; color: #39B54A; border: 1px solid #39B54A';
-    if (pct >= 40) return 'background: #3C3000; color: #FFC906; border: 1px solid #FFC906';
-    return 'background: #3C0000; color: #E10600; border: 1px solid #E10600';
+    if (pct >= 70) return { backgroundColor: '#1A3C1A', color: '#39B54A', border: '1px solid #39B54A' };
+    if (pct >= 40) return { backgroundColor: '#3C3000', color: '#FFC906', border: '1px solid #FFC906' };
+    return { backgroundColor: '#3C0000', color: '#E10600', border: '1px solid #E10600' };
   };
 
   const avgConfidence = decisions.length > 0 
@@ -153,7 +144,7 @@ export const DecisionLog: React.FC<DecisionLogProps> = ({
 
                   <div 
                     className="px-3 py-1 text-[12px] font-display font-bold uppercase"
-                    style={{ cssText: getConfidenceBadgeStyle(decision.confidence) }}
+                    style={getConfidenceBadgeStyle(decision.confidence)}
                   >
                     {(decision.confidence * 100).toFixed(0)}%
                   </div>

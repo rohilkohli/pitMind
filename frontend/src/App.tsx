@@ -23,17 +23,26 @@ function PageLoader({ label }: { label: string }) {
 }
 
 function RequireAuth({ children }: { children: React.ReactElement }) {
-  const { loading } = useOptionalAuthUser();
+  const { user, loading } = useOptionalAuthUser();
 
   if (loading) {
     return <div className="flex h-screen items-center justify-center bg-f1-black text-f1-muted">Checking authentication...</div>;
   }
 
-  // Bypass auth for local log checking
+  // Only bypass authentication in development when explicitly enabled
+  const bypassAuth = import.meta.env.VITE_BYPASS_AUTH === 'true' && import.meta.env.DEV;
+  
+  if (!user && !bypassAuth) {
+    return <Navigate to="/login" replace />;
+  }
+
   return children;
 }
 
 export default function App() {
+  const defaultWsUrl = import.meta.env.VITE_WS_URL || 
+    ((window.location.protocol === 'https:' ? 'wss://' : 'ws://') + window.location.host + '/api/v1/stream/telemetry');
+
   return (
     <BrowserRouter>
       <Routes>
@@ -59,11 +68,11 @@ export default function App() {
         />
         
         {/* Dashboard is restricted to authenticated engineers */}
-        <Route 
-          path="/dashboard" 
+        <Route
+          path="/dashboard"
           element={
             <RequireAuth>
-              <StreamProvider wsUrl="ws://127.0.0.1:8000/api/v1/stream/telemetry">
+              <StreamProvider wsUrl={defaultWsUrl}>
                 <RoleProvider>
                   <PageShell>
                     <Suspense fallback={<PageLoader label="Loading engineer console..." />}>
@@ -73,15 +82,15 @@ export default function App() {
                 </RoleProvider>
               </StreamProvider>
             </RequireAuth>
-          } 
+          }
         />
         
         {/* Copilot is an alias for the Dashboard view in this version */}
-        <Route 
-          path="/copilot" 
+        <Route
+          path="/copilot"
           element={
             <RequireAuth>
-              <StreamProvider wsUrl="ws://127.0.0.1:8000/api/v1/stream/telemetry">
+              <StreamProvider wsUrl={defaultWsUrl}>
                 <RoleProvider>
                   <PageShell>
                     <Suspense fallback={<PageLoader label="Loading Copilot workspace..." />}>
@@ -91,7 +100,7 @@ export default function App() {
                 </RoleProvider>
               </StreamProvider>
             </RequireAuth>
-          } 
+          }
         />
         
         {/* Default route */}

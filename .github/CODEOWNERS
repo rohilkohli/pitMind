@@ -1,0 +1,51 @@
+# CODEOWNERS file for pitMind project
+# https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# Default owners for everything in the repo
+# These owners will be requested for review when someone opens a pull request
+*       @rohilG
+
+# Backend code
+/backend/                   @rohilG
+/backend/models/            @rohilG
+/backend/routes/            @rohilG
+/backend/services/          @rohilG
+/backend/tests/             @rohilG
+
+# Frontend code
+/frontend/                  @rohilG
+/frontend/src/              @rohilG
+/frontend/src/components/   @rohilG
+/frontend/src/pages/        @rohilG
+/frontend/src/services/     @rohilG
+
+# Configuration files
+/.github/                   @rohilG
+/docker-compose.yml         @rohilG
+/.env.example               @rohilG
+/backend/config.py          @rohilG
+/backend/alembic/           @rohilG
+
+# Documentation
+/docs/                      @rohilG
+/README.md                  @rohilG
+
+# CI/CD workflows
+/.github/workflows/         @rohilG
+
+# Dependencies
+/backend/requirements.txt   @rohilG
+/frontend/package.json      @rohilG
+/frontend/package-lock.json @rohilG
+
+# Database migrations
+/backend/alembic/versions/  @rohilG
+
+# Scripts
+/scripts/                   @rohilG
+/backend/scripts/           @rohilG
+
+# Data files
+/data/                      @rohilG
+/langflow/                  @rohilG
+/langflow-flows/            @rohilG

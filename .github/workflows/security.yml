@@ -1,0 +1,325 @@
+name: Security Scanning
+
+on:
+  schedule:
+    # Run daily at 2 AM UTC
+    - cron: '0 2 * * *'
+  pull_request:
+    branches: [main, develop]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  security-events: write
+  issues: write
+
+jobs:
+  # Dependency Scanning
+  dependency-scan:
+    name: Dependency Vulnerability Scan
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+          cache-dependency-path: backend/requirements.txt
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install safety pip-audit
+
+      - name: Run Safety check (Python)
+        run: |
+          cd backend
+          safety check --json --output safety-report.json || true
+          safety check || echo "⚠️ Vulnerabilities found in Python dependencies"
+        continue-on-error: true
+
+      - name: Run pip-audit (Python)
+        run: |
+          cd backend
+          pip-audit --desc --format json --output pip-audit-report.json || true
+          pip-audit --desc || echo "⚠️ Vulnerabilities found in Python dependencies"
+        continue-on-error: true
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Run npm audit (Node.js)
+        run: |
+          cd frontend
+          npm audit --json > npm-audit-report.json || true
+          npm audit || echo "⚠️ Vulnerabilities found in Node.js dependencies"
+        continue-on-error: true
+
+      - name: Upload dependency scan results
+        uses: actions/upload-artifact@v4
+        with:
+          name: dependency-scan-results
+          path: |
+            backend/safety-report.json
+            backend/pip-audit-report.json
+            frontend/npm-audit-report.json
+          retention-days: 30
+
+      - name: Create issue for critical vulnerabilities
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const title = '🚨 Critical Security Vulnerabilities Detected';
+            const body = `
+            ## Security Scan Alert
+            
+            Critical vulnerabilities were detected in project dependencies.
+            
+            **Workflow Run:** ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+            **Branch:** ${{ github.ref_name }}
+            **Commit:** ${{ github.sha }}
+            
+            Please review the scan results and update dependencies immediately.
+            
+            ### Next Steps
+            1. Review the workflow artifacts for detailed reports
+            2. Update vulnerable dependencies
+            3. Run tests to ensure compatibility
+            4. Create a PR with the fixes
+            `;
+            
+            github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: title,
+              body: body,
+              labels: ['security', 'dependencies', 'critical']
+            });
+
+  # CodeQL Analysis
+  codeql-analysis:
+    name: CodeQL Security Analysis
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        language: ['python', 'javascript']
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: ${{ matrix.language }}
+          queries: security-extended,security-and-quality
+
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v3
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:${{ matrix.language }}"
+
+  # Docker Image Scanning
+  docker-scan:
+    name: Docker Image Security Scan
+    runs-on: ubuntu-latest
+    if: github.event_name != 'schedule'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Backend image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend
+          file: ./backend/Dockerfile
+          push: false
+          tags: pitmind-backend:scan
+          load: true
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Run Trivy scan on Backend
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: pitmind-backend:scan
+          format: 'sarif'
+          output: 'trivy-backend-results.sarif'
+          severity: 'CRITICAL,HIGH,MEDIUM'
+          vuln-type: 'os,library'
+
+      - name: Upload Trivy Backend results
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: 'trivy-backend-results.sarif'
+          category: 'trivy-backend'
+
+      - name: Build Frontend image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./frontend
+          file: ./frontend/Dockerfile
+          push: false
+          tags: pitmind-frontend:scan
+          load: true
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Run Trivy scan on Frontend
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: pitmind-frontend:scan
+          format: 'sarif'
+          output: 'trivy-frontend-results.sarif'
+          severity: 'CRITICAL,HIGH,MEDIUM'
+          vuln-type: 'os,library'
+
+      - name: Upload Trivy Frontend results
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: 'trivy-frontend-results.sarif'
+          category: 'trivy-frontend'
+
+      - name: Generate vulnerability summary
+        run: |
+          echo "## Docker Image Scan Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Backend Image" >> $GITHUB_STEP_SUMMARY
+          trivy image --severity CRITICAL,HIGH --format table pitmind-backend:scan >> $GITHUB_STEP_SUMMARY || true
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Frontend Image" >> $GITHUB_STEP_SUMMARY
+          trivy image --severity CRITICAL,HIGH --format table pitmind-frontend:scan >> $GITHUB_STEP_SUMMARY || true
+
+  # Secret Scanning
+  secret-scan:
+    name: Secret Scanning
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run Gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}
+
+      - name: Run TruffleHog
+        uses: trufflesecurity/trufflehog@main
+        with:
+          path: ./
+          base: ${{ github.event.repository.default_branch }}
+          head: HEAD
+          extra_args: --debug --only-verified
+
+  # SAST (Static Application Security Testing)
+  sast-scan:
+    name: SAST Analysis
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Bandit
+        run: pip install bandit[toml]
+
+      - name: Run Bandit (Python SAST)
+        run: |
+          cd backend
+          bandit -r . -f json -o bandit-report.json || true
+          bandit -r . -ll || echo "⚠️ Security issues found"
+        continue-on-error: true
+
+      - name: Upload Bandit results
+        uses: actions/upload-artifact@v4
+        with:
+          name: bandit-results
+          path: backend/bandit-report.json
+          retention-days: 30
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+
+      - name: Install ESLint security plugin
+        run: |
+          cd frontend
+          npm ci
+          npm install --save-dev eslint-plugin-security
+
+      - name: Run ESLint security scan
+        run: |
+          cd frontend
+          npx eslint . --ext .ts,.tsx --format json --output-file eslint-security-report.json || true
+          npx eslint . --ext .ts,.tsx || echo "⚠️ Security issues found"
+        continue-on-error: true
+
+      - name: Upload ESLint results
+        uses: actions/upload-artifact@v4
+        with:
+          name: eslint-security-results
+          path: frontend/eslint-security-report.json
+          retention-days: 30
+
+  # Security Summary
+  security-summary:
+    name: Security Scan Summary
+    runs-on: ubuntu-latest
+    needs: [dependency-scan, codeql-analysis, docker-scan, secret-scan, sast-scan]
+    if: always()
+    
+    steps:
+      - name: Generate security summary
+        run: |
+          echo "## 🔒 Security Scan Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Scan Type | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|-----------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Dependency Scan | ${{ needs.dependency-scan.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| CodeQL Analysis | ${{ needs.codeql-analysis.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Docker Scan | ${{ needs.docker-scan.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Secret Scan | ${{ needs.secret-scan.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| SAST Scan | ${{ needs.sast-scan.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "For detailed results, check the Security tab and workflow artifacts." >> $GITHUB_STEP_SUMMARY
+
+      - name: Check overall security status
+        run: |
+          if [ "${{ needs.dependency-scan.result }}" == "failure" ] || \
+             [ "${{ needs.codeql-analysis.result }}" == "failure" ] || \
+             [ "${{ needs.secret-scan.result }}" == "failure" ]; then
+            echo "❌ Critical security issues detected"
+            exit 1
+          fi
+          echo "✅ Security scans completed"
+
+# Made with Bob

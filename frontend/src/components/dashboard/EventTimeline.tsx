@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import { AlertCircle, Flag, Wind, Clock, Wrench } from 'lucide-react';
-import { Card } from '../ui/card';
+import { Clock } from 'lucide-react';
 
 export interface RaceEvent {
   id: string;
@@ -78,24 +77,6 @@ const MOCK_EVENTS: RaceEvent[] = [
     severity: 'info',
   },
 ];
-
-const getEventIcon = (type: RaceEvent['type']) => {
-  switch (type) {
-    case 'safety_car':
-    case 'vsc':
-      return <Flag className="w-5 h-5 text-f1-red" />;
-    case 'incident':
-      return <AlertCircle className="w-5 h-5 text-medium" />;
-    case 'pit_stop':
-      return <Wrench className="w-5 h-5 text-f1-white" />;
-    case 'weather':
-      return <Wind className="w-5 h-5 text-inter" />;
-    case 'gap_spike':
-    case 'flag':
-    default:
-      return <Clock className="w-5 h-5 text-f1-muted" />;
-  }
-};
 
 const getDriverColor = (driver?: string) => {
   if (!driver) return '#67676D';

@@ -116,7 +116,7 @@ async def run_strategy_pipeline(payload: TelemetryPayload) -> StrategyRecommenda
         steps.append("Step 2b: Langflow graph merged external signals (if configured)")
     steps.append("Step 3: IBM Granite natural-language explanation")
 
-    base = build_recommendation(payload)
+    base = await build_recommendation(payload)
     base = StrategyRecommendation(
         action=base.action,
         pit_this_lap=base.pit_this_lap,

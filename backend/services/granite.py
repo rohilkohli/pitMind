@@ -2,19 +2,33 @@
 
 from __future__ import annotations
 
+import asyncio
 import json
 import logging
 import re
-from typing import Any
+import time
+from typing import Any, Optional
 
 import httpx
 
 try:
     from ..config import get_settings
+    from .cache_manager import (
+        generate_ai_response_cache_key,
+        get_cached_strategy,
+        set_cached_strategy,
+    )
+    from .logger import get_logger
 except ImportError:
     from config import get_settings
+    from services.cache_manager import (
+        generate_ai_response_cache_key,
+        get_cached_strategy,
+        set_cached_strategy,
+    )
+    from services.logger import get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 HF_CHAT_COMPLETIONS_URL = "https://router.huggingface.co/v1/chat/completions"
 STRATEGY_SCHEMA = {
@@ -45,41 +59,155 @@ STRATEGY_SCHEMA = {
 }
 
 
-async def granite_generate(system: str, user: str, max_tokens: int = 512) -> str:
+async def granite_generate(
+    system: str,
+    user: str,
+    max_tokens: int = 512,
+    bypass_cache: bool = False,
+) -> str:
+    """
+    Generate AI response with caching support and parallel provider calls.
+    
+    Uses asyncio.gather with first-success pattern to try all providers
+    simultaneously with 5s timeout per provider for optimal performance.
+    
+    Args:
+        system: System prompt
+        user: User prompt
+        max_tokens: Maximum tokens for response
+        bypass_cache: If True, skip cache and force fresh AI call
+        
+    Returns:
+        Generated text response
+    """
     settings = get_settings()
+    start_time = time.time()
 
-    # Try Watsonx first
+    # Check cache first (unless bypassed or disabled)
+    if settings.cache_enabled and not bypass_cache:
+        cache_key = generate_ai_response_cache_key(system, user, max_tokens)
+        cached_response = await get_cached_strategy(cache_key)
+        
+        if cached_response is not None:
+            logger.info("Cache HIT for AI response", cache_key_prefix=cache_key[:32])
+            # Extract the actual response from cache entry
+            if isinstance(cached_response, dict) and "data" in cached_response:
+                return cached_response["data"]
+            return str(cached_response)
+
+    # Cache miss or bypassed - try providers in parallel with timeout
+    generated_text: Optional[str] = None
+    provider_used: Optional[str] = None
+    
+    # Build list of provider tasks
+    provider_tasks = []
+    provider_names = []
+    
+    # Add Watsonx if configured
     if settings.watsonx_api_key.strip() and settings.watsonx_project_id.strip():
-        try:
-            text = await _watsonx_chat(system, user, max_tokens)
-            if text:
-                logger.info("Granite: Using Watsonx provider")
-                return text
-        except Exception as e:
-            logger.warning(f"Watsonx provider failed: {e}")
-
-    # Fall back to HuggingFace
+        provider_tasks.append(asyncio.create_task(_call_provider_with_timeout("watsonx", _watsonx_chat, system, user, max_tokens)))
+        provider_names.append("watsonx")
+    
+    # Add HuggingFace if configured
     if settings.hf_api_token.strip() and settings.hf_model_id.strip():
-        try:
-            text = await _hf_run(system, user, max_tokens)
-            if text:
-                logger.info("Granite: Using HuggingFace provider")
-                return text
-        except Exception as e:
-            logger.warning(f"HuggingFace provider failed: {e}")
-
-    # Fall back to Replicate (optional)
+        provider_tasks.append(asyncio.create_task(_call_provider_with_timeout("huggingface", _hf_run, system, user, max_tokens)))
+        provider_names.append("huggingface")
+    
+    # Add Replicate if configured
     if settings.replicate_api_token.strip():
+        provider_tasks.append(asyncio.create_task(_call_provider_with_timeout("replicate", _replicate_run, system, user, max_tokens)))
+        provider_names.append("replicate")
+    
+    # Try all providers in parallel if any are configured
+    if provider_tasks:
         try:
-            text = await _replicate_run(system, user, max_tokens)
-            if text:
-                logger.info("Granite: Using Replicate provider")
-                return text
+            # Use return_when=FIRST_COMPLETED to get first successful response
+            done, pending = await asyncio.wait(
+                provider_tasks,
+                return_when=asyncio.FIRST_COMPLETED,
+                timeout=10.0  # Overall timeout for all providers
+            )
+            
+            # Cancel pending tasks
+            for task in pending:
+                task.cancel()
+            
+            # Get first successful result
+            for task in done:
+                try:
+                    result = await task
+                    if result and result.get("text"):
+                        generated_text = result["text"]
+                        provider_used = result["provider"]
+                        duration_ms = (time.time() - start_time) * 1000
+                        logger.log_ai_request(
+                            provider=provider_used,
+                            model="granite",
+                            duration_ms=duration_ms,
+                            success=True
+                        )
+                        logger.info("AI provider succeeded", provider=provider_used, duration_ms=round(duration_ms, 2))
+                        break
+                except Exception as e:
+                    logger.warning("Provider task failed", exc_info=e)
+                    
+        except asyncio.TimeoutError:
+            logger.warning("All AI providers timed out", timeout_seconds=10.0)
         except Exception as e:
-            logger.warning(f"Replicate provider failed: {e}")
+            logger.error("Error in parallel provider execution", exc_info=e)
 
-    logger.warning("All AI providers unavailable; using local fallback")
-    return _local_fallback_response(system, user)
+    # Final fallback if no provider succeeded
+    if not generated_text:
+        logger.warning("All AI providers unavailable; using local fallback")
+        generated_text = _local_fallback_response(system, user)
+        provider_used = "local_fallback"
+
+    # Cache the successful response
+    if settings.cache_enabled and generated_text and not bypass_cache:
+        cache_key = generate_ai_response_cache_key(system, user, max_tokens)
+        # Use strategy TTL for AI responses
+        await set_cached_strategy(cache_key, generated_text, ttl=settings.cache_ttl_strategy)
+        logger.info("Cached AI response", cache_key_prefix=cache_key[:32])
+
+    return generated_text
+
+
+async def _call_provider_with_timeout(
+    provider_name: str,
+    provider_func,
+    system: str,
+    user: str,
+    max_tokens: int,
+    timeout: float = 5.0
+) -> dict[str, Any]:
+    """
+    Call an AI provider with timeout handling.
+    
+    Args:
+        provider_name: Name of the provider
+        provider_func: Async function to call
+        system: System prompt
+        user: User prompt
+        max_tokens: Maximum tokens
+        timeout: Timeout in seconds
+        
+    Returns:
+        Dict with provider name and generated text, or None if failed
+    """
+    try:
+        text = await asyncio.wait_for(
+            provider_func(system, user, max_tokens),
+            timeout=timeout
+        )
+        if text:
+            return {"provider": provider_name, "text": text}
+        return {"provider": provider_name, "text": None}
+    except asyncio.TimeoutError:
+        logger.warning("Provider timeout", provider=provider_name, timeout_seconds=timeout)
+        return {"provider": provider_name, "text": None}
+    except Exception as e:
+        logger.warning("Provider failed", provider=provider_name, exc_info=e)
+        return {"provider": provider_name, "text": None}
 
 
 def get_ai_status() -> dict[str, Any]:
@@ -162,7 +290,7 @@ async def _watsonx_chat(system: str, user: str, max_tokens: int) -> str | None:
                 except Exception:
                     body_text = "<unreadable response body>"
                 print(f"DEBUG: Watsonx HTTP {resp.status_code}: {body_text}")
-                logger.warning("Watsonx HTTP %s: %s", resp.status_code, body_text)
+                logger.warning("Watsonx HTTP error", status_code=resp.status_code, body=body_text)
                 return None
             data = r.json()
             results = data.get("results") or []
@@ -175,10 +303,10 @@ async def _watsonx_chat(system: str, user: str, max_tokens: int) -> str | None:
         except Exception:
             body_text = "<unreadable response body>"
         print(f"DEBUG: Watsonx HTTP exception: {resp.status_code} {body_text}")
-        logger.warning("Watsonx HTTP exception: %s %s", resp.status_code, body_text)
+        logger.warning("Watsonx HTTP exception", status_code=resp.status_code, body=body_text)
     except Exception as exc:  # noqa: BLE001
         print(f"DEBUG: Watsonx Exception: {exc}")
-        logger.warning("Watsonx generation failed: %s", exc)
+        logger.warning("Watsonx generation failed", exc_info=exc)
     return None
 
 
@@ -231,7 +359,7 @@ async def _replicate_run(system: str, user: str, max_tokens: int) -> str | None:
                     return None
                 await asyncio.sleep(2)
     except Exception as exc:  # noqa: BLE001
-        logger.warning("Replicate generation failed: %s", exc)
+        logger.warning("Replicate generation failed", exc_info=exc)
     return None
 
 
@@ -273,7 +401,7 @@ async def _hf_run(system: str, user: str, max_tokens: int) -> str | None:
                     return _normalize_strategy_json(content, system, user)
                 return content.strip()
     except Exception as exc:  # noqa: BLE001
-        logger.warning("HuggingFace generation failed: %s", exc)
+        logger.warning("HuggingFace generation failed", exc_info=exc)
     return None
 
 

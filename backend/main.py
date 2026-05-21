@@ -6,6 +6,7 @@ import asyncio
 import json
 import logging
 import time
+import uuid
 from datetime import datetime
 from typing import Any
 
@@ -28,6 +29,11 @@ try:
     from .services import pipeline as pipeline_svc
     from .services import granite
     from .services.strategy_engine import predict_strategy
+    from .services import redis_client
+    from .services.cache_manager import get_cache_stats
+    from .services.logger import get_logger, RequestIDMiddleware, PerformanceTimer
+    from .middleware.error_handler import register_exception_handlers, ErrorTrackingMiddleware
+    from .models import database as db
 except ImportError:
     # When executed from the `backend/` directory (e.g., `uvicorn main:app`)
     from config import cors_origin_list, get_settings
@@ -38,6 +44,11 @@ except ImportError:
     from services import pipeline as pipeline_svc
     from services import granite
     from services.strategy_engine import predict_strategy
+    from services import redis_client
+    from services.cache_manager import get_cache_stats
+    from services.logger import get_logger, RequestIDMiddleware, PerformanceTimer
+    from middleware.error_handler import register_exception_handlers, ErrorTrackingMiddleware
+    from models import database as db
 
 try:
     # Use explicit project ID for local development if credentials aren't set
@@ -48,8 +59,8 @@ except ValueError:
 except Exception as e:
     logging.warning(f"Firebase initialization failed: {e}")
 
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+# Initialize structured logger
+logger = get_logger(__name__)
 
 limiter = Limiter(key_func=get_remote_address)
 RATE_LIMIT = f"{get_settings().rate_limit_per_minute}/minute"
@@ -57,6 +68,10 @@ app = FastAPI(title="PitMind API", version="0.1.0")
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
+# Register custom exception handlers
+register_exception_handlers(app)
+
+# Add middleware in correct order (last added = first executed)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=cors_origin_list(),
@@ -64,6 +79,55 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Add request ID tracking middleware
+app.add_middleware(RequestIDMiddleware)
+
+# Add error tracking middleware
+app.add_middleware(ErrorTrackingMiddleware)
+
+
+# Startup and shutdown events
+@app.on_event("startup")
+async def startup_event():
+    """Initialize database and Redis connections on startup."""
+    logger.info("Starting up PitMind API...")
+    
+    # Initialize Redis (graceful degradation if unavailable)
+    redis_available = await redis_client.init_redis()
+    if redis_available:
+        logger.info("✓ Redis initialized successfully")
+    else:
+        logger.warning("⚠ Redis unavailable - running with in-memory fallback")
+    
+    # Initialize database (graceful degradation if unavailable)
+    try:
+        await db.init_db()
+        db_health = await db.check_db_health()
+        if db_health.get("connected"):
+            logger.info("✓ Database initialized successfully")
+        else:
+            logger.warning("⚠ Database unavailable - audit logs will not be persisted")
+    except Exception as e:
+        logger.error(f"⚠ Database initialization failed: {e} - audit logs will not be persisted")
+    
+    logger.info("PitMind API startup complete")
+
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    """Clean up database and Redis connections on shutdown."""
+    logger.info("Shutting down PitMind API...")
+    
+    # Close Redis connections
+    await redis_client.close_redis()
+    logger.info("✓ Redis connections closed")
+    
+    # Close database connections
+    await db.close_db()
+    logger.info("✓ Database connections closed")
+    
+    logger.info("PitMind API shutdown complete")
 
 
 @app.middleware("http")
@@ -77,20 +141,106 @@ async def add_security_headers(request: Request, call_next):
     return response
 
 
+@app.middleware("http")
+async def log_requests(request: Request, call_next):
+    """Log all HTTP requests with performance metrics."""
+    start_time = time.time()
+    
+    # Log incoming request
+    logger.info(
+        "Incoming request",
+        method=request.method,
+        path=str(request.url.path),
+        query_params=dict(request.query_params),
+        client_host=request.client.host if request.client else None
+    )
+    
+    # Process request
+    response = await call_next(request)
+    
+    # Calculate duration
+    duration_ms = (time.time() - start_time) * 1000
+    
+    # Log completed request
+    logger.log_request(
+        method=request.method,
+        path=str(request.url.path),
+        status_code=response.status_code,
+        duration_ms=duration_ms
+    )
+    
+    return response
+
+
 @app.get("/health")
 async def health() -> dict[str, Any]:
-    return {"status": "ok", **granite.get_ai_status()}
+    """Basic health check with Redis, database, and cache status."""
+    redis_health = await redis_client.check_redis_health()
+    db_health = await db.check_db_health()
+    cache_stats = get_cache_stats()
+    
+    overall_status = "ok"
+    if not redis_health.get("connected") or not db_health.get("connected"):
+        overall_status = "degraded"
+    
+    return {
+        "status": overall_status,
+        "redis": redis_health,
+        "database": db_health,
+        "cache": {
+            "hit_rate": cache_stats.hit_rate,
+            "total_requests": cache_stats.total_requests,
+            "hits": cache_stats.hits,
+            "misses": cache_stats.misses,
+        },
+        **granite.get_ai_status()
+    }
 
 
 @app.get("/api/health")
 async def api_health() -> dict[str, Any]:
-    return {"status": "ok", **granite.get_ai_status()}
+    """API health check with Redis, database, and cache status."""
+    redis_health = await redis_client.check_redis_health()
+    db_health = await db.check_db_health()
+    cache_stats = get_cache_stats()
+    
+    overall_status = "ok"
+    if not redis_health.get("connected") or not db_health.get("connected"):
+        overall_status = "degraded"
+    
+    return {
+        "status": overall_status,
+        "redis": redis_health,
+        "database": db_health,
+        "cache": {
+            "hit_rate": cache_stats.hit_rate,
+            "total_requests": cache_stats.total_requests,
+            "hits": cache_stats.hits,
+            "misses": cache_stats.misses,
+        },
+        **granite.get_ai_status()
+    }
 
 
 @app.get("/api/v1/metrics/health")
 async def get_health_metrics() -> dict[str, Any]:
     """Get detailed system health metrics for HealthConsole."""
     ai_status = granite.get_ai_status()
+    redis_health = await redis_client.check_redis_health()
+    db_health = await db.check_db_health()
+    cache_stats = get_cache_stats()
+    
+    # Get cached metrics or use defaults
+    cached_metrics = await redis_client.get_cached_health_metrics()
+    
+    # Determine cache health status based on hit rate
+    cache_status = "healthy"
+    if cache_stats.total_requests > 10:  # Only evaluate if we have enough data
+        if cache_stats.hit_rate < 30:
+            cache_status = "degraded"
+        elif cache_stats.hit_rate < 50:
+            cache_status = "warning"
+    
     return {
         "api": {
             "name": "API Gateway",
@@ -98,10 +248,35 @@ async def get_health_metrics() -> dict[str, Any]:
             "value": "Online",
             "lastUpdated": datetime.now().isoformat(),
         },
+        "redis": {
+            "name": "Redis Cache",
+            "status": "healthy" if redis_health.get("connected") else "degraded",
+            "value": "Connected" if redis_health.get("connected") else "Disconnected",
+            "lastUpdated": datetime.now().isoformat(),
+        },
+        "database": {
+            "name": "PostgreSQL",
+            "status": "healthy" if db_health.get("connected") else "degraded",
+            "value": "Connected" if db_health.get("connected") else "Disconnected",
+            "lastUpdated": datetime.now().isoformat(),
+        },
+        "cacheHitRate": {
+            "name": "Cache Hit Rate",
+            "status": cache_status,
+            "value": cache_stats.hit_rate,
+            "unit": "%",
+            "threshold": 50,
+            "lastUpdated": datetime.now().isoformat(),
+            "metadata": {
+                "hits": cache_stats.hits,
+                "misses": cache_stats.misses,
+                "total_requests": cache_stats.total_requests,
+            },
+        },
         "latency": {
             "name": "Response Latency",
             "status": "healthy",
-            "value": 142,
+            "value": cached_metrics.get("latency", 142) if cached_metrics else 142,
             "unit": "ms",
             "threshold": 500,
             "lastUpdated": datetime.now().isoformat(),
@@ -109,7 +284,7 @@ async def get_health_metrics() -> dict[str, Any]:
         "dataQuality": {
             "name": "Data Quality Score",
             "status": "healthy",
-            "value": 96.8,
+            "value": cached_metrics.get("dataQuality", 96.8) if cached_metrics else 96.8,
             "unit": "%",
             "threshold": 90,
             "lastUpdated": datetime.now().isoformat(),
@@ -117,27 +292,27 @@ async def get_health_metrics() -> dict[str, Any]:
         "engineerApprovals": {
             "name": "Engineer Approvals",
             "status": "healthy",
-            "value": 4,
+            "value": cached_metrics.get("engineerApprovals", 4) if cached_metrics else 4,
             "unit": "decisions",
             "lastUpdated": datetime.now().isoformat(),
         },
         "uptime": {
             "name": "System Uptime",
             "status": "healthy",
-            "value": "4h 23m",
+            "value": cached_metrics.get("uptime", "4h 23m") if cached_metrics else "4h 23m",
             "lastUpdated": datetime.now().isoformat(),
         },
         "strategyCallCount": {
             "name": "Strategy Calls",
             "status": "healthy",
-            "value": 12,
+            "value": cached_metrics.get("strategyCallCount", 12) if cached_metrics else 12,
             "unit": "total",
             "lastUpdated": datetime.now().isoformat(),
         },
         "errorRate": {
             "name": "Error Rate",
             "status": "healthy",
-            "value": 0.3,
+            "value": cached_metrics.get("errorRate", 0.3) if cached_metrics else 0.3,
             "unit": "%",
             "threshold": 2.0,
             "lastUpdated": datetime.now().isoformat(),
@@ -145,7 +320,7 @@ async def get_health_metrics() -> dict[str, Any]:
         "telemetryDatapoints": {
             "name": "Telemetry Points",
             "status": "healthy",
-            "value": 2847,
+            "value": cached_metrics.get("telemetryDatapoints", 2847) if cached_metrics else 2847,
             "unit": "pts",
             "lastUpdated": datetime.now().isoformat(),
         },
@@ -155,24 +330,41 @@ async def get_health_metrics() -> dict[str, Any]:
 
 # WebSocket connection manager
 class ConnectionManager:
-    """Manages WebSocket connections for real-time telemetry streaming."""
+    """Manages WebSocket connections for real-time telemetry streaming with Redis tracking."""
     
     def __init__(self):
+        # In-memory storage (always available)
         self.active_connections: dict[str, list[WebSocket]] = {}
         self.message_count: dict[str, int] = {}
         self.start_time = time.time()
+        # Connection ID mapping for Redis tracking
+        self.connection_ids: dict[WebSocket, str] = {}
     
     async def connect(self, websocket: WebSocket, session_id: str):
         """Accept and register a new WebSocket connection."""
         await websocket.accept()
+        
+        # Generate unique connection ID
+        connection_id = str(uuid.uuid4())
+        self.connection_ids[websocket] = connection_id
+        
+        # Store in memory
         if session_id not in self.active_connections:
             self.active_connections[session_id] = []
             self.message_count[session_id] = 0
         self.active_connections[session_id].append(websocket)
-        logger.info(f"Client connected to session {session_id}. Active: {len(self.active_connections[session_id])}")
+        
+        # Track in Redis (graceful degradation if unavailable)
+        await redis_client.add_websocket_connection(session_id, connection_id)
+        
+        logger.info(f"Client {connection_id} connected to session {session_id}. Active: {len(self.active_connections[session_id])}")
     
     def disconnect(self, websocket: WebSocket, session_id: str):
         """Unregister a disconnected WebSocket."""
+        # Get connection ID
+        connection_id = self.connection_ids.get(websocket, "unknown")
+        
+        # Remove from memory
         if session_id in self.active_connections:
             try:
                 self.active_connections[session_id].remove(websocket)
@@ -181,7 +373,15 @@ class ConnectionManager:
             if not self.active_connections[session_id]:
                 del self.active_connections[session_id]
                 del self.message_count[session_id]
-        logger.info(f"Client disconnected from session {session_id}")
+        
+        # Remove from connection ID mapping
+        if websocket in self.connection_ids:
+            del self.connection_ids[websocket]
+        
+        # Remove from Redis (fire and forget - don't await)
+        asyncio.create_task(redis_client.remove_websocket_connection(session_id, connection_id))
+        
+        logger.info(f"Client {connection_id} disconnected from session {session_id}")
     
     async def broadcast_telemetry(self, session_id: str, telemetry: dict[str, Any]):
         """Broadcast telemetry to all connected clients in a session."""
@@ -209,12 +409,27 @@ manager = ConnectionManager()
 
 
 @app.websocket("/api/v1/stream/telemetry")
-async def websocket_telemetry_stream(websocket: WebSocket):
+async def websocket_telemetry_stream(websocket: WebSocket, session_id: str | None = None):
     """
     WebSocket endpoint for real-time telemetry streaming.
     Handles ping/pong for latency measurement and broadcasts telemetry data.
+    
+    Args:
+        websocket: WebSocket connection
+        session_id: Session identifier from query parameter (e.g., ?session_id=race_2024_monaco)
+                   Defaults to "current_race" if not provided for backward compatibility
     """
-    session_id = "current_race"  # In production, extract from auth token
+    # Extract session_id from query parameter or use default
+    if not session_id:
+        session_id = "current_race"
+        logger.warning("No session_id provided, using default 'current_race'")
+    
+    # Validate session_id format (alphanumeric, underscores, hyphens only)
+    if not session_id.replace("_", "").replace("-", "").isalnum():
+        logger.error(f"Invalid session_id format: {session_id}")
+        await websocket.close(code=1008, reason="Invalid session_id format")
+        return
+    
     logger.info(f"Connecting WebSocket session: {session_id}")
     await manager.connect(websocket, session_id)
     logger.info(f"WebSocket connected: {session_id}")

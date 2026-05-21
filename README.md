@@ -1,5 +1,12 @@
 # PitMind — AI Race Strategy & Explainability Copilot
 
+[![CI Pipeline](https://github.com/rohilG/pitMind/actions/workflows/ci.yml/badge.svg)](https://github.com/rohilG/pitMind/actions/workflows/ci.yml)
+[![CD Pipeline](https://github.com/rohilG/pitMind/actions/workflows/cd.yml/badge.svg)](https://github.com/rohilG/pitMind/actions/workflows/cd.yml)
+[![Security Scan](https://github.com/rohilG/pitMind/actions/workflows/security.yml/badge.svg)](https://github.com/rohilG/pitMind/actions/workflows/security.yml)
+[![License](https://img.shields.io/badge/license-Educational-blue.svg)](LICENSE)
+[![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue.svg)](https://www.python.org/downloads/)
+[![Node 20.x](https://img.shields.io/badge/node-20.x-green.svg)](https://nodejs.org/)
+
 PitMind is a demo-grade full-stack assistant for Formula 1-style race engineers. It ingests lap telemetry, scores pit-stop urgency with transparent heuristics, optionally merges Langflow orchestration signals over HTTP, and asks **IBM Granite** (via Watsonx.ai or Replicate-compatible endpoints) to narrate the recommendation in plain language engineers can trust under pressure.
 
 The interface is styled with the official **Formula 1 design language**—featuring signature F1 red (`#EF3340`), bold Outfit typography, premium animations, and data-focused layouts that communicate speed and precision.
@@ -248,14 +255,71 @@ RATE_LIMIT_PER_MINUTE=60
 - **Code split chunks**: 6 vendor chunks + app chunk
 - **Memory usage**: ~180MB backend, ~120MB frontend
 
+## CI/CD Pipeline
+
+The project includes a comprehensive CI/CD pipeline with GitHub Actions:
+
+### Automated Workflows
+
+- **🔄 Continuous Integration** — Automated testing, linting, and building on every PR and push
+  - Backend: Python 3.11/3.12 matrix, pytest with 80% coverage requirement
+  - Frontend: ESLint, Prettier, TypeScript checks, Vitest tests
+  - Docker: Multi-platform builds (amd64, arm64) with security scanning
+
+- **🚀 Continuous Deployment** — Automated deployments to staging and production
+  - Staging: Auto-deploy on main branch merge
+  - Production: Manual approval with blue-green deployment
+  - Rollback: Automatic on failure detection
+
+- **🔒 Security Scanning** — Daily vulnerability checks
+  - Dependency scanning (Safety, pip-audit, npm audit)
+  - Code analysis (CodeQL for Python and JavaScript)
+  - Container scanning (Trivy for Docker images)
+  - Secret detection (Gitleaks, TruffleHog)
+  - SAST analysis (Bandit, ESLint security)
+
+- **📦 Dependency Management** — Automated updates
+  - Weekly Dependabot PRs for Python, Node.js, GitHub Actions, Docker
+  - Grouped minor/patch updates for easier review
+  - Auto-merge for non-breaking changes (when CI passes)
+
+- **🏷️ Release Automation** — Streamlined release process
+  - Automatic changelog generation from commits
+  - Docker image tagging and publishing to GHCR
+  - GitHub release creation with artifacts
+  - Production deployment for stable releases
+
+### Pipeline Status
+
+Check the [Actions tab](https://github.com/rohilG/pitMind/actions) for real-time workflow status.
+
+### Documentation
+
+For detailed CI/CD documentation, deployment procedures, and troubleshooting:
+- [CI/CD Documentation](./docs/CI_CD.md) — Complete pipeline guide
+- [Deployment Guide](./docs/DEPLOYMENT.md) — Production deployment instructions
+- [API Documentation](./docs/API.md) — API endpoints and WebSocket streaming
+
+### Quick Start for Contributors
+
+1. Fork the repository
+2. Create a feature branch: `git checkout -b feature/amazing-feature`
+3. Make your changes and commit: `git commit -m 'feat: add amazing feature'`
+4. Push to your fork: `git push origin feature/amazing-feature`
+5. Open a Pull Request (CI will run automatically)
+6. Address any CI failures and review feedback
+7. Once approved and CI passes, your PR will be merged
+
 ## Development Roadmap
 
+- [x] CI/CD pipeline setup with GitHub Actions
+- [x] Automated testing and security scanning
+- [x] Docker multi-platform builds
 - [ ] Advanced analytics dashboard (lap deltas, tyre progression)
 - [ ] Predictive pit window optimization
 - [ ] Session replay and comparative analysis
 - [ ] Multi-team collaboration workspace
-- [ ] CI/CD pipeline setup
-- [ ] Test coverage improvements (add test dependencies)
+- [ ] Test coverage improvements (restore test dependencies)
 - [ ] Redis caching layer
 - [ ] Database persistence (PostgreSQL)
 

@@ -4,11 +4,12 @@ import pytest
 import asyncio
 from unittest.mock import patch, AsyncMock
 
-from models.race_state import TelemetryPayload, LapPoint
-from services.strategy_engine import build_recommendation, predict_strategy
+from backend.models.race_state import TelemetryPayload, LapPoint
+from backend.services.strategy_engine import build_recommendation, predict_strategy
 
 
-def test_strategy_with_minimal_telemetry():
+@pytest.mark.asyncio
+async def test_strategy_with_minimal_telemetry():
     """BUG #5 FIX: Should handle telemetry with minimal data gracefully."""
     payload = TelemetryPayload(
         circuit="Monza",
@@ -20,7 +21,7 @@ def test_strategy_with_minimal_telemetry():
         ],
     )
     
-    scores, reasons, meta = predict_strategy(payload)
+    scores, reasons, meta = await predict_strategy(payload)
     assert scores.pit_urgency >= 0 and scores.pit_urgency <= 100
     assert scores.sc_probability_next_3_laps >= 0
     assert scores.overtake_risk >= 0
@@ -38,7 +39,8 @@ def test_strategy_with_empty_laps_raises_validation_error():
         )
 
 
-def test_strategy_recommendation_includes_all_fields():
+@pytest.mark.asyncio
+async def test_strategy_recommendation_includes_all_fields():
     """BUG #10 FIX: Recommendation should include confidence_decomposition."""
     payload = TelemetryPayload(
         circuit="Monaco",
@@ -50,7 +52,7 @@ def test_strategy_recommendation_includes_all_fields():
         ],
     )
     
-    recommendation = build_recommendation(payload)
+    recommendation = await build_recommendation(payload)
     
     # Verify all required fields exist
     assert recommendation.action is not None
@@ -66,10 +68,10 @@ def test_strategy_recommendation_includes_all_fields():
 @pytest.mark.asyncio
 async def test_granite_fallback_chain():
     """BUG #6 FIX: Granite should try providers in correct order."""
-    from services.granite import granite_generate
+    from backend.services.granite import granite_generate
     
     # Mock all providers as unavailable
-    with patch("services.granite.get_settings") as mock_settings:
+    with patch("backend.services.granite.get_settings") as mock_settings:
         mock_settings.return_value.watsonx_api_key = ""
         mock_settings.return_value.watsonx_project_id = ""
         mock_settings.return_value.hf_api_token = ""

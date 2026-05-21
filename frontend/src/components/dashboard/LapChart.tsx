@@ -1,19 +1,7 @@
-import React, { useState } from "react";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
+import { useState } from "react";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import type { TooltipProps } from "recharts";
 import type { ValueType, NameType } from "recharts/types/component/DefaultTooltipContent";
-
-const mockData = Array.from({ length: 30 }, (_, i) => {
-  const lap = i + 1;
-  const trend = i < 10 ? 0.18 : i < 20 ? 0.08 : -0.02;
-
-  return {
-    lap,
-    VER: 82.4 + trend + Math.sin(i / 3) * 0.08,
-    LEC: 82.9 + trend + Math.cos(i / 4) * 0.07,
-    NOR: 83.1 + trend + Math.sin(i / 5) * 0.06,
-  };
-});
 
 export function LapChart({ data }: { data?: any[] }) {
   const [selectedDrivers, setSelectedDrivers] = useState<string[]>(["VER", "LEC", "NOR"]);

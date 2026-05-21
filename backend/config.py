@@ -83,6 +83,90 @@ class Settings(BaseSettings):
     replicate_model_owner: str = Field(default="replicate", validation_alias=AliasChoices("REPLICATE_MODEL_OWNER", "replicate_model_owner"))
     replicate_model_name: str = Field(default="llama-2-70b-chat", validation_alias=AliasChoices("REPLICATE_MODEL_NAME", "replicate_model_name"))
 
+    # Redis Configuration
+    redis_url: str = Field(
+        default="redis://localhost:6379/0",
+        validation_alias=AliasChoices("REDIS_URL", "redis_url"),
+        description="Redis connection URL for caching and session management"
+    )
+    redis_max_connections: int = Field(
+        default=10,
+        validation_alias=AliasChoices("REDIS_MAX_CONNECTIONS", "redis_max_connections"),
+    )
+    redis_socket_timeout: int = Field(
+        default=5,
+        validation_alias=AliasChoices("REDIS_SOCKET_TIMEOUT", "redis_socket_timeout"),
+    )
+    redis_socket_connect_timeout: int = Field(
+        default=5,
+        validation_alias=AliasChoices("REDIS_SOCKET_CONNECT_TIMEOUT", "redis_socket_connect_timeout"),
+    )
+
+    # PostgreSQL Configuration
+    database_url: str = Field(
+        default="postgresql+asyncpg://pitmind:pitmind@localhost:5432/pitmind",
+        validation_alias=AliasChoices("DATABASE_URL", "database_url"),
+        description="PostgreSQL connection URL with asyncpg driver"
+    )
+    db_pool_size: int = Field(
+        default=5,
+        validation_alias=AliasChoices("DB_POOL_SIZE", "db_pool_size"),
+    )
+    db_max_overflow: int = Field(
+        default=10,
+        validation_alias=AliasChoices("DB_MAX_OVERFLOW", "db_max_overflow"),
+    )
+    db_pool_timeout: int = Field(
+        default=30,
+        validation_alias=AliasChoices("DB_POOL_TIMEOUT", "db_pool_timeout"),
+    )
+    db_pool_recycle: int = Field(
+        default=3600,
+        validation_alias=AliasChoices("DB_POOL_RECYCLE", "db_pool_recycle"),
+    )
+
+    # Cache Configuration
+    cache_enabled: bool = Field(
+        default=True,
+        validation_alias=AliasChoices("CACHE_ENABLED", "cache_enabled"),
+        description="Enable/disable caching layer"
+    )
+    cache_ttl_default: int = Field(
+        default=300,
+        validation_alias=AliasChoices("CACHE_TTL_DEFAULT", "cache_ttl_default"),
+        description="Default cache TTL in seconds (5 minutes)"
+    )
+    cache_ttl_strategy: int = Field(
+        default=300,
+        validation_alias=AliasChoices("CACHE_TTL_STRATEGY", "cache_ttl_strategy"),
+        description="Strategy recommendation cache TTL in seconds (5 minutes)"
+    )
+    cache_ttl_historical: int = Field(
+        default=3600,
+        validation_alias=AliasChoices("CACHE_TTL_HISTORICAL", "cache_ttl_historical"),
+        description="Historical race data cache TTL in seconds (1 hour)"
+    )
+    cache_ttl_post_race: int = Field(
+        default=86400,
+        validation_alias=AliasChoices("CACHE_TTL_POST_RACE", "cache_ttl_post_race"),
+        description="Post-race analysis cache TTL in seconds (24 hours)"
+    )
+    cache_ttl_session: int = Field(
+        default=3600,
+        validation_alias=AliasChoices("CACHE_TTL_SESSION", "cache_ttl_session"),
+        description="Session state cache TTL in seconds (1 hour)"
+    )
+    cache_ttl_health: int = Field(
+        default=60,
+        validation_alias=AliasChoices("CACHE_TTL_HEALTH", "cache_ttl_health"),
+        description="Health metrics cache TTL in seconds (1 minute)"
+    )
+    cache_max_size: int = Field(
+        default=1000,
+        validation_alias=AliasChoices("CACHE_MAX_SIZE", "cache_max_size"),
+        description="Maximum cache entries per session"
+    )
+
 
 @lru_cache
 def get_settings() -> Settings:

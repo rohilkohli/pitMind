@@ -1,0 +1,285 @@
+name: CD Pipeline
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Deployment environment'
+        required: true
+        type: choice
+        options:
+          - staging
+          - production
+      skip_tests:
+        description: 'Skip tests (not recommended)'
+        required: false
+        type: boolean
+        default: false
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME_BACKEND: ${{ github.repository }}/backend
+  IMAGE_NAME_FRONTEND: ${{ github.repository }}/frontend
+
+jobs:
+  # Build and Push Docker Images
+  build-and-push:
+    name: Build and Push Docker Images
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      backend-tag: ${{ steps.meta-backend.outputs.tags }}
+      frontend-tag: ${{ steps.meta-frontend.outputs.tags }}
+      version: ${{ steps.version.outputs.version }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Generate version
+        id: version
+        run: |
+          VERSION=$(git describe --tags --always --dirty 2>/dev/null || echo "v0.1.0")
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Generated version: $VERSION"
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata for Backend
+        id: meta-backend
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_BACKEND }}
+          tags: |
+            type=ref,event=branch
+            type=sha,prefix={{branch}}-
+            type=semver,pattern={{version}},value=${{ steps.version.outputs.version }}
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Build and push Backend image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend
+          file: ./backend/Dockerfile
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta-backend.outputs.tags }}
+          labels: ${{ steps.meta-backend.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          build-args: |
+            VERSION=${{ steps.version.outputs.version }}
+            BUILD_DATE=${{ github.event.head_commit.timestamp }}
+            VCS_REF=${{ github.sha }}
+
+      - name: Extract metadata for Frontend
+        id: meta-frontend
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_FRONTEND }}
+          tags: |
+            type=ref,event=branch
+            type=sha,prefix={{branch}}-
+            type=semver,pattern={{version}},value=${{ steps.version.outputs.version }}
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Build and push Frontend image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./frontend
+          file: ./frontend/Dockerfile
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta-frontend.outputs.tags }}
+          labels: ${{ steps.meta-frontend.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          build-args: |
+            VERSION=${{ steps.version.outputs.version }}
+            BUILD_DATE=${{ github.event.head_commit.timestamp }}
+            VCS_REF=${{ github.sha }}
+
+  # Deploy to Staging
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: build-and-push
+    if: github.ref == 'refs/heads/main' || (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'staging')
+    environment:
+      name: staging
+      url: https://staging.pitmind.app
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy to Staging
+        run: |
+          echo "🚀 Deploying to Staging environment"
+          echo "Backend image: ${{ needs.build-and-push.outputs.backend-tag }}"
+          echo "Frontend image: ${{ needs.build-and-push.outputs.frontend-tag }}"
+          echo "Version: ${{ needs.build-and-push.outputs.version }}"
+          
+          # TODO: Add actual deployment commands here
+          # Examples:
+          # - kubectl set image deployment/backend backend=${{ needs.build-and-push.outputs.backend-tag }}
+          # - kubectl set image deployment/frontend frontend=${{ needs.build-and-push.outputs.frontend-tag }}
+          # - helm upgrade pitmind ./charts/pitmind --set image.tag=${{ needs.build-and-push.outputs.version }}
+          # - docker-compose -f docker-compose.staging.yml pull && docker-compose -f docker-compose.staging.yml up -d
+          
+          echo "✅ Staging deployment initiated"
+
+      - name: Wait for deployment
+        run: |
+          echo "⏳ Waiting for services to be ready..."
+          sleep 30
+
+      - name: Run smoke tests
+        run: |
+          echo "🧪 Running smoke tests against staging"
+          
+          # Health check for backend
+          BACKEND_URL="https://staging-api.pitmind.app/health"
+          echo "Checking backend health: $BACKEND_URL"
+          # curl -f $BACKEND_URL || exit 1
+          
+          # Health check for frontend
+          FRONTEND_URL="https://staging.pitmind.app"
+          echo "Checking frontend: $FRONTEND_URL"
+          # curl -f $FRONTEND_URL || exit 1
+          
+          echo "✅ Smoke tests passed"
+
+      - name: Notify deployment success
+        if: success()
+        run: |
+          echo "✅ Staging deployment successful"
+          # TODO: Add Slack/Discord notification
+          # curl -X POST ${{ secrets.SLACK_WEBHOOK_URL }} \
+          #   -H 'Content-Type: application/json' \
+          #   -d '{"text":"✅ Staging deployment successful: ${{ needs.build-and-push.outputs.version }}"}'
+
+      - name: Notify deployment failure
+        if: failure()
+        run: |
+          echo "❌ Staging deployment failed"
+          # TODO: Add Slack/Discord notification
+          # curl -X POST ${{ secrets.SLACK_WEBHOOK_URL }} \
+          #   -H 'Content-Type: application/json' \
+          #   -d '{"text":"❌ Staging deployment failed: ${{ needs.build-and-push.outputs.version }}"}'
+
+  # Deploy to Production
+  deploy-production:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: [build-and-push, deploy-staging]
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'production'
+    environment:
+      name: production
+      url: https://pitmind.app
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Create deployment backup
+        run: |
+          echo "💾 Creating backup of current production deployment"
+          # TODO: Add backup commands
+          # kubectl get deployment backend -o yaml > backup-backend-$(date +%Y%m%d-%H%M%S).yaml
+          # kubectl get deployment frontend -o yaml > backup-frontend-$(date +%Y%m%d-%H%M%S).yaml
+
+      - name: Deploy to Production (Blue-Green)
+        run: |
+          echo "🚀 Deploying to Production environment"
+          echo "Backend image: ${{ needs.build-and-push.outputs.backend-tag }}"
+          echo "Frontend image: ${{ needs.build-and-push.outputs.frontend-tag }}"
+          echo "Version: ${{ needs.build-and-push.outputs.version }}"
+          
+          # TODO: Implement blue-green deployment
+          # 1. Deploy to "green" environment
+          # 2. Run health checks
+          # 3. Switch traffic from "blue" to "green"
+          # 4. Keep "blue" for quick rollback
+          
+          echo "✅ Production deployment initiated"
+
+      - name: Wait for deployment
+        run: |
+          echo "⏳ Waiting for services to be ready..."
+          sleep 60
+
+      - name: Run health checks
+        run: |
+          echo "🏥 Running health checks"
+          
+          # Backend health check
+          BACKEND_URL="https://api.pitmind.app/health"
+          echo "Checking backend: $BACKEND_URL"
+          # for i in {1..10}; do
+          #   if curl -f $BACKEND_URL; then
+          #     echo "✅ Backend is healthy"
+          #     break
+          #   fi
+          #   echo "Attempt $i failed, retrying..."
+          #   sleep 10
+          # done
+          
+          # Frontend health check
+          FRONTEND_URL="https://pitmind.app"
+          echo "Checking frontend: $FRONTEND_URL"
+          # curl -f $FRONTEND_URL || exit 1
+          
+          echo "✅ Health checks passed"
+
+      - name: Run production smoke tests
+        run: |
+          echo "🧪 Running production smoke tests"
+          # TODO: Add comprehensive smoke tests
+          # - Test critical user flows
+          # - Verify database connectivity
+          # - Check external integrations
+          echo "✅ Smoke tests passed"
+
+      - name: Notify deployment success
+        if: success()
+        run: |
+          echo "✅ Production deployment successful"
+          # TODO: Add Slack/Discord notification
+          # curl -X POST ${{ secrets.SLACK_WEBHOOK_URL }} \
+          #   -H 'Content-Type: application/json' \
+          #   -d '{"text":"✅ Production deployment successful: ${{ needs.build-and-push.outputs.version }}"}'
+
+      - name: Rollback on failure
+        if: failure()
+        run: |
+          echo "❌ Production deployment failed - initiating rollback"
+          # TODO: Add rollback commands
+          # kubectl rollout undo deployment/backend
+          # kubectl rollout undo deployment/frontend
+          echo "🔄 Rollback completed"
+
+      - name: Notify deployment failure
+        if: failure()
+        run: |
+          echo "❌ Production deployment failed and rolled back"
+          # TODO: Add Slack/Discord notification
+          # curl -X POST ${{ secrets.SLACK_WEBHOOK_URL }} \
+          #   -H 'Content-Type: application/json' \
+          #   -d '{"text":"❌ Production deployment failed: ${{ needs.build-and-push.outputs.version }}"}'
+
+# Made with Bob

@@ -1,12 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Card } from '../ui/card';
-import {
-  Activity,
-  Gauge,
-  AlertCircle,
-  CheckCircle,
-  RotateCcw,
-} from 'lucide-react';
+import { RotateCcw } from 'lucide-react';
 
 export interface HealthMetric {
   name: string;
@@ -100,32 +94,6 @@ const MOCK_HEALTH: HealthSnapshot = {
   },
 };
 
-const getStatusColor = (status: string) => {
-  switch (status) {
-    case 'healthy':
-      return 'border-inter/40 bg-f1-dark';
-    case 'warning':
-      return 'border-medium/40 bg-f1-dark';
-    case 'critical':
-      return 'border-f1-red/40 bg-f1-dark';
-    default:
-      return 'border-f1-border bg-f1-dark';
-  }
-};
-
-const getStatusIcon = (status: string) => {
-  switch (status) {
-    case 'healthy':
-      return <CheckCircle className="w-5 h-5 text-inter" />;
-    case 'warning':
-      return <AlertCircle className="w-5 h-5 text-medium" />;
-    case 'critical':
-      return <AlertCircle className="w-5 h-5 text-f1-red" />;
-    default:
-      return null;
-  }
-};
-
 const getStatusLabel = (status: string) => {
   switch (status) {
     case 'healthy':
@@ -142,12 +110,11 @@ const getStatusLabel = (status: string) => {
 export const HealthConsole: React.FC<HealthConsoleProps> = ({ onRefresh }) => {
   const [health, setHealth] = useState<HealthSnapshot>(MOCK_HEALTH);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [expandedMetrics, setExpandedMetrics] = useState<Set<string>>(new Set());
 
   const fetchHealth = async () => {
     setIsRefreshing(true);
     try {
-      const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+      const baseUrl = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8000';
       const response = await fetch(`${baseUrl}/api/v1/metrics/health`);
       if (response.ok) {
         const data = await response.json();

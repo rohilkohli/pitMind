@@ -4,6 +4,10 @@
 *.env
 firebase-service-account.json
 *.pem
+scripts/id_rsa_pitmind
+scripts/id_rsa_pitmind.pub
+scratch/
+fix_tests*.py
 
 # Python
 __pycache__/
@@ -14,8 +18,11 @@ __pycache__/
 venv/
 .pytest_cache/
 .coverage
+coverage.xml
 htmlcov/
 .mypy_cache/
+*.py[cod]
+*$py.class
 
 # Node
 node_modules/
@@ -23,6 +30,7 @@ dist/
 build/
 *.log
 .npm
+coverage/
 
 # IDE
 .idea/
@@ -35,3 +43,19 @@ Thumbs.db
 
 # FastF1 cache (if generated locally)
 .cache/
+
+# CI/CD artifacts
+*.sarif
+*-report.json
+bandit-report.json
+safety-report.json
+pip-audit-report.json
+npm-audit-report.json
+eslint-security-report.json
+trivy-*.sarif
+outdated.json
+release-artifacts/
+backup-*.yaml
+
+# GitHub Actions
+.github/workflows/*.log

@@ -95,6 +95,22 @@ export function StrategyTimeline({
     window.localStorage.setItem(strategyChecklistKey, JSON.stringify(checklist));
   }, [checklist, strategyChecklistKey]);
 
+  const executionBrief = useMemo(() => {
+    if (!reco) return "";
+    const windowStart = reco.scores?.recommended_window_laps?.[0] ?? "-";
+    const windowEnd = reco.scores?.recommended_window_laps?.[1] ?? "-";
+    const confidence = Math.max(0, Math.min(100, reco.confidence));
+    const pitCall = reco.pit_this_lap ? "Pit this lap" : "Hold this lap";
+    return [
+      `Primary action: ${reco.action}`,
+      `Immediate call: ${pitCall}`,
+      `Target compound: ${reco.suggested_compound}`,
+      `Recommended pit window: L${windowStart} to L${windowEnd}`,
+      `Confidence: ${confidence.toFixed(1)}%`,
+      `Alternative: ${reco.alternative}`,
+    ].join("\n");
+  }, [reco]);
+
   if (!reco) {
     return (
       <div 
@@ -140,18 +156,6 @@ export function StrategyTimeline({
   const pitUrgency = clampPercent(reco.scores?.pit_urgency ?? 0);
   const scProbability = clampPercent(reco.scores?.sc_probability_next_3_laps ?? 0);
   const overtakeRisk = clampPercent(reco.scores?.overtake_risk ?? 0);
-
-  const executionBrief = useMemo(() => {
-    const pitCall = reco.pit_this_lap ? "Pit this lap" : "Hold this lap";
-    return [
-      `Primary action: ${reco.action}`,
-      `Immediate call: ${pitCall}`,
-      `Target compound: ${reco.suggested_compound}`,
-      `Recommended pit window: L${windowStart} to L${windowEnd}`,
-      `Confidence: ${confidence.toFixed(1)}%`,
-      `Alternative: ${reco.alternative}`,
-    ].join("\n");
-  }, [reco.action, reco.alternative, reco.pit_this_lap, reco.suggested_compound, windowStart, windowEnd, confidence]);
 
   const readinessCount = Number(checklist.pitCrewReady) + Number(checklist.tyreSetConfirmed) + Number(checklist.radioCallPrepared);
   const readinessPct = (readinessCount / 3) * 100;

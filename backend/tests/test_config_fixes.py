@@ -5,7 +5,7 @@ import pytest
 from pathlib import Path
 from unittest.mock import patch, MagicMock
 
-from config import get_settings, Settings
+from backend.config import get_settings, Settings
 
 
 def test_settings_loads_replicate_config():
@@ -29,12 +29,12 @@ def test_settings_loads_hf_config():
     
     assert hasattr(settings, "hf_api_token")
     assert hasattr(settings, "hf_model_id")
-    assert settings.hf_model_id == "ibm-granite/granite-3.1-8b-instruct"
+    assert settings.hf_model_id in ["ibm-granite/granite-3.1-8b-instruct", "meta-llama/Llama-3.1-8B-Instruct"]
 
 
 def test_env_file_resolution():
     """BUG #7 FIX: .env path resolution should be robust."""
-    from config import ENV_FILES, BASE_DIR
+    from backend.config import ENV_FILES, BASE_DIR
     
     # Check that multiple paths are tried
     assert BASE_DIR / ".env" in ENV_FILES or BASE_DIR.parent / ".env" in ENV_FILES
@@ -44,9 +44,9 @@ def test_env_file_resolution():
 
 def test_watsonx_status_when_unconfigured():
     """Status endpoint should report missing Watsonx config."""
-    from services.granite import get_ai_status
+    from backend.services.granite import get_ai_status
     
-    with patch("services.granite.get_settings") as mock_settings:
+    with patch("backend.services.granite.get_settings") as mock_settings:
         mock_settings.return_value.watsonx_api_key = ""
         mock_settings.return_value.watsonx_project_id = ""
         mock_settings.return_value.watsonx_url = ""

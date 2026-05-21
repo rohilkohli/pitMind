@@ -1,10 +1,12 @@
 import React, { createContext, useContext } from 'react';
 import { useStreamConnection, type StreamConnectionState } from '../hooks/useStreamConnection';
+import type { WebSocketMessageType } from '../types/api';
 
 interface StreamContextType {
   state: StreamConnectionState;
-  send: (data: unknown) => void;
+  send: <T = unknown>(type: WebSocketMessageType, data: T) => void;
   reconnect: () => void;
+  disconnect: () => void;
   isConnected: boolean;
 }
 

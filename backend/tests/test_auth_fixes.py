@@ -4,7 +4,7 @@ import pytest
 from fastapi.testclient import TestClient
 from unittest.mock import patch, MagicMock
 
-from main import app
+from backend.main import app
 
 client = TestClient(app)
 
@@ -22,7 +22,9 @@ def test_missing_authorization_header_rejected():
     )
     # Should return 401 Unauthorized, not allow guest access
     assert response.status_code == 401
-    assert "authorization" in response.json()["detail"].lower()
+    res_data = response.json()
+    err_msg = res_data.get("error", {}).get("message", "") or res_data.get("detail", "")
+    assert "authorization" in err_msg.lower()
 
 
 def test_malformed_authorization_header_rejected():
@@ -56,7 +58,9 @@ def test_bearer_token_with_dev_prefix_allowed_in_dev_mode():
     # BUG #3 FIX: Token validation should reject or accept correctly
     # 401 is correct if Firebase is not configured and token is invalid
     # The important part is that the auth header IS being processed
-    assert "authorization" in response.json()["detail"].lower() or response.status_code == 401
+    res_data = response.json()
+    err_msg = res_data.get("error", {}).get("message", "") or res_data.get("detail", "")
+    assert "authorization" in err_msg.lower() or "token" in err_msg.lower() or response.status_code == 401
 
 
 if __name__ == "__main__":

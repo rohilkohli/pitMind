@@ -1,68 +1,110 @@
+import { useEffect, useRef } from "react";
 import { useOptionalAuthUser } from "../../hooks/useOptionalAuthUser";
 import { Link, useLocation } from "react-router-dom";
-
-// F1-style Logo SVG (Premium Path)
-const F1LogoIcon = () => (
-  <svg viewBox="0 0 100 40" fill="none" width="48" height="18" className="text-f1-red">
-    <path 
-      d="M0 40L15 40L25 0L10 0L0 40ZM35 15L45 15L48 5L38 5L35 15ZM32 25L42 25L45 15L35 15L32 25ZM29 35L39 35L42 25L32 25L29 35ZM55 40L95 40C100 40 100 35 100 35L100 30L60 30L63 20L100 20L100 15C100 15 100 10 95 10L65 10L68 0L100 0L100 0L58 0L46 40L55 40Z" 
-      fill="currentColor" 
-    />
-  </svg>
-);
 
 export function NavBar() {
   const { user } = useOptionalAuthUser();
   const location = useLocation();
-  const isEngineer = location.pathname.includes("dashboard");
+  const isEngineer = location.pathname.includes("dashboard") || location.pathname.includes("copilot");
+  const topbarRef = useRef<HTMLElement>(null);
+
+  // Animate the lap progress bar
+  useEffect(() => {
+    // currentLap/totalLaps — using a static demo value; real value would come from raceState
+    const progress = (34 / 57) * 100;
+    if (topbarRef.current) {
+      topbarRef.current.style.setProperty("--nav-progress", `${progress.toFixed(1)}%`);
+    }
+  }, []);
+
+  const navLinks = [
+    { label: "Dashboard", to: "/dashboard" },
+    { label: "Fan Mode",  to: "/fan" },
+    { label: "Strategy",  to: "/strategy" },
+    { label: "Telemetry", to: "/telemetry" },
+  ];
 
   return (
-    <header className="sticky top-0 z-40 border-b border-f1-border bg-f1-black/95 px-4 backdrop-blur-md transition-all duration-300">
-      <div className="mx-auto flex h-14 max-w-[1600px] items-center justify-between gap-6">
-        {/* Left: Logo + PITMIND */}
-        <div className="flex items-center gap-2 flex-shrink-0">
-          <Link to="/" className="flex items-center gap-2 group">
-            <div className="flex h-8 w-8 items-center justify-center bg-f1-red flex-shrink-0">
-              <F1LogoIcon />
-            </div>
-            <span className="font-display text-lg font-black uppercase text-f1-white tracking-tighter">PitMind</span>
+    <header ref={topbarRef} className="pm-topbar">
+      {/* Logo */}
+      <Link to="/" className="pm-logo">
+        <div className="pm-logo-box">
+          <span>PM</span>
+        </div>
+        <span className="pm-logo-text">PITMIND</span>
+      </Link>
+
+      {/* Nav Links */}
+      <nav style={{ display: "flex", gap: "2px", flex: 1 }}>
+        {navLinks.map((link) => (
+          <Link
+            key={link.label}
+            to={link.to}
+            className={`pm-nav-item ${location.pathname === link.to ? "active" : ""}`}
+            style={{
+              fontSize: "10px",
+              letterSpacing: "0.15em",
+            }}
+          >
+            {link.label}
           </Link>
+        ))}
+      </nav>
 
-          <div className="hidden md:flex items-center gap-4 ml-4 pl-4 border-l border-f1-border">
-            <Link to="/dashboard" className="text-xs font-bold uppercase text-f1-white hover:text-f1-red transition-colors">Dashboard</Link>
-            <Link to="/fan" className="text-xs font-bold uppercase text-f1-white hover:text-f1-red transition-colors">Fan Mode</Link>
-            <a href="#strategy" className="text-xs font-bold uppercase text-f1-white hover:text-f1-red transition-colors">Strategy</a>
-          </div>
+      {/* Right: LIVE pill + Lap counter + Login/User */}
+      <div style={{ display: "flex", alignItems: "center", gap: "16px", marginLeft: "auto" }}>
+        <div 
+          className="pm-live-pill"
+          style={{
+            fontFamily: "'Barlow Condensed', sans-serif",
+            fontWeight: 700,
+            fontSize: "9px",
+            letterSpacing: "0.15em",
+            textTransform: "uppercase",
+            borderRadius: 0
+          }}
+        >
+          <div className="pm-live-dot" />
+          LIVE SYNC ACTIVE
         </div>
 
-
-        {/* Center: Live Badge */}
-        <div className="hidden lg:flex items-center gap-2 ml-auto mr-4">
-          <div className="f1-live text-xs">
-            Live
-          </div>
-          <span className="text-xs font-mono font-bold text-f1-muted">LAP 34 / 57</span>
+        <div className="pm-lap-counter">
+          LAP <span className="accent">34</span> / 57
         </div>
 
-        {/* Right: Auth + Role Toggle */}
-        <div className="flex items-center gap-3 flex-shrink-0">
-          {user ? (
-            <div className="flex items-center gap-2 px-2 py-1 border border-f1-border bg-f1-dark">
-              <img src={user.photoURL || ""} alt="Avatar" className="h-7 w-7 object-cover border border-f1-border" />
-              <Link
-                to={isEngineer ? "/fan" : "/dashboard"}
-                className="text-xs font-bold uppercase text-f1-white hover:text-f1-red transition-colors"
-              >
-                {isEngineer ? "FAN" : "ENGINEER"}
-              </Link>
-            </div>
-          ) : (
-            <Link to="/login" className="f1-btn text-xs py-2 px-4">
-              Login
-            </Link>
-          )}
-        </div>
+        {user ? (
+          <Link
+            to={isEngineer ? "/fan" : "/dashboard"}
+            className="pm-login-btn"
+            style={{
+              clipPath: "polygon(8px 0, 100% 0, calc(100% - 8px) 100%, 0 100%)",
+              fontFamily: "'Barlow Condensed', sans-serif",
+              fontWeight: 700,
+              fontSize: "10px",
+              letterSpacing: "0.15em",
+              borderRadius: 0
+            }}
+          >
+            {isEngineer ? "FAN MODE" : "ENGINEER"}
+          </Link>
+        ) : (
+          <Link 
+            to="/login" 
+            className="pm-login-btn"
+            style={{
+              clipPath: "polygon(8px 0, 100% 0, calc(100% - 8px) 100%, 0 100%)",
+              fontFamily: "'Barlow Condensed', sans-serif",
+              fontWeight: 700,
+              fontSize: "10px",
+              letterSpacing: "0.15em",
+              borderRadius: 0
+            }}
+          >
+            ENGINEER LOGIN
+          </Link>
+        )}
       </div>
     </header>
   );
 }
+

@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { Card } from '../ui/card';
 import { ArrowRight, TrendingUp, Zap, Clock } from 'lucide-react';
 
 export interface PitScenario {
@@ -124,11 +123,7 @@ export const BranchingSimulator: React.FC<BranchingSimulatorProps> = ({
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const selectedScenario = MOCK_SCENARIOS.find((s) => s.id === selectedId);
 
-  const getConfidenceBadgeColor = (confidence: number) => {
-    if (confidence >= 0.8) return 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30';
-    if (confidence >= 0.65) return 'bg-amber-500/20 text-amber-300 border-amber-500/30';
-    return 'bg-red-500/20 text-red-300 border-red-500/30';
-  };
+
 
   return (
     <div className="space-y-6">
@@ -141,21 +136,24 @@ export const BranchingSimulator: React.FC<BranchingSimulatorProps> = ({
               setSelectedId(scenario.id);
               onSelectScenario?.(scenario);
             }}
-            className={`cursor-pointer rounded-2xl border-2 p-4 transition-all ${
+            className={`cursor-pointer pm-panel min-w-[140px] p-4 transition-all ${
               selectedId === scenario.id
-                ? 'border-f1-red bg-f1-red/10 ring-2 ring-f1-red/30 shadow-lg'
-                : 'border-white/10 bg-black/20 hover:border-white/20 hover:bg-black/30'
+                ? 'border-[var(--f1-red)] bg-[var(--f1-red-dim)]'
+                : 'hover:border-[var(--f1-red)]'
             }`}
           >
             <div className="flex items-start justify-between gap-2 mb-3">
               <div>
-                <h3 className="text-sm font-semibold text-white">{scenario.label}</h3>
-                <p className="text-xs text-f1-muted mt-1">{scenario.description}</p>
+                <h3 className="font-label text-sm text-[var(--text-primary)]">{scenario.label}</h3>
+                <p className="font-tele text-[10px] text-[var(--text-secondary)] mt-1">{scenario.description}</p>
               </div>
               <div
-                className={`px-2 py-1 rounded-lg text-xs font-bold border ${getConfidenceBadgeColor(
-                  scenario.confidence
-                )}`}
+                className={`pm-badge-ai`}
+                style={{
+                  background: scenario.confidence >= 0.8 ? 'var(--neon-green-dim)' : scenario.confidence >= 0.65 ? 'var(--amber-dim)' : 'var(--f1-red-dim)',
+                  color: scenario.confidence >= 0.8 ? 'var(--neon-green)' : scenario.confidence >= 0.65 ? 'var(--amber)' : 'var(--f1-red)',
+                  border: `1px solid ${scenario.confidence >= 0.8 ? 'var(--neon-green)' : scenario.confidence >= 0.65 ? 'var(--amber)' : 'var(--f1-red)'}`
+                }}
               >
                 {(scenario.confidence * 100).toFixed(0)}%
               </div>
@@ -164,18 +162,18 @@ export const BranchingSimulator: React.FC<BranchingSimulatorProps> = ({
             {/* Outcome metrics */}
             <div className="space-y-2 mb-4">
               <div className="flex items-center justify-between text-xs">
-                <span className="text-f1-muted">Predicted Position</span>
-                <span className="font-semibold text-white">{scenario.predictedPosition}</span>
+                <span className="font-label tracking-widest text-[var(--text-secondary)] uppercase">Predicted Pos</span>
+                <span className="font-race text-[var(--text-primary)]">P{scenario.predictedPosition}</span>
               </div>
               <div className="flex items-center justify-between text-xs">
-                <span className="text-f1-muted">Gap to Leader</span>
-                <span className={`font-semibold ${scenario.predictedGap > 0 ? 'text-red-400' : 'text-emerald-400'}`}>
+                <span className="font-label tracking-widest text-[var(--text-secondary)] uppercase">Gap</span>
+                <span className={`font-race ${scenario.predictedGap > 0 ? 'text-[var(--f1-red)]' : 'text-[var(--neon-green)]'}`}>
                   {scenario.predictedGap > 0 ? '+' : ''}{scenario.predictedGap.toFixed(1)}s
                 </span>
               </div>
               <div className="flex items-center justify-between text-xs">
-                <span className="text-f1-muted">Lap Time</span>
-                <span className="font-mono text-white">{scenario.predictedLapTime.toFixed(1)}s</span>
+                <span className="font-label tracking-widest text-[var(--text-secondary)] uppercase">Lap Time</span>
+                <span className="font-tele text-[var(--text-primary)]">{scenario.predictedLapTime.toFixed(1)}s</span>
               </div>
             </div>
 
@@ -191,7 +189,7 @@ export const BranchingSimulator: React.FC<BranchingSimulatorProps> = ({
 
       {/* Detailed scenario view */}
       {selectedScenario && (
-        <Card className="border-white/10 bg-white/5 p-6">
+        <div className="pm-panel p-6">
           <div className="grid gap-6 md:grid-cols-2">
             {/* Left: Pros & Cons */}
             <div className="space-y-4">
@@ -252,19 +250,19 @@ export const BranchingSimulator: React.FC<BranchingSimulatorProps> = ({
           </div>
 
           {/* Action button */}
-          <div className="mt-6 pt-6 border-t border-white/10">
-            <button className="w-full px-4 py-3 rounded-lg bg-f1-red text-white font-semibold hover:bg-f1-red-dark transition flex items-center justify-center gap-2">
+          <div className="mt-6 pt-6" style={{ borderTop: "1px solid var(--border)" }}>
+            <button className="pm-btn-primary w-full flex items-center justify-center gap-2">
               <span>Execute {selectedScenario.label} Strategy</span>
               <ArrowRight className="w-4 h-4" />
             </button>
           </div>
-        </Card>
+        </div>
       )}
 
       {/* Info panel */}
-      <div className="p-4 rounded-lg border border-white/10 bg-black/20">
-        <p className="text-xs text-f1-muted">
-          <span className="font-semibold text-white">Current State:</span> Lap {currentLap}, P{currentPosition}, Gap {currentGap > 0 ? '+' : ''}{currentGap.toFixed(1)}s
+      <div className="pm-panel p-4 bg-[var(--carbon-mid)]" style={{ border: "1px solid var(--border)" }}>
+        <p className="font-tele text-[10px] text-[var(--text-secondary)]">
+          <span className="font-label tracking-widest text-[var(--text-primary)] uppercase mr-2">Current State:</span> Lap {currentLap}, P{currentPosition}, Gap {currentGap > 0 ? '+' : ''}{currentGap.toFixed(1)}s
         </p>
         <p className="text-xs text-f1-muted mt-2">
           Click a scenario card to view pros/cons and predicted timeline. Compare outcomes before committing to a pit strategy.

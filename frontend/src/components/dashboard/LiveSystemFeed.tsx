@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 
 interface LogEntry {
   id: string;
@@ -22,67 +22,171 @@ const MESSAGES = [
   'Cache hit: track_monaco_v2',
 ];
 
+const getTagClass = (module: string): string => {
+  const m = module.toUpperCase();
+  if (m === 'NETWORK' || m === 'TELEMETRY') return 'pm-feed-tag pm-tag-net';
+  if (m === 'FIREBASE')                     return 'pm-feed-tag pm-tag-fb';
+  if (m === 'AUTH')                         return 'pm-feed-tag pm-tag-auth';
+  return 'pm-feed-tag pm-tag-sys'; // STRATEGY, GRANITE-AI, etc.
+};
+
 export const LiveSystemFeed: React.FC = () => {
   const [logs, setLogs] = useState<LogEntry[]>([]);
-  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    // Seed initial entries
+    const initial: LogEntry[] = Array.from({ length: 5 }, (_, i) => {
+      const module = MODULES[Math.floor(Math.random() * MODULES.length)];
+      const now = new Date(Date.now() - (5 - i) * 2200);
+      return {
+        id: `init-${i}`,
+        timestamp: now.toLocaleTimeString([], { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+        module,
+        message: MESSAGES[Math.floor(Math.random() * MESSAGES.length)],
+        type: 'info',
+      };
+    });
+    setLogs(initial);
+
     const interval = setInterval(() => {
+      const module = MODULES[Math.floor(Math.random() * MODULES.length)];
       const newLog: LogEntry = {
         id: Math.random().toString(36).substr(2, 9),
         timestamp: new Date().toLocaleTimeString([], { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' }),
-        module: MODULES[Math.floor(Math.random() * MODULES.length)],
+        module,
         message: MESSAGES[Math.floor(Math.random() * MESSAGES.length)],
-        type: Math.random() > 0.9 ? 'warn' : Math.random() > 0.1 ? 'info' : 'success',
+        type: Math.random() > 0.9 ? 'warn' : 'info',
       };
 
-      setLogs((prev) => [newLog, ...prev].slice(0, 50));
-    }, 2000);
+      setLogs((prev) => [newLog, ...prev].slice(0, 8));
+    }, 2200);
 
     return () => clearInterval(interval);
   }, []);
 
-  const getTypeColor = (type: string) => {
-    switch (type) {
-      case 'warn': return 'text-[#FFC906]';
-      case 'error': return 'text-f1-red';
-      case 'success': return 'text-[#39B54A]';
-      default: return 'text-[#C4C4C4]';
-    }
-  };
-
   return (
-    <div className="flex flex-col h-full bg-[#1F1F27] overflow-hidden">
-      <div className="px-5 py-4 border-b border-[#38383F] bg-[#1F1F27] flex items-center justify-between">
-        <h4 className="f1-section-title !mb-0">System Live Feed</h4>
-        <div className="flex items-center gap-2">
-          <div className="h-1.5 w-1.5 rounded-full bg-f1-red animate-pulse" />
-          <span className="text-[9px] font-black text-f1-red uppercase tracking-widest">Live</span>
-        </div>
-      </div>
-      
-      <div 
-        ref={containerRef}
-        className="flex-1 overflow-y-auto p-5 font-mono text-[11px] space-y-2.5 bg-[#15151E]/40 scrollbar-thin"
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        height: "100%",
+        background: "transparent",
+        overflow: "hidden",
+        position: "relative",
+      }}
+    >
+      {/* Header */}
+      <div
+        style={{
+          padding: "0 0 12px 0",
+          borderBottom: "1px solid var(--border)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          flexShrink: 0,
+        }}
       >
+        <div className="pm-panel-title">System Feed</div>
+        <span 
+          className="pm-panel-badge pm-badge-live"
+          style={{
+            fontFamily: "'Barlow Condensed', sans-serif",
+            fontWeight: 700,
+            fontSize: "9px",
+            letterSpacing: "0.15em",
+            textTransform: "uppercase",
+            borderRadius: 0
+          }}
+        >
+          STREAMING
+        </span>
+      </div>
+
+      {/* Log entries — max 8 visible */}
+      <div
+        style={{
+          flex: 1,
+          overflowY: "hidden",
+          padding: "8px 0",
+        }}
+      >
+        {logs.length === 0 && (
+          <div
+            style={{
+              fontFamily: "'IBM Plex Mono', monospace",
+              fontSize: 10,
+              color: "var(--text-secondary)",
+              letterSpacing: "0.15em",
+              textTransform: "uppercase",
+              animation: "flicker 3s infinite",
+            }}
+          >
+            Initializing system log stream...
+          </div>
+        )}
         {logs.map((log) => (
-          <div key={log.id} className="flex gap-4 opacity-90 hover:opacity-100 transition-opacity">
-            <span className="text-[#67676D] shrink-0 font-medium">[{log.timestamp}]</span>
-            <span className="text-white font-bold shrink-0 opacity-40">{log.module}</span>
-            <span className={`${getTypeColor(log.type)} break-all font-medium tracking-tight`}>{log.message}</span>
+          <div key={log.id} className="pm-feed-item">
+            <span className="pm-feed-time">[{log.timestamp}]</span>
+            <span 
+              className={getTagClass(log.module)}
+              style={{
+                borderRadius: 0,
+                fontFamily: "'Barlow Condensed', sans-serif",
+                fontWeight: 700,
+                fontSize: "9px",
+                letterSpacing: "0.15em",
+                textTransform: "uppercase"
+              }}
+            >
+              {log.module.slice(0, 7)}
+            </span>
+            <span className="pm-feed-text">{log.message}</span>
           </div>
         ))}
-        {logs.length === 0 && (
-          <div className="text-[#67676D] animate-pulse font-bold uppercase tracking-widest text-[10px]">Initializing system log stream...</div>
-        )}
       </div>
 
-      <div className="px-5 py-3 border-t border-[#38383F] bg-[#1F1F27] text-[10px] text-[#67676D] uppercase font-bold tracking-[0.2em] flex justify-between">
-        <div className="flex items-center gap-2">
-          <div className="w-1 h-1 rounded-full bg-[#39B54A]" />
-          <span>STATUS: NOMINAL</span>
+      {/* Footer */}
+      <div
+        style={{
+          padding: "12px 0 0 0",
+          borderTop: "1px solid var(--border)",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          flexShrink: 0,
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+          <div
+            style={{
+              width: 4,
+              height: 4,
+              borderRadius: "50%",
+              background: "var(--neon-green)",
+            }}
+          />
+          <span
+            style={{
+              fontFamily: "'Barlow Condensed', sans-serif",
+              fontSize: 9,
+              letterSpacing: "0.2em",
+              textTransform: "uppercase",
+              color: "var(--text-secondary)",
+              fontWeight: 700,
+            }}
+          >
+            STATUS: NOMINAL
+          </span>
         </div>
-        <span>BUFFER: {logs.length}/50</span>
+        <span
+          style={{
+            fontFamily: "'IBM Plex Mono', monospace",
+            fontSize: 9,
+            color: "var(--text-secondary)",
+          }}
+        >
+          BUFFER: {logs.length}/8
+        </span>
       </div>
     </div>
   );

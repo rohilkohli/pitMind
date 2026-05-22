@@ -32,14 +32,14 @@ function clampPercent(value: number) {
 }
 
 function ScoreRow({ label, value, tone }: ScoreRowProps) {
-  const colorClass = tone === "safe" ? "bg-[#39B54A]" : tone === "warn" ? "bg-[#FFC906]" : "bg-f1-red";
+  const colorClass = tone === "safe" ? "bg-[var(--neon-green)]" : tone === "warn" ? "bg-[var(--amber)]" : "bg-[var(--f1-red)]";
   return (
     <div>
-      <div className="mb-1 flex items-center justify-between">
-        <span className="text-[10px] font-black uppercase tracking-wider text-f1-muted">{label}</span>
-        <span className="font-mono text-[11px] text-f1-white">{value.toFixed(0)}%</span>
+      <div className="mb-1 flex items-center justify-between font-tele">
+        <span className="text-[10px] font-label uppercase tracking-wider text-[var(--text-secondary)]">{label}</span>
+        <span className="font-semibold text-[11px] text-[var(--text-primary)]">{value.toFixed(0)}%</span>
       </div>
-      <div className="h-1.5 w-full bg-f1-border">
+      <div className="h-1.5 w-full bg-[var(--carbon-light)]">
         <div className={`h-full ${colorClass}`} style={{ width: `${clampPercent(value)}%` }} />
       </div>
     </div>
@@ -47,9 +47,9 @@ function ScoreRow({ label, value, tone }: ScoreRowProps) {
 }
 
 function confidenceTone(confidence: number) {
-  if (confidence >= 70) return "text-[#39B54A]";
-  if (confidence >= 45) return "text-[#FFC906]";
-  return "text-f1-red";
+  if (confidence >= 70) return "text-[var(--neon-green)]";
+  if (confidence >= 45) return "text-[var(--amber)]";
+  return "text-[var(--f1-red)]";
 }
 
 export function StrategyTimeline({
@@ -114,7 +114,7 @@ export function StrategyTimeline({
   if (!reco) {
     return (
       <div 
-        className="flex h-full items-center justify-center p-8 text-center relative overflow-hidden bg-[#15151E]"
+        className="flex h-full items-center justify-center p-8 text-center relative overflow-hidden bg-[var(--carbon-mid)]"
         style={{
           backgroundImage: `
             linear-gradient(rgba(225,6,0,0.03) 1px, transparent 1px),
@@ -124,21 +124,21 @@ export function StrategyTimeline({
         }}
       >
         <div className="relative z-10 flex flex-col items-center">
-          <Lock className="w-10 h-10 text-[#38383F] mb-4" />
-          <p className="text-[18px] font-display font-semibold text-[#67676D] uppercase tracking-widest leading-tight mb-2">
+          <Lock className="w-10 h-10 text-[var(--border)] mb-4" />
+          <p className="font-label text-[18px] font-semibold text-[var(--text-secondary)] uppercase tracking-widest leading-tight mb-2">
             Generate a strategy to <br/> unlock the reasoning trace
           </p>
-          <p className="text-[13px] font-body text-[#38383F] max-w-[200px]">
+          <p className="text-[10px] font-tele uppercase text-[var(--text-secondary)] max-w-[200px]">
             The viewer fills in with evidence, confidence, and alternate calls.
           </p>
           <div className="mt-5 grid grid-cols-2 gap-2 text-left">
-            <div className="border border-[#38383F] bg-[#1F1F27] px-3 py-2">
-              <p className="text-[9px] font-black uppercase tracking-wider text-f1-muted">Awaiting</p>
-              <p className="mt-1 text-[11px] font-bold text-f1-white">Recommendation</p>
+            <div className="border border-[var(--border)] bg-[var(--carbon-light)] px-3 py-2">
+              <p className="text-[9px] font-label font-black uppercase tracking-wider text-[var(--text-secondary)]">Awaiting</p>
+              <p className="mt-1 text-[11px] font-tele uppercase font-bold text-[var(--text-primary)]">Recommendation</p>
             </div>
-            <div className="border border-[#38383F] bg-[#1F1F27] px-3 py-2">
-              <p className="text-[9px] font-black uppercase tracking-wider text-f1-muted">Awaiting</p>
-              <p className="mt-1 text-[11px] font-bold text-f1-white">Risk Model</p>
+            <div className="border border-[var(--border)] bg-[var(--carbon-light)] px-3 py-2">
+              <p className="text-[9px] font-label font-black uppercase tracking-wider text-[var(--text-secondary)]">Awaiting</p>
+              <p className="mt-1 text-[11px] font-tele uppercase font-bold text-[var(--text-primary)]">Risk Model</p>
             </div>
           </div>
         </div>
@@ -221,62 +221,62 @@ export function StrategyTimeline({
 
   return (
     <>
-      <div className="flex h-full flex-col border border-f1-border bg-f1-black">
-        <div className="sticky top-0 z-10 border-b border-f1-border bg-f1-black px-4 py-4">
+      <div className="flex h-full flex-col">
+        <div className="sticky top-0 z-10 border-b border-[var(--border)] bg-[var(--carbon)] px-4 py-4">
           <div className="flex items-center justify-between gap-3">
             <div>
-              <h2 className="text-xs font-bold uppercase tracking-widest text-f1-white">AI Reasoning Trace</h2>
-              <p className="mt-1 text-xs uppercase tracking-widest text-f1-muted">Model output with guardrails and structured evidence</p>
+              <h2 className="text-xs font-label uppercase tracking-widest text-[var(--text-primary)]">AI Reasoning Trace</h2>
+              <p className="mt-1 font-tele text-[10px] uppercase tracking-widest text-[var(--text-secondary)]">Model output with guardrails and structured evidence</p>
             </div>
-            <span className="f1-badge f1-badge-soft text-xs">
-              {confidence.toFixed(0)}%
+            <span className="pm-chip">
+              {confidence.toFixed(0)}% CONFIDENCE
             </span>
           </div>
         </div>
         
         <div className="space-y-5 overflow-y-auto px-4 py-4">
-          <div className="f1-card border-l-4 border-f1-red p-4">
+          <div className="pm-panel border-l-4 border-[var(--f1-red)] p-4">
             <div className="flex items-start justify-between gap-3">
               <div>
-                <span className="text-xs font-bold uppercase tracking-widest text-f1-muted">Recommendation</span>
-                <h3 className="mt-2 text-xl font-display font-black uppercase text-f1-white">{reco.action}</h3>
+                <span className="text-xs font-label uppercase tracking-widest text-[var(--text-secondary)]">Recommendation</span>
+                <h3 className="mt-2 text-xl font-label font-black uppercase text-[var(--text-primary)]">{reco.action}</h3>
               </div>
-              <div className="border border-f1-border bg-f1-dark px-3 py-2 text-right">
-                <div className="text-xs uppercase tracking-widest text-f1-muted">Compound</div>
-                <div className="font-mono text-sm text-f1-white">{reco.suggested_compound}</div>
-              </div>
-            </div>
-
-            <div className="mt-4 grid grid-cols-3 gap-2 text-xs text-f1-muted">
-              <div className="border border-f1-border bg-f1-dark px-3 py-2">
-                <div className="uppercase tracking-widest">Pit</div>
-                <div className="mt-1 font-bold text-f1-white">{String(reco.pit_this_lap)}</div>
-              </div>
-              <div className="border border-f1-border bg-f1-dark px-3 py-2">
-                <div className="uppercase tracking-widest">Window</div>
-                <div className="mt-1 font-mono text-f1-white">{windowStart}-{windowEnd}</div>
-              </div>
-              <div className="border border-f1-border bg-f1-dark px-3 py-2">
-                <div className="uppercase tracking-widest">Confidence</div>
-                <div className={`mt-1 font-mono ${confidenceTone(confidence)}`}>{confidence.toFixed(1)}%</div>
+              <div className="border border-[var(--border)] bg-[var(--carbon-mid)] px-3 py-2 text-right">
+                <div className="text-[10px] font-label uppercase tracking-widest text-[var(--text-secondary)]">Compound</div>
+                <div className="font-tele text-sm text-[var(--text-primary)] font-semibold mt-1">{reco.suggested_compound}</div>
               </div>
             </div>
 
-            <div className="mt-4 h-2 bg-f1-border">
-              <div className="h-full bg-f1-red" style={{ width: `${confidence}%` }} />
+            <div className="mt-4 grid grid-cols-3 gap-2 text-xs text-[var(--text-secondary)] font-tele">
+              <div className="border border-[var(--border)] bg-[var(--carbon-mid)] px-3 py-2">
+                <div className="font-label text-[10px] uppercase tracking-widest">Pit</div>
+                <div className="mt-1 font-semibold text-[var(--text-primary)]">{String(reco.pit_this_lap)}</div>
+              </div>
+              <div className="border border-[var(--border)] bg-[var(--carbon-mid)] px-3 py-2">
+                <div className="font-label text-[10px] uppercase tracking-widest">Window</div>
+                <div className="mt-1 font-semibold text-[var(--text-primary)]">{windowStart}-{windowEnd}</div>
+              </div>
+              <div className="border border-[var(--border)] bg-[var(--carbon-mid)] px-3 py-2">
+                <div className="font-label text-[10px] uppercase tracking-widest">Confidence</div>
+                <div className={`mt-1 font-semibold ${confidenceTone(confidence)}`}>{confidence.toFixed(1)}%</div>
+              </div>
+            </div>
+
+            <div className="mt-4 h-2 bg-[var(--carbon-light)]">
+              <div className="h-full bg-[var(--f1-red)]" style={{ width: `${confidence}%` }} />
             </div>
           </div>
 
-          <div className="f1-card p-4">
+          <div className="pm-panel p-4">
             <div className="mb-3 flex items-center justify-between">
-              <h3 className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-f1-muted">
-                <Gauge className="h-3.5 w-3.5 text-f1-red" />
+              <h3 className="flex items-center gap-2 text-xs font-label font-bold uppercase tracking-widest text-[var(--text-secondary)]">
+                <Gauge className="h-3.5 w-3.5 text-[var(--f1-red)]" />
                 Strategy Risk Matrix
               </h3>
               <button
                 type="button"
                 onClick={onCopyBrief}
-                className="inline-flex items-center gap-1.5 border border-f1-border bg-f1-dark px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-f1-white hover:border-f1-red"
+                className="inline-flex items-center gap-1.5 border border-[var(--border)] bg-[var(--carbon-mid)] px-2.5 py-1 text-[10px] font-label font-black uppercase tracking-wider text-[var(--text-primary)] hover:border-[var(--f1-red)] transition-colors clip-para-sm"
               >
                 <ClipboardCheck className="h-3 w-3" />
                 {briefCopied ? "Copied" : "Copy Brief"}
@@ -289,14 +289,14 @@ export function StrategyTimeline({
               <ScoreRow label="Overtake risk" value={overtakeRisk} tone={overtakeRisk >= 60 ? "risk" : overtakeRisk >= 35 ? "warn" : "safe"} />
             </div>
 
-            <div className="mt-4 border border-f1-border bg-f1-dark p-3">
-              <p className="text-[10px] font-black uppercase tracking-wider text-f1-muted">Execution Brief</p>
-              <pre className="mt-2 whitespace-pre-wrap font-mono text-[11px] leading-relaxed text-f1-secondary">{executionBrief}</pre>
+            <div className="mt-4 border border-[var(--border)] bg-[var(--carbon-mid)] p-3">
+              <p className="text-[10px] font-label font-black uppercase tracking-wider text-[var(--text-secondary)]">Execution Brief</p>
+              <pre className="mt-2 whitespace-pre-wrap font-tele text-[11px] leading-relaxed text-[var(--text-primary)]">{executionBrief}</pre>
               <div className="mt-3 flex justify-end">
                 <button
                   type="button"
                   onClick={() => onInjectBriefToChat?.(executionBrief)}
-                  className="border border-f1-border bg-[#1A1A22] px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-f1-white hover:border-f1-red"
+                  className="pm-btn-primary px-3 py-1.5 text-[10px]"
                 >
                   Push To Copilot
                 </button>
@@ -304,34 +304,34 @@ export function StrategyTimeline({
             </div>
           </div>
 
-          <div className="f1-card p-4">
-            <h3 className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-f1-muted">
-              <ShieldCheck className="h-3.5 w-3.5 text-f1-red" />
+          <div className="pm-panel p-4">
+            <h3 className="mb-3 flex items-center gap-2 text-xs font-label font-bold uppercase tracking-widest text-[var(--text-secondary)]">
+              <ShieldCheck className="h-3.5 w-3.5 text-[var(--f1-red)]" />
               Strategy Execution Checklist
             </h3>
 
-            <div className="mb-3 h-1.5 bg-f1-border">
-              <div className="h-full bg-f1-red" style={{ width: `${readinessPct}%` }} />
+            <div className="mb-3 h-1.5 bg-[var(--carbon-light)]">
+              <div className="h-full bg-[var(--f1-red)]" style={{ width: `${readinessPct}%` }} />
             </div>
 
             <div className="space-y-2">
-              <button type="button" onClick={() => toggleChecklist("pitCrewReady")} className="flex w-full items-center justify-between border border-f1-border bg-f1-dark px-3 py-2 text-left">
-                <span className="text-xs font-semibold text-f1-secondary">Pit crew ready at box</span>
-                <span className={`text-[10px] font-black uppercase ${checklist.pitCrewReady ? "text-[#39B54A]" : "text-f1-muted"}`}>{checklist.pitCrewReady ? "Done" : "Pending"}</span>
+              <button type="button" onClick={() => toggleChecklist("pitCrewReady")} className="flex w-full items-center justify-between border border-[var(--border)] bg-[var(--carbon-mid)] px-3 py-2 text-left hover:border-[var(--f1-red)] transition-colors">
+                <span className="font-tele text-[11px] font-semibold text-[var(--text-primary)] uppercase">Pit crew ready at box</span>
+                <span className={`font-label text-[10px] font-black uppercase ${checklist.pitCrewReady ? "text-[var(--neon-green)]" : "text-[var(--text-secondary)]"}`}>{checklist.pitCrewReady ? "Done" : "Pending"}</span>
               </button>
-              <button type="button" onClick={() => toggleChecklist("tyreSetConfirmed")} className="flex w-full items-center justify-between border border-f1-border bg-f1-dark px-3 py-2 text-left">
-                <span className="text-xs font-semibold text-f1-secondary">Target tyre set confirmed</span>
-                <span className={`text-[10px] font-black uppercase ${checklist.tyreSetConfirmed ? "text-[#39B54A]" : "text-f1-muted"}`}>{checklist.tyreSetConfirmed ? "Done" : "Pending"}</span>
+              <button type="button" onClick={() => toggleChecklist("tyreSetConfirmed")} className="flex w-full items-center justify-between border border-[var(--border)] bg-[var(--carbon-mid)] px-3 py-2 text-left hover:border-[var(--f1-red)] transition-colors">
+                <span className="font-tele text-[11px] font-semibold text-[var(--text-primary)] uppercase">Target tyre set confirmed</span>
+                <span className={`font-label text-[10px] font-black uppercase ${checklist.tyreSetConfirmed ? "text-[var(--neon-green)]" : "text-[var(--text-secondary)]"}`}>{checklist.tyreSetConfirmed ? "Done" : "Pending"}</span>
               </button>
-              <button type="button" onClick={() => toggleChecklist("radioCallPrepared")} className="flex w-full items-center justify-between border border-f1-border bg-f1-dark px-3 py-2 text-left">
-                <span className="text-xs font-semibold text-f1-secondary">Radio call script prepared</span>
-                <span className={`text-[10px] font-black uppercase ${checklist.radioCallPrepared ? "text-[#39B54A]" : "text-f1-muted"}`}>{checklist.radioCallPrepared ? "Done" : "Pending"}</span>
+              <button type="button" onClick={() => toggleChecklist("radioCallPrepared")} className="flex w-full items-center justify-between border border-[var(--border)] bg-[var(--carbon-mid)] px-3 py-2 text-left hover:border-[var(--f1-red)] transition-colors">
+                <span className="font-tele text-[11px] font-semibold text-[var(--text-primary)] uppercase">Radio call script prepared</span>
+                <span className={`font-label text-[10px] font-black uppercase ${checklist.radioCallPrepared ? "text-[var(--neon-green)]" : "text-[var(--text-secondary)]"}`}>{checklist.radioCallPrepared ? "Done" : "Pending"}</span>
               </button>
             </div>
 
-            <div className="mt-3 flex items-start gap-2 border border-f1-border bg-[#1A1A22] px-3 py-2">
-              <TimerReset className="mt-0.5 h-3.5 w-3.5 text-f1-red" />
-              <p className="text-[11px] leading-relaxed text-f1-secondary">
+            <div className="mt-3 flex items-start gap-2 border border-[var(--border)] bg-[var(--carbon-mid)] px-3 py-2">
+              <TimerReset className="mt-0.5 h-3.5 w-3.5 text-[var(--f1-red)]" />
+              <p className="font-tele text-[10px] leading-relaxed text-[var(--text-secondary)] uppercase">
                 Ready state: {readinessCount}/3 checks complete. {readinessCount === 3 ? "Execution lane is clear." : "Complete checklist before issuing final pit command."}
               </p>
             </div>
@@ -341,72 +341,72 @@ export function StrategyTimeline({
                 type="button"
                 onClick={onCommit}
                 disabled={commitState.loading || !onCommitStrategy}
-                className="h-9 flex-1 border border-f1-red bg-f1-red/15 px-3 text-[10px] font-black uppercase tracking-[0.16em] text-f1-white hover:bg-f1-red/30 disabled:opacity-60"
+                className="pm-btn-primary flex-1 py-2 text-[10px]"
               >
                 {commitState.loading ? "Committing..." : "Commit Strategy"}
               </button>
               <button
                 type="button"
                 onClick={() => setChecklist({ pitCrewReady: false, tyreSetConfirmed: false, radioCallPrepared: false })}
-                className="h-9 border border-f1-border bg-f1-dark px-3 text-[10px] font-black uppercase tracking-wider text-f1-muted hover:text-f1-white"
+                className="h-9 border border-[var(--border)] bg-[var(--carbon-mid)] px-3 font-label text-[10px] font-black uppercase tracking-wider text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors clip-para-sm"
               >
                 Reset
               </button>
             </div>
 
             {commitState.message && (
-              <p className={`mt-2 text-[10px] font-bold uppercase tracking-wider ${commitState.isError ? "text-f1-red" : "text-[#39B54A]"}`}>
+              <p className={`mt-2 font-tele text-[10px] font-bold uppercase tracking-wider ${commitState.isError ? "text-[var(--f1-red)]" : "text-[var(--neon-green)]"}`}>
                 {commitState.message}
               </p>
             )}
           </div>
 
           {reco.explanation && (
-            <div className="f1-card border-l-4 border-f1-red p-4">
-              <h3 className="text-xs font-bold uppercase tracking-widest text-f1-muted">Summary</h3>
-              <p className="mt-2 text-sm leading-relaxed text-f1-secondary">{reco.explanation}</p>
+            <div className="pm-panel border-l-4 border-[var(--f1-red)] p-4">
+              <h3 className="text-xs font-label font-bold uppercase tracking-widest text-[var(--text-secondary)]">Summary</h3>
+              <p className="mt-2 font-tele text-xs leading-relaxed text-[var(--text-primary)]">{reco.explanation}</p>
             </div>
           )}
 
           <div className="grid gap-3 md:grid-cols-2">
-            <div className="f1-card p-4">
-              <h3 className="text-xs font-bold uppercase tracking-widest text-f1-muted">Pipeline</h3>
+            <div className="pm-panel p-4">
+              <h3 className="text-xs font-label font-bold uppercase tracking-widest text-[var(--text-secondary)]">Pipeline</h3>
               <div className="mt-3 space-y-3">
                 {steps.length > 0 ? steps.map((step, idx) => (
                   <div key={idx} className="flex gap-3">
-                    <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center bg-f1-red text-[10px] font-bold text-white">{idx + 1}</span>
-                    <p className="text-sm text-f1-secondary">{step}</p>
+                    <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center bg-[var(--f1-red)] font-tele text-[10px] font-bold text-[var(--text-primary)]">{idx + 1}</span>
+                    <p className="font-tele text-xs text-[var(--text-primary)]">{step}</p>
                   </div>
-                )) : <p className="text-sm text-f1-muted">No pipeline steps returned.</p>}
+                )) : <p className="font-tele text-xs text-[var(--text-secondary)]">No pipeline steps returned.</p>}
               </div>
             </div>
 
             <div className="space-y-3">
-              <div className="f1-card p-4">
-                <h3 className="text-xs font-bold uppercase tracking-widest text-f1-muted">Key Drivers</h3>
+              <div className="pm-panel p-4">
+                <h3 className="text-xs font-label font-bold uppercase tracking-widest text-[var(--text-secondary)]">Key Drivers</h3>
                 {reasons.length > 0 ? (
                   <ul className="mt-3 space-y-2">
                     {reasons.map((reason, idx) => (
-                      <li key={idx} className="flex gap-2 text-sm text-f1-secondary">
-                        <span className="mt-1 h-2 w-2 bg-f1-red" />
+                      <li key={idx} className="flex gap-2 font-tele text-xs text-[var(--text-primary)]">
+                        <span className="mt-1 h-2 w-2 bg-[var(--f1-red)]" />
                         <span>{reason}</span>
                       </li>
                     ))}
                   </ul>
-                ) : <p className="mt-2 text-sm text-f1-muted">No structured reasons provided.</p>}
+                ) : <p className="mt-2 font-tele text-xs text-[var(--text-secondary)]">No structured reasons provided.</p>}
               </div>
-              <div className="f1-card p-4">
-                <h3 className="text-xs font-bold uppercase tracking-widest text-f1-muted">Alternative</h3>
-                <p className="mt-2 text-sm text-f1-secondary">{reco.alternative}</p>
+              <div className="pm-panel p-4">
+                <h3 className="text-xs font-label font-bold uppercase tracking-widest text-[var(--text-secondary)]">Alternative</h3>
+                <p className="mt-2 font-tele text-xs text-[var(--text-primary)]">{reco.alternative}</p>
               </div>
 
               {(pitUrgency >= 70 || overtakeRisk >= 70) && (
-                <div className="border border-f1-red/30 bg-f1-red/10 p-4">
-                  <h3 className="mb-2 flex items-center gap-2 text-xs font-black uppercase tracking-widest text-f1-red">
+                <div className="border border-[var(--f1-red)] bg-[var(--f1-red-dim)] p-4">
+                  <h3 className="mb-2 flex items-center gap-2 font-label text-xs font-black uppercase tracking-widest text-[var(--f1-red)]">
                     <AlertTriangle className="h-3.5 w-3.5" />
                     Escalation Alert
                   </h3>
-                  <p className="text-sm text-f1-secondary">
+                  <p className="font-tele text-[10px] uppercase text-[var(--f1-red)]">
                     High urgency/risk detected. Keep alternative strategy armed for immediate switch.
                   </p>
                 </div>
@@ -415,31 +415,31 @@ export function StrategyTimeline({
           </div>
 
           {evidence.length > 0 && (
-            <div className="f1-card p-4">
-              <h3 className="text-xs font-bold uppercase tracking-widest text-f1-muted mb-3">Evidence</h3>
+            <div className="pm-panel p-4">
+              <h3 className="text-xs font-label font-bold uppercase tracking-widest text-[var(--text-secondary)] mb-3">Evidence</h3>
               <ul className="space-y-2">
                 {evidence.map((item, idx) => (
                   <li
                     key={idx}
                     onClick={() => setSelectedEvidence(generateEvidenceDrilldown(item, idx))}
-                    className="flex gap-3 text-sm text-[#C4C4C4] cursor-pointer group bg-[#2D2D35] p-3 border-l-2 border-f1-red hover:bg-[#38383F] transition-all"
+                    className="flex gap-3 text-sm text-[var(--text-secondary)] cursor-pointer group bg-[var(--carbon-mid)] p-3 border-l-2 border-[var(--f1-red)] hover:bg-[var(--carbon-light)] transition-all"
                   >
-                    <span className="text-f1-red font-bold">»</span>
-                    <span className="group-hover:text-white transition-colors uppercase font-semibold text-[12px]">{item}</span>
+                    <span className="text-[var(--f1-red)] font-bold">»</span>
+                    <span className="group-hover:text-[var(--text-primary)] transition-colors font-tele uppercase font-semibold text-[10px]">{item}</span>
                   </li>
                 ))}
               </ul>
-              <p className="mt-3 text-xs text-f1-muted">Click any evidence item to drill down into the telemetry data</p>
+              <p className="mt-3 font-tele text-[10px] text-[var(--text-secondary)] uppercase">Click any evidence item to drill down into the telemetry data</p>
             </div>
           )}
 
           {assumptions.length > 0 && (
-            <div className="border border-f1-border bg-f1-dark p-4">
-              <h3 className="text-xs font-bold uppercase tracking-widest text-f1-muted">Assumptions</h3>
+            <div className="border border-[var(--border)] bg-[var(--carbon-mid)] p-4">
+              <h3 className="text-xs font-label font-bold uppercase tracking-widest text-[var(--text-secondary)]">Assumptions</h3>
               <ul className="mt-3 space-y-2">
                 {assumptions.map((item, idx) => (
-                  <li key={idx} className="flex gap-2 text-sm text-f1-secondary">
-                    <span className="text-f1-red">!</span>
+                  <li key={idx} className="flex gap-2 font-tele text-[10px] uppercase text-[var(--text-primary)]">
+                    <span className="text-[var(--f1-red)]">!</span>
                     <span>{item}</span>
                   </li>
                 ))}

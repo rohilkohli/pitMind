@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { Card, CardHeader, CardTitle, CardContent } from '../ui/card';
 import { Database, Loader2, Play } from 'lucide-react';
 import { postLoadFastF1, type TelemetryPayload } from '../../services/api';
 import { auth } from '../../lib/firebase';
@@ -37,17 +36,17 @@ export const FastF1Loader: React.FC<FastF1LoaderProps> = ({ onDataLoaded }) => {
   };
 
   return (
-    <Card className="border-[#38383F] bg-[#1F1F27] rounded-none h-full shadow-2xl">
-      <CardHeader className="pb-3 border-b border-[#38383F] mb-4">
-        <CardTitle className="text-[12px] font-display font-extrabold text-white flex items-center gap-2 uppercase tracking-[0.2em]">
-          <Database className="w-4 h-4 text-f1-red" />
+    <div className="pm-panel h-full flex flex-col">
+      <div className="pm-panel-header">
+        <div className="pm-panel-title flex items-center gap-2">
+          <Database className="w-4 h-4 text-[var(--f1-red)]" />
           REAL-SESSION DATA (FastF1)
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
+        </div>
+      </div>
+      <div className="p-4 flex-1 flex flex-col">
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-1.5">
-            <label className="text-[10px] text-[#67676D] uppercase font-bold tracking-wider">Year</label>
+            <label className="font-label tracking-widest text-[10px] text-[var(--text-secondary)] uppercase">Year</label>
             <select 
               value={year} 
               onChange={(e) => setYear(parseInt(e.target.value))}
@@ -59,25 +58,25 @@ export const FastF1Loader: React.FC<FastF1LoaderProps> = ({ onDataLoaded }) => {
             </select>
           </div>
           <div className="space-y-1.5">
-            <label className="text-[10px] text-[#67676D] uppercase font-bold tracking-wider">Driver</label>
+            <label className="font-label tracking-widest text-[10px] text-[var(--text-secondary)] uppercase">Driver</label>
             <input 
               value={driver}
               onChange={(e) => setDriver(e.target.value.toUpperCase())}
               placeholder="VER"
-              className="w-full bg-[#2D2D35] border border-[#38383F] text-[13px] text-white p-2 rounded-none focus:border-f1-red outline-none font-display font-semibold uppercase"
+              className="w-full bg-[var(--carbon-mid)] border border-[var(--border)] text-[13px] text-[var(--text-primary)] p-2 focus:border-[var(--f1-red)] outline-none font-tele uppercase"
             />
           </div>
           <div className="space-y-1.5">
-            <label className="text-[10px] text-[#67676D] uppercase font-bold tracking-wider">Event</label>
+            <label className="font-label tracking-widest text-[10px] text-[var(--text-secondary)] uppercase">Event</label>
             <input 
               value={event}
               onChange={(e) => setEvent(e.target.value)}
               placeholder="Monza"
-              className="w-full bg-[#2D2D35] border border-[#38383F] text-[13px] text-white p-2 rounded-none focus:border-f1-red outline-none font-display font-semibold uppercase"
+              className="w-full bg-[var(--carbon-mid)] border border-[var(--border)] text-[13px] text-[var(--text-primary)] p-2 focus:border-[var(--f1-red)] outline-none font-tele uppercase"
             />
           </div>
           <div className="space-y-1.5">
-            <label className="text-[10px] text-[#67676D] uppercase font-bold tracking-wider">Session</label>
+            <label className="font-label tracking-widest text-[10px] text-[var(--text-secondary)] uppercase">Session</label>
             <select 
               value={sessionType} 
               onChange={(e) => setSessionType(e.target.value as any)}
@@ -96,7 +95,7 @@ export const FastF1Loader: React.FC<FastF1LoaderProps> = ({ onDataLoaded }) => {
         <button
           onClick={handleLoad}
           disabled={loading}
-          className="w-full mt-6 h-12 bg-f1-red text-white text-[12px] font-display font-extrabold uppercase tracking-[0.2em] hover:bg-f1-red-dark transition-all flex items-center justify-center gap-2 disabled:opacity-50 rounded-none shadow-[0_10px_20px_rgba(225,6,0,0.2)]"
+          className="pm-btn-primary w-full mt-6 flex items-center justify-center gap-2"
         >
           {loading ? (
             <>
@@ -112,13 +111,13 @@ export const FastF1Loader: React.FC<FastF1LoaderProps> = ({ onDataLoaded }) => {
         </button>
 
         {error && (
-          <p className="mt-4 text-[10px] text-f1-red uppercase font-black text-center bg-f1-red/10 py-2 border border-f1-red/20">{error}</p>
+          <p className="mt-4 text-[10px] text-[var(--f1-red)] uppercase font-tele text-center bg-[var(--f1-red-dim)] py-2 border border-[var(--f1-red)]">{error}</p>
         )}
         
-        <p className="mt-4 text-[10px] text-[#67676D] leading-relaxed uppercase font-medium italic">
+        <p className="mt-auto pt-4 text-[10px] text-[var(--text-secondary)] leading-relaxed uppercase font-tele italic">
           Note: Outbound connection required. First load of an event may take 30-60s to bootstrap the F1 timing cache.
         </p>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 };

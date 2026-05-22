@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { Clock } from 'lucide-react';
 
 export interface RaceEvent {
   id: string;
@@ -78,28 +77,37 @@ const MOCK_EVENTS: RaceEvent[] = [
   },
 ];
 
-const getDriverColor = (driver?: string) => {
-  if (!driver) return '#67676D';
-  const d = driver.toUpperCase();
-  if (d.includes('VER')) return '#3671C6';
-  if (d.includes('LEC')) return '#E8002D';
-  if (d.includes('HAM')) return '#27F4D2';
-  if (d.includes('NOR')) return '#FF8000';
-  return '#E10600';
+const getDotColor = (type: RaceEvent['type']): string => {
+  switch (type) {
+    case 'pit_stop':   return '#39FF14';
+    case 'safety_car':
+    case 'vsc':        return '#ffd200';
+    case 'gap_spike':
+    case 'incident':   return '#E8002D';
+    default:           return '#888890';
+  }
 };
 
-const getEventBorderColor = (type: RaceEvent['type']) => {
+const getTagClass = (type: RaceEvent['type']): string => {
   switch (type) {
-    case 'incident':
+    case 'pit_stop':   return 'pm-tl-event-tag pm-tag-pstop';
     case 'safety_car':
-    case 'vsc':
-      return '#E10600'; // red
-    case 'flag':
-      return '#FFC906'; // yellow
-    case 'pit_stop':
-      return '#3671C6'; // blue
-    default:
-      return '#38383F';
+    case 'vsc':        return 'pm-tl-event-tag pm-tag-sc';
+    case 'gap_spike':
+    case 'incident':   return 'pm-tl-event-tag pm-tag-gap';
+    default:           return 'pm-tl-event-tag pm-tag-track';
+  }
+};
+
+const getTagLabel = (type: RaceEvent['type']): string => {
+  switch (type) {
+    case 'pit_stop':   return 'P-STOP';
+    case 'safety_car': return 'SC';
+    case 'vsc':        return 'VSC';
+    case 'gap_spike':  return 'CRITICAL';
+    case 'incident':   return 'INCIDENT';
+    case 'weather':    return 'TRACK';
+    default:           return type.toUpperCase();
   }
 };
 
@@ -116,73 +124,164 @@ export const EventTimeline: React.FC<EventTimelineProps> = ({
 
   if (events.length === 0) {
     return (
-      <div className="p-8 text-center bg-[#1F1F27] border border-[#38383F]">
-        <Clock className="w-12 h-12 mx-auto mb-4 text-[#67676D] opacity-20" />
-        <p className="text-[14px] font-display font-bold text-[#67676D] uppercase tracking-widest">Awaiting Race Events</p>
+      <div
+        style={{
+          padding: "32px",
+          textAlign: "center",
+          background: "var(--carbon-light)",
+          border: "1px solid var(--border)",
+        }}
+      >
+        <p
+          style={{
+            fontFamily: "'Barlow Condensed', sans-serif",
+            fontSize: 14,
+            fontWeight: 700,
+            color: "var(--text-secondary)",
+            textTransform: "uppercase",
+            letterSpacing: "0.2em",
+          }}
+        >
+          Awaiting Race Events
+        </p>
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col h-full bg-[#15151E]">
-      <div className="flex-1 space-y-3 overflow-y-auto p-4 scrollbar-thin">
-        {events.map((event) => (
-          <div
-            key={event.id}
-            onClick={() => handleEventClick(event)}
-            className={`flex flex-col p-3 cursor-pointer transition-all bg-[#1F1F27] border-l-[4px] border-[#38383F] ${
-              selectedEvent === event.id ? 'ring-1 ring-f1-red' : 'hover:bg-[#2D2D35]'
-            }`}
-            style={{ borderLeftColor: getEventBorderColor(event.type) }}
+    <div style={{ background: "var(--carbon)", overflow: "hidden" }}>
+      {/* Header */}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          padding: "12px 16px",
+          borderBottom: "1px solid var(--border)",
+          flexWrap: "wrap",
+          gap: 8,
+        }}
+      >
+        <div className="pm-panel-title">Live Race Timeline</div>
+        <div style={{ display: "flex", gap: 6 }}>
+          <span
+            className="pm-panel-badge"
+            style={{
+              background: "rgba(255,255,255,0.05)",
+              color: "var(--text-secondary)",
+              border: "1px solid var(--border)",
+              borderRadius: 0,
+              fontFamily: "'Barlow Condensed', sans-serif",
+              fontWeight: 700,
+              fontSize: "9px",
+              letterSpacing: "0.15em",
+              textTransform: "uppercase"
+            }}
           >
-            <div className="flex justify-between items-start mb-2">
-              <div className="flex flex-wrap items-center gap-2">
-                <h4 className="text-[15px] font-display font-bold text-white uppercase tracking-tight">{event.title}</h4>
-                {event.driver && (
-                  <span 
-                    className="text-[10px] font-bold px-2 py-0.5 text-white uppercase tracking-wider"
-                    style={{ backgroundColor: getDriverColor(event.driver) }}
-                  >
-                    {event.driver}
-                  </span>
-                )}
-              </div>
-              <div className="text-[11px] font-mono text-[#67676D] uppercase text-right leading-none">
-                <div>LAP {event.lap}</div>
-                <div className="mt-1">{event.time}</div>
-              </div>
-            </div>
-            <p className="text-[12px] font-normal text-[#C4C4C4] leading-relaxed font-body">
-              {event.description}
-            </p>
-          </div>
-        ))}
+            EVENTS {events.length}
+          </span>
+          <span 
+            className="pm-panel-badge pm-badge-ai"
+            style={{
+              borderRadius: 0,
+              fontFamily: "'Barlow Condensed', sans-serif",
+              fontWeight: 700,
+              fontSize: "9px",
+              letterSpacing: "0.15em",
+              textTransform: "uppercase"
+            }}
+          >
+            CRITICAL {events.filter((e) => e.severity === 'critical').length}
+          </span>
+          <span 
+            className="pm-panel-badge pm-badge-live"
+            style={{
+              borderRadius: 0,
+              fontFamily: "'Barlow Condensed', sans-serif",
+              fontWeight: 700,
+              fontSize: "9px",
+              letterSpacing: "0.15em",
+              textTransform: "uppercase"
+            }}
+          >
+            PIT STOPS {events.filter((e) => e.type === 'pit_stop').length}
+          </span>
+        </div>
       </div>
 
-      {/* Footer Stat Pills */}
-      <div className="p-4 bg-[#15151E] border-t border-[#38383F] flex flex-wrap gap-2">
-        <div className="px-3 py-2 bg-[#2D2D35] flex items-center gap-2">
-          <span className="text-[11px] font-bold text-[#67676D] uppercase">Events</span>
-          <span className="text-[13px] font-display font-bold text-white">{events.length}</span>
-        </div>
-        <div className="px-3 py-2 bg-[#2D2D35] flex items-center gap-2">
-          <span className="text-[11px] font-bold text-[#67676D] uppercase">Critical</span>
-          <span className="text-[13px] font-display font-bold text-[#E10600]">
-            {events.filter((e) => e.severity === 'critical').length}
-          </span>
-        </div>
-        <div className="px-3 py-2 bg-[#2D2D35] flex items-center gap-2">
-          <span className="text-[11px] font-bold text-[#67676D] uppercase">Pit Stops</span>
-          <span className="text-[13px] font-display font-bold text-[#3671C6]">
-            {events.filter((e) => e.type === 'pit_stop').length}
-          </span>
-        </div>
-        <div className="px-3 py-2 bg-[#2D2D35] flex items-center gap-2">
-          <span className="text-[11px] font-bold text-[#67676D] uppercase">Incidents</span>
-          <span className="text-[13px] font-display font-bold text-[#FFC906]">
-            {events.filter((e) => e.type === 'incident').length}
-          </span>
-        </div>
+      {/* Timeline */}
+      <div style={{ overflowY: "auto", maxHeight: "calc(100% - 52px)" }}>
+        {events.map((event, i) => {
+          const dotColor = getDotColor(event.type);
+          const isSelected = selectedEvent === event.id;
+
+          return (
+            <div
+              key={event.id}
+              className="pm-tl-item"
+              onClick={() => handleEventClick(event)}
+              style={isSelected ? { background: "rgba(232,0,45,0.04)" } : undefined}
+            >
+              {/* Lap + Time */}
+              <div className="pm-tl-lap">
+                LAP {event.lap}
+                <span>{event.time}</span>
+              </div>
+
+              {/* Connector */}
+              <div className="pm-tl-connector">
+                <div
+                  className="pm-tl-dot"
+                  style={{
+                    background: dotColor,
+                    boxShadow: `0 0 6px ${dotColor}60`,
+                  }}
+                />
+                {i < events.length - 1 && <div className="pm-tl-line" />}
+              </div>
+
+              {/* Content */}
+              <div className="pm-tl-content">
+                <div className="pm-tl-event">
+                  {event.title}
+                  <span 
+                    className={getTagClass(event.type)}
+                    style={{
+                      borderRadius: 0,
+                      fontFamily: "'Barlow Condensed', sans-serif",
+                      fontWeight: 700,
+                      fontSize: "9px",
+                      letterSpacing: "0.15em",
+                      textTransform: "uppercase"
+                    }}
+                  >
+                    {getTagLabel(event.type)}
+                  </span>
+                  {event.driver && (
+                    <span
+                      className="pm-tl-event-tag"
+                      style={{
+                        background: "rgba(255,255,255,0.08)",
+                        color: "var(--chrome)",
+                        border: "1px solid var(--border)",
+                        marginLeft: 4,
+                        borderRadius: 0,
+                        fontFamily: "'Barlow Condensed', sans-serif",
+                        fontWeight: 700,
+                        fontSize: "9px",
+                        letterSpacing: "0.15em",
+                        textTransform: "uppercase"
+                      }}
+                    >
+                      {event.driver.slice(0, 3).toUpperCase()}
+                    </span>
+                  )}
+                </div>
+                <div className="pm-tl-desc">{event.description}</div>
+              </div>
+            </div>
+          );
+        })}
       </div>
     </div>
   );

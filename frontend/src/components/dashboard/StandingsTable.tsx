@@ -3,10 +3,29 @@ import type { DriverState } from "../../hooks/useFirebaseRaceState";
 export function StandingsTable({ standings }: { standings: DriverState[] | undefined }) {
   if (!standings || standings.length === 0) {
     return (
-      <div className="bg-f1-black p-4 space-y-2">
-        <div className="flex items-center gap-2 mb-4">
-          <div className="w-2 h-2 rounded-full bg-amber-500 animate-pulse-dot" />
-          <span className="text-[10px] font-black uppercase tracking-[0.2em] text-amber-500">Waiting for Data</span>
+      <div style={{ padding: "16px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
+          <div
+            style={{
+              width: 6,
+              height: 6,
+              borderRadius: "50%",
+              background: "var(--amber)",
+              animation: "pulse-dot 2s infinite ease-in-out",
+            }}
+          />
+          <span
+            style={{
+              fontFamily: "'Barlow Condensed', sans-serif",
+              fontSize: 9,
+              letterSpacing: "0.2em",
+              textTransform: "uppercase",
+              color: "var(--amber)",
+              fontWeight: 700,
+            }}
+          >
+            Waiting for Data
+          </span>
         </div>
         {[...Array(5)].map((_, i) => (
           <div key={i} className="skeleton-row" />
@@ -15,79 +34,98 @@ export function StandingsTable({ standings }: { standings: DriverState[] | undef
     );
   }
 
-  // Helper to map tyre compound to a CSS variable class (defined in tailwind config or index.css)
-  const getTyreColor = (compound: string) => {
-    switch (compound.toUpperCase()) {
-      case "SOFT": return "var(--tyre-soft)";
-      case "MEDIUM": return "var(--tyre-medium)";
-      case "HARD": return "var(--tyre-hard)";
-      case "INTERMEDIATE": return "var(--tyre-inter)";
-      case "WET": return "var(--tyre-wet)";
-      default: return "var(--tyre-medium)";
-    }
+  const getTyreClass = (compound: string): string => {
+    const c = compound.toUpperCase();
+    if (c === "SOFT")         return "pm-tyre-s";
+    if (c === "MEDIUM")       return "pm-tyre-m";
+    if (c === "HARD")         return "pm-tyre-h";
+    if (c === "INTERMEDIATE") return "pm-tyre-i";
+    if (c === "WET")          return "pm-tyre-w";
+    return "pm-tyre-m";
+  };
+
+  const getTyreAbbr = (compound: string): string => {
+    const c = compound.toUpperCase();
+    if (c === "SOFT")         return "S";
+    if (c === "MEDIUM")       return "M";
+    if (c === "HARD")         return "H";
+    if (c === "INTERMEDIATE") return "I";
+    if (c === "WET")          return "W";
+    return compound[0] ?? "M";
   };
 
   return (
-    <div className="flex h-full flex-col bg-f1-black border border-f1-border">
-      <div className="sticky top-0 z-10 border-b border-f1-border bg-f1-dark px-4 py-3">
-        <div className="flex items-center justify-between gap-3">
-          <h2 className="text-xs font-bold uppercase tracking-widest text-f1-muted">Live Standings</h2>
-          <span className="text-xs font-bold uppercase text-f1-muted">{standings.length} CARS</span>
-        </div>
+    <div style={{ background: "transparent" }}>
+      {/* Header */}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          paddingBottom: "12px",
+          borderBottom: "1px solid var(--border)",
+          marginBottom: "8px",
+        }}
+      >
+        <div className="pm-panel-title">Live Standings</div>
+        <span 
+          className="pm-panel-badge pm-badge-live"
+          style={{
+            fontFamily: "'Barlow Condensed', sans-serif",
+            fontWeight: 700,
+            fontSize: "9px",
+            letterSpacing: "0.15em",
+            textTransform: "uppercase",
+            borderRadius: 0
+          }}
+        >
+          LIVE
+        </span>
       </div>
-      
-      <div className="flex-1 overflow-y-auto px-2 py-2 scrollbar-thin scrollbar-thumb-f1-red/20">
-        <table className="w-full text-left text-sm">
-          <thead className="sr-only">
-            <tr>
-              <th>Position</th>
-              <th>Driver</th>
-              <th>Gap</th>
-              <th>Tyre</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-f1-border">
-            {standings.map((driver) => (
-              <tr 
-                key={driver.driver} 
-                className="h-12 transition-colors hover:bg-f1-elevated border-l-4"
-                style={{ borderLeftColor: driver.team_color }}
-              >
-                <td className="w-10 pl-3 pr-2 font-display font-black text-f1-white text-lg">{driver.position}</td>
-                <td className="flex h-12 items-center gap-2 px-2 font-bold text-f1-white">
-                  <span 
-                    className="h-3 w-3" 
-                    style={{ backgroundColor: driver.team_color }} 
-                  />
-                  {driver.driver}
-                </td>
-                <td className="px-2 f1-mono text-f1-muted text-xs">
-                  {driver.position === 1 
-                    ? "Leader" 
-                    : `+${driver.gap_leader_s?.toFixed(3) || "—"}`}
-                </td>
-                <td className="pr-4 text-right">
-                  <div className="flex items-center justify-end gap-2">
-                    <span 
-                      className="f1-badge px-2 py-1 text-xs font-bold uppercase"
-                      style={{ 
-                        backgroundColor: getTyreColor(driver.tyre_compound),
-                        color: "#fff",
-                        textShadow: "0 1px 2px rgba(0,0,0,0.5)"
-                      }}
-                    >
-                      {driver.tyre_compound[0]}
-                    </span>
-                    <span className="w-7 text-right f1-mono text-xs text-f1-muted">
-                      {driver.tyre_age_laps}L
-                    </span>
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+
+      {/* Rows */}
+      <div>
+        {standings.map((driver) => (
+          <div key={driver.driver} className="pm-standing-row">
+            {/* Position */}
+            <span className={`pm-pos ${driver.position === 1 ? "p1" : ""}`}>
+              {driver.position}
+            </span>
+
+            {/* Team color bar */}
+            <div
+              style={{
+                width: 4,
+                height: 28,
+                background: driver.team_color || "var(--steel)",
+                borderRadius: 0,
+                flexShrink: 0,
+              }}
+            />
+
+            {/* Driver info */}
+            <div>
+              <div className="pm-driver-abbr">
+                {driver.driver.length > 3 ? driver.driver.slice(0, 3).toUpperCase() : driver.driver.toUpperCase()}
+              </div>
+              <div className="pm-driver-team" style={{ textTransform: "uppercase", letterSpacing: "0.15em" }}>{driver.driver}</div>
+            </div>
+
+            {/* Gap */}
+            <div className="pm-driver-gap">
+              {driver.position === 1
+                ? "LEADER"
+                : `+${driver.gap_leader_s?.toFixed(3) ?? "—"}`}
+            </div>
+
+            {/* Tyre badge */}
+            <div className={`pm-tyre-badge ${getTyreClass(driver.tyre_compound)}`}>
+              {getTyreAbbr(driver.tyre_compound)}
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   );
 }
+

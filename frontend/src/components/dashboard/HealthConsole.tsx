@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { Card } from '../ui/card';
 import { RotateCcw } from 'lucide-react';
 
 export interface HealthMetric {
@@ -158,57 +157,114 @@ export const HealthConsole: React.FC<HealthConsoleProps> = ({ onRefresh }) => {
     : 'healthy';
 
   const getLatencyColor = (latency: number) => {
-    if (latency < 200) return 'text-[#39B54A]';
-    if (latency < 500) return 'text-[#FFC906]';
-    return 'text-[#E10600]';
+    if (latency < 200) return 'var(--neon-green)';
+    if (latency < 500) return 'var(--amber)';
+    return 'var(--f1-red)';
   };
 
   return (
-    <Card className="border-f1-border bg-[#1F1F27] p-6">
+    <div style={{ background: "transparent" }}>
       {/* Header */}
-      <div className="flex items-center justify-between mb-6 border-b border-f1-red pb-4">
-        <div className="flex items-center gap-3">
-          <div className="w-3 h-3 rounded-full bg-[#39B54A] animate-pulse-dot" />
-          <h3 className="text-[24px] font-display font-extrabold text-white uppercase tracking-tight">
-            {getStatusLabel(overallStatus)} - {healthyCount}/{metrics.length} SYSTEMS
-          </h3>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          paddingBottom: "12px",
+          borderBottom: "1px solid var(--border)",
+          marginBottom: "16px",
+        }}
+      >
+        <div className="flex items-center gap-2">
+          <div 
+            style={{
+              width: 6,
+              height: 6,
+              borderRadius: "50%",
+              background: overallStatus === "healthy" ? "var(--neon-green)" : overallStatus === "warning" ? "var(--amber)" : "var(--f1-red)",
+              animation: "pulse-green 1.2s ease-in-out infinite",
+            }}
+          />
+          <span
+            style={{
+              fontFamily: "'Barlow Condensed', sans-serif",
+              fontSize: 10,
+              fontWeight: 700,
+              letterSpacing: "0.2em",
+              textTransform: "uppercase",
+              color: "var(--text-secondary)",
+            }}
+          >
+            System Health
+          </span>
         </div>
-
-        <button
-          onClick={handleRefresh}
-          disabled={isRefreshing}
-          className="p-2 transition-all duration-200"
-        >
-          <RotateCcw className={`w-5 h-5 text-f1-red ${isRefreshing ? 'animate-spin' : ''}`} />
-        </button>
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <span
+            className={`pm-panel-badge ${
+              overallStatus === "healthy"
+                ? "pm-badge-live"
+                : overallStatus === "warning"
+                ? "pm-badge-ok"
+                : "pm-badge-ai"
+            }`}
+            style={{
+              fontFamily: "'Barlow Condensed', sans-serif",
+              fontWeight: 700,
+              fontSize: "9px",
+              letterSpacing: "0.15em",
+              borderRadius: 0,
+            }}
+          >
+            {getStatusLabel(overallStatus)} · {healthyCount}/{metrics.length} OK
+          </span>
+          <button
+            onClick={handleRefresh}
+            disabled={isRefreshing}
+            style={{
+              background: "none",
+              border: "none",
+              color: "var(--f1-red)",
+              cursor: "pointer",
+              padding: 4,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <RotateCcw className={`w-4 h-4 ${isRefreshing ? "animate-spin" : ""}`} />
+          </button>
+        </div>
       </div>
 
       {/* Metrics grid */}
-      <div className="grid grid-cols-2 gap-3 mb-8">
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px", marginBottom: "16px" }}>
         {metrics.filter(m => m).map((metric, idx) => (
           <div
             key={idx}
-            className="p-3 border border-[#38383F] bg-[#2D2D35] relative overflow-hidden"
+            className="pm-health-metric relative overflow-hidden"
           >
-            <h4 className="text-[10px] font-bold text-[#67676D] uppercase tracking-wider mb-1">{metric.name || 'System Metric'}</h4>
-            <div className="text-[22px] font-display font-bold text-white leading-none mb-2">
-              <span className={metric.name?.toLowerCase()?.includes('latency') ? getLatencyColor(Number(metric.value)) : ''}>
+            <div className="pm-health-label">{metric.name || 'System Metric'}</div>
+            <div className={`pm-health-val ${metric.status === 'warning' ? 'warn' : metric.status === 'critical' ? 'crit' : ''}`}>
+              <span style={{ color: metric.name?.toLowerCase()?.includes('latency') ? getLatencyColor(Number(metric.value)) : undefined }}>
                 {metric.value}
               </span>
-              {metric.unit && <span className="text-[10px] text-[#67676D] ml-1 uppercase">{metric.unit}</span>}
+              {metric.unit && <span style={{ fontSize: "9px", color: "var(--text-secondary)", marginLeft: "4px", textTransform: "uppercase", fontFamily: "'IBM Plex Mono', monospace" }}>{metric.unit}</span>}
             </div>
             
             {/* Threshold indicator */}
-            <div className="absolute bottom-0 left-0 w-full h-[3px] bg-[#38383F]">
+            <div className="absolute bottom-0 left-0 w-full h-[2px]" style={{ background: "rgba(255,255,255,0.05)" }}>
               {metric.threshold && (
                 <div 
-                  className={`h-full ${metric.status === 'healthy' ? 'bg-[#39B54A]' : metric.status === 'warning' ? 'bg-[#FFC906]' : 'bg-[#E10600]'}`}
-                  style={{ width: `${Math.min(100, (Number(metric.value) / Number(metric.threshold)) * 100)}%` }}
+                  className="h-full"
+                  style={{
+                    background: metric.status === 'healthy' ? 'var(--neon-green)' : metric.status === 'warning' ? 'var(--amber)' : 'var(--f1-red)',
+                    width: `${Math.min(100, (Number(metric.value) / Number(metric.threshold)) * 100)}%`
+                  }}
                 />
               )}
             </div>
             
-            <div className="text-[9px] text-[#67676D] font-medium uppercase mt-1">
+            <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: "8px", color: "var(--text-secondary)", textTransform: "uppercase", marginTop: "4px" }}>
               {metric.lastUpdated?.replace(/seconds? ago/, 's ago').replace(/minutes? ago/, 'm ago').replace('Just now', '0s ago')}
             </div>
           </div>
@@ -216,60 +272,140 @@ export const HealthConsole: React.FC<HealthConsoleProps> = ({ onRefresh }) => {
       </div>
 
       {/* Performance Timeline */}
-      <div className="space-y-6">
-        <h4 className="text-[14px] font-display font-extrabold text-white uppercase tracking-wider border-b border-[#38383F] pb-2 mb-4">
-          PERFORMANCE TIMELINE
+      <div style={{ marginTop: "16px", paddingTop: "12px", borderTop: "1px solid var(--border)" }}>
+        <h4
+          style={{
+            fontFamily: "'Barlow Condensed', sans-serif",
+            fontSize: "11px",
+            fontWeight: 700,
+            letterSpacing: "0.15em",
+            textTransform: "uppercase",
+            color: "var(--text-secondary)",
+            marginBottom: "12px",
+          }}
+        >
+          Performance Timeline
         </h4>
 
-        <div className="space-y-4">
+        <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
           {/* API Latency */}
-          <div className="group">
-            <div className="flex justify-between items-end mb-1">
-              <span className="text-[11px] font-semibold text-[#67676D] uppercase min-w-[180px]">API Latency</span>
-              <span className={`text-[12px] font-mono font-bold ${getLatencyColor(Number(health.latency?.value || 0))}`}>
+          <div>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: "4px" }}>
+              <span
+                style={{
+                  fontFamily: "'Barlow Condensed', sans-serif",
+                  fontSize: "9px",
+                  fontWeight: 700,
+                  letterSpacing: "0.15em",
+                  textTransform: "uppercase",
+                  color: "var(--text-secondary)",
+                }}
+              >
+                API Latency
+              </span>
+              <span
+                style={{
+                  fontFamily: "'IBM Plex Mono', monospace",
+                  fontSize: "10px",
+                  fontWeight: 700,
+                  color: getLatencyColor(Number(health.latency?.value || 0)),
+                }}
+              >
                 {health.latency?.value || 0}ms
               </span>
             </div>
-            <div className="relative h-[4px] bg-[#2D2D35] w-full">
+            <div style={{ height: "4px", background: "rgba(255,255,255,0.05)", width: "100%", position: "relative" }}>
               <div
-                className={`h-full transition-all duration-600 ease-out ${Number(health.latency?.value || 0) < 200 ? 'bg-[#39B54A]' : Number(health.latency?.value || 0) < 500 ? 'bg-[#FFC906]' : 'bg-[#E10600]'}`}
-                style={{ width: `${Math.min(100, (Number(health.latency?.value || 0) / 500) * 100)}%` }}
+                style={{
+                  height: "100%",
+                  transition: "width 0.6s ease-out",
+                  background: getLatencyColor(Number(health.latency?.value || 0)),
+                  width: `${Math.min(100, (Number(health.latency?.value || 0) / 500) * 100)}%`,
+                }}
               />
-              <div className="absolute top-0 bottom-0 w-[1px] bg-white/30" style={{ left: '40%' }} title="Threshold: 200ms" />
+              <div style={{ position: "absolute", top: 0, bottom: 0, width: "1px", background: "rgba(255,255,255,0.2)", left: "40%" }} title="Threshold: 200ms" />
             </div>
           </div>
 
           {/* Data Quality */}
-          <div className="group">
-            <div className="flex justify-between items-end mb-1">
-              <span className="text-[11px] font-semibold text-[#67676D] uppercase min-w-[180px]">Data Quality Score</span>
-              <span className="text-[12px] font-mono font-bold text-white">{health.dataQuality?.value || 0}%</span>
+          <div>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: "4px" }}>
+              <span
+                style={{
+                  fontFamily: "'Barlow Condensed', sans-serif",
+                  fontSize: "9px",
+                  fontWeight: 700,
+                  letterSpacing: "0.15em",
+                  textTransform: "uppercase",
+                  color: "var(--text-secondary)",
+                }}
+              >
+                Data Quality Score
+              </span>
+              <span
+                style={{
+                  fontFamily: "'IBM Plex Mono', monospace",
+                  fontSize: "10px",
+                  fontWeight: 700,
+                  color: "var(--text-primary)",
+                }}
+              >
+                {health.dataQuality?.value || 0}%
+              </span>
             </div>
-            <div className="relative h-[4px] bg-[#2D2D35] w-full">
+            <div style={{ height: "4px", background: "rgba(255,255,255,0.05)", width: "100%", position: "relative" }}>
               <div
-                className="h-full bg-[#39B54A] transition-all duration-600 ease-out"
-                style={{ width: `${health.dataQuality?.value || 0}%` }}
+                style={{
+                  height: "100%",
+                  transition: "width 0.6s ease-out",
+                  background: Number(health.dataQuality?.value || 0) >= 90 ? "var(--neon-green)" : "var(--amber)",
+                  width: `${health.dataQuality?.value || 0}%`,
+                }}
               />
-              <div className="absolute top-0 bottom-0 w-[1px] bg-white/30" style={{ left: '90%' }} title="Threshold: 90%" />
+              <div style={{ position: "absolute", top: 0, bottom: 0, width: "1px", background: "rgba(255,255,255,0.2)", left: "90%" }} title="Threshold: 90%" />
             </div>
           </div>
 
           {/* Error Rate */}
-          <div className="group">
-            <div className="flex justify-between items-end mb-1">
-              <span className="text-[11px] font-semibold text-[#67676D] uppercase min-w-[180px]">Error Rate</span>
-              <span className="text-[12px] font-mono font-bold text-white">{health.errorRate?.value || 0}%</span>
+          <div>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: "4px" }}>
+              <span
+                style={{
+                  fontFamily: "'Barlow Condensed', sans-serif",
+                  fontSize: "9px",
+                  fontWeight: 700,
+                  letterSpacing: "0.15em",
+                  textTransform: "uppercase",
+                  color: "var(--text-secondary)",
+                }}
+              >
+                Error Rate
+              </span>
+              <span
+                style={{
+                  fontFamily: "'IBM Plex Mono', monospace",
+                  fontSize: "10px",
+                  fontWeight: 700,
+                  color: "var(--text-primary)",
+                }}
+              >
+                {health.errorRate?.value || 0}%
+              </span>
             </div>
-            <div className="relative h-[4px] bg-[#2D2D35] w-full">
+            <div style={{ height: "4px", background: "rgba(255,255,255,0.05)", width: "100%", position: "relative" }}>
               <div
-                className="h-full bg-[#39B54A] transition-all duration-600 ease-out"
-                style={{ width: `${(Number(health.errorRate?.value || 0) / 2) * 100}%` }}
+                style={{
+                  height: "100%",
+                  transition: "width 0.6s ease-out",
+                  background: Number(health.errorRate?.value || 0) < 1.0 ? "var(--neon-green)" : Number(health.errorRate?.value || 0) < 2.0 ? "var(--amber)" : "var(--f1-red)",
+                  width: `${Math.min(100, (Number(health.errorRate?.value || 0) / 2) * 100)}%`,
+                }}
               />
-              <div className="absolute top-0 bottom-0 w-[1px] bg-white/30" style={{ left: '50%' }} title="Threshold: 1.0%" />
+              <div style={{ position: "absolute", top: 0, bottom: 0, width: "1px", background: "rgba(255,255,255,0.2)", left: "50%" }} title="Threshold: 1.0%" />
             </div>
           </div>
         </div>
       </div>
-    </Card>
+    </div>
   );
 };

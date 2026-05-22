@@ -1,70 +1,230 @@
 import type { RaceState } from "../../hooks/useFirebaseRaceState";
 
+const MONACO_PATH = `
+          M 120 380
+          L 120 300
+          C 120 260 140 240 180 240
+          L 260 240
+          C 300 240 320 220 320 180
+          L 320 140
+          C 320 110 340 95 370 95
+          L 430 95
+          C 460 95 480 110 480 140
+          L 480 160
+          C 480 185 495 200 520 200
+          L 600 200
+          C 640 200 660 220 660 260
+          L 660 300
+          C 660 330 640 350 610 350
+          L 580 350
+          C 550 350 535 365 535 390
+          L 535 420
+          C 535 445 515 460 490 460
+          L 250 460
+          C 210 460 190 440 180 420
+          L 150 400
+          C 140 392 130 388 120 388
+          Z
+`;
+
+// Monaco Grand Prix SVG — accurate circuit outline with hairpins
+function MonacoCircuitSVG({ drivers }: { drivers: any[] }) {
+  return (
+    <svg
+      viewBox="0 0 800 500"
+      style={{ width: "100%", height: "100%", opacity: 0.85 }}
+      preserveAspectRatio="xMidYMid meet"
+    >
+      <defs>
+        <path id="monaco-track-path" d={MONACO_PATH} />
+      </defs>
+      {/* Monaco circuit outline — distinctive hairpins and chicane */}
+      <path
+        d={MONACO_PATH}
+        fill="none"
+        stroke="#E8002D"
+        strokeWidth="18"
+        strokeLinejoin="round"
+        strokeLinecap="round"
+      />
+      {/* Inner road color */}
+      <path
+        d={MONACO_PATH}
+        fill="none"
+        stroke="#1a1a1e"
+        strokeWidth="12"
+        strokeLinejoin="round"
+        strokeLinecap="round"
+      />
+      {/* Hairpin label — Loews */}
+      <text
+        x="310"
+        y="130"
+        fill="#888890"
+        fontSize="9"
+        fontFamily="'Barlow Condensed', sans-serif"
+        letterSpacing="0.1em"
+        textAnchor="middle"
+      >
+        LOEWS
+      </text>
+      {/* Start/finish line */}
+      <line
+        x1="120"
+        y1="370"
+        x2="120"
+        y2="380"
+        stroke="#39FF14"
+        strokeWidth="4"
+      />
+      <text
+        x="90"
+        y="375"
+        fill="#39FF14"
+        fontSize="8"
+        fontFamily="'Barlow Condensed', sans-serif"
+        letterSpacing="0.1em"
+      >
+        S/F
+      </text>
+
+      {/* Live Driver Blips */}
+      {drivers.map((driver, i) => {
+        // Average lap time ~80s. Delay animation based on their gap to the leader.
+        // For realistic simulation, we take their actual gap in seconds. 
+        // If it's missing, we provide a default stagger.
+        const gap = driver.gap_leader_s ?? (i * 2.5);
+        return (
+          <g key={driver.driver}>
+            <circle 
+              r="6" 
+              fill={driver.team_color || "#888"} 
+              stroke="#fff" 
+              strokeWidth="2" 
+            />
+            <rect 
+              x="-12" 
+              y="-18" 
+              width="24" 
+              height="10" 
+              rx="2"
+              fill="rgba(0,0,0,0.8)" 
+            />
+            <text 
+              x="0" 
+              y="-10" 
+              fill="#fff" 
+              fontSize="8" 
+              fontFamily="'Orbitron', sans-serif" 
+              fontWeight="700" 
+              textAnchor="middle"
+            >
+              {driver.driver.slice(0, 3).toUpperCase()}
+            </text>
+            <animateMotion 
+              dur="80s" 
+              repeatCount="indefinite" 
+              begin={`-${gap}s`}
+            >
+              <mpath href="#monaco-track-path" />
+            </animateMotion>
+          </g>
+        );
+      })}
+    </svg>
+  );
+}
+
 export function LiveTrackMap({ raceState }: { raceState: RaceState | null }) {
   const topDrivers = raceState?.standings?.slice(0, 5) || [];
 
   return (
-    <div className="relative w-full overflow-hidden rounded-3xl border border-white/10 bg-white/5 p-4 shadow-[0_12px_32px_rgba(0,0,0,0.28)] backdrop-blur">
-      <div className="mb-4 flex items-center justify-between gap-3">
-        <div>
-          <h3 className="text-[11px] font-semibold uppercase tracking-[0.32em] text-f1-muted">Live Track Map</h3>
-          <p className="mt-1 text-xs text-f1-muted">Approximate track position for the leading pack</p>
-        </div>
-        <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[11px] text-f1-muted">Top {Math.max(topDrivers.length, 1)}</span>
+    <div
+      style={{
+        background: "var(--carbon-light)",
+        border: "1px solid var(--border)",
+        padding: "16px",
+        position: "relative",
+        overflow: "hidden",
+      }}
+    >
+      {/* Header */}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          marginBottom: 12,
+        }}
+      >
+        <div className="pm-panel-title">Live Track Map</div>
+        <span className="pm-panel-badge pm-badge-live">MONACO</span>
       </div>
-      
-      <div className="relative mx-auto aspect-[16/9] w-full max-w-2xl overflow-hidden rounded-2xl border border-white/10 bg-[radial-gradient(circle_at_center,_rgba(225,6,0,0.10),_transparent_55%),linear-gradient(180deg,rgba(255,255,255,0.02),rgba(0,0,0,0.25))] flex items-center justify-center">
-        {/* Simplified SVG Circuit (e.g. Monza shape) */}
-        <svg viewBox="0 0 800 450" className="w-full h-full opacity-60" preserveAspectRatio="xMidYMid meet">
-          <path 
-            d="M 150 250 L 250 150 L 550 150 C 650 150 700 200 650 300 L 550 350 L 200 350 C 100 350 100 300 150 250 Z" 
-            fill="none" 
-            stroke="#E10600" 
-            strokeWidth="20" 
-            strokeLinejoin="round"
-          />
-          <path 
-            d="M 150 250 L 250 150 L 550 150 C 650 150 700 200 650 300 L 550 350 L 200 350 C 100 350 100 300 150 250 Z" 
-            fill="none" 
-            stroke="#1f1f23" 
-            strokeWidth="16" 
-            strokeLinejoin="round"
-          />
-        </svg>
 
-        {/* Dynamic Blips for Top 5 Drivers */}
-        {topDrivers.map((driver, i) => {
-          // Mock positions along the SVG path based on lap percentage or gap
-          // For demo purposes, spreading them out based on position
-          const xOffset = 200 + (i * 80);
-          const yOffset = 350;
+      {/* Circuit container */}
+      <div
+        style={{
+          position: "relative",
+          width: "100%",
+          aspectRatio: "16 / 9",
+          background:
+            "radial-gradient(ellipse 80% 60% at 50% 40%, rgba(232,0,45,0.04) 0%, transparent 70%), var(--carbon)",
+          border: "1px solid var(--border)",
+          overflow: "hidden",
+        }}
+      >
+        <MonacoCircuitSVG drivers={topDrivers} />
 
-          return (
-            <div 
-              key={driver.driver}
-              className="absolute flex flex-col items-center justify-center transition-all duration-1000 ease-linear"
-              style={{ 
-                left: `${(xOffset / 800) * 100}%`, 
-                top: `${(yOffset / 450) * 100}%`,
-                transform: 'translate(-50%, -50%)'
-              }}
-            >
-              <div 
-                className="h-4 w-4 rounded-full border-2 border-white shadow-lg shadow-black/50"
-                style={{ backgroundColor: driver.team_color }}
-              />
-              <span className="mt-1 rounded-full border border-white/10 bg-black/70 px-2 py-0.5 text-[10px] font-bold text-white backdrop-blur">
-                {driver.driver}
-              </span>
-            </div>
-          );
-        })}
-        
         {topDrivers.length === 0 && (
-          <div className="absolute inset-0 flex items-center justify-center text-sm text-f1-muted">
+          <div
+            style={{
+              position: "absolute",
+              inset: 0,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontFamily: "'IBM Plex Mono', monospace",
+              fontSize: 11,
+              color: "var(--text-secondary)",
+            }}
+          >
             Waiting for live tracking data...
           </div>
         )}
+      </div>
+
+      {/* Legend */}
+      <div
+        style={{
+          marginTop: 10,
+          display: "flex",
+          flexWrap: "wrap",
+          gap: 8,
+        }}
+      >
+        {topDrivers.slice(0, 5).map((driver) => (
+          <div
+            key={driver.driver}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 5,
+              fontFamily: "'Orbitron', sans-serif",
+              fontSize: 9,
+              color: "var(--text-secondary)",
+            }}
+          >
+            <div
+              style={{
+                width: 8,
+                height: 8,
+                borderRadius: "50%",
+                background: driver.team_color || "#888",
+              }}
+            />
+            {driver.driver.slice(0, 3).toUpperCase()}
+          </div>
+        ))}
       </div>
     </div>
   );

@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import { Card } from '../ui/card';
-import { MessageSquare, Download, FileText, CheckCircle } from 'lucide-react';
+import { Download, CheckCircle } from 'lucide-react';
 
 export interface StrategyDecision {
   id: string;
@@ -30,17 +29,13 @@ const MOCK_DECISIONS: StrategyDecision[] = [
     id: '1',
     lap: 12,
     timestamp: '00:28:45',
-    action: 'Pit Stop (Soft → Hard)',
-    confidence: 0.88,
-    reasoning: 'Tyre wear accelerating, pit window optimal. Leader not yet committed.',
+    action: 'Pit For Fresh Softs',
+    confidence: 0.91,
+    reasoning: 'Tyre wear accelerating. Pit window optimal. Leader not yet committed.',
     annotation: 'Clean pit execution, 2.1s stop',
     approved: true,
     approvedBy: 'Engineer Lead',
-    outcome: {
-      resultPosition: 2,
-      resultGap: 1.2,
-      notes: 'Undercut attempt, competitor matched',
-    },
+    outcome: { resultPosition: 2, resultGap: 1.2, notes: 'Undercut attempt, competitor matched' },
   },
   {
     id: '2',
@@ -52,17 +47,13 @@ const MOCK_DECISIONS: StrategyDecision[] = [
     annotation: 'Good call - P2 pit 2 laps later',
     approved: true,
     approvedBy: 'Strategist',
-    outcome: {
-      resultPosition: 1,
-      resultGap: -0.8,
-      notes: 'Gained 2 positions through patience',
-    },
+    outcome: { resultPosition: 1, resultGap: -0.8, notes: 'Gained 2 positions through patience' },
   },
   {
     id: '3',
     lap: 35,
     timestamp: '01:22:33',
-    action: 'Switch to Conservative Pace',
+    action: 'Switch To Conservative',
     confidence: 0.65,
     reasoning: 'Tyre management critical. Low confidence in final stint durability.',
     annotation: 'Borderline call - could have pushed more',
@@ -73,7 +64,7 @@ const MOCK_DECISIONS: StrategyDecision[] = [
     id: '4',
     lap: 41,
     timestamp: '01:45:18',
-    action: 'Final Push (Soft Tyres)',
+    action: 'Final Push — Soft',
     confidence: 0.79,
     reasoning: 'SC deployed lap 38. Fresh softs now optimal for DRS battles.',
     approved: false,
@@ -87,125 +78,270 @@ export const DecisionLog: React.FC<DecisionLogProps> = ({
 }) => {
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
-  const getConfidenceBadgeStyle = (confidence: number): React.CSSProperties => {
-    const pct = confidence * 100;
-    if (pct >= 70) return { backgroundColor: '#1A3C1A', color: '#39B54A', border: '1px solid #39B54A' };
-    if (pct >= 40) return { backgroundColor: '#3C3000', color: '#FFC906', border: '1px solid #FFC906' };
-    return { backgroundColor: '#3C0000', color: '#E10600', border: '1px solid #E10600' };
+  const getConfClass = (conf: number): string => {
+    const pct = conf * 100;
+    if (pct >= 80) return 'pm-conf-high';
+    if (pct >= 60) return 'pm-conf-mid';
+    return 'pm-conf-low';
   };
 
-  const avgConfidence = decisions.length > 0 
-    ? (decisions.reduce((sum, d) => sum + d.confidence, 0) / decisions.length) * 100 
+  const getCallLabel = (conf: number): string => {
+    const pct = conf * 100;
+    if (pct >= 80) return 'OPTIMAL CALL';
+    if (pct >= 60) return 'BORDERLINE CALL';
+    return 'RISKY CALL';
+  };
+
+  const getCardClass = (conf: number): string => {
+    const pct = conf * 100;
+    if (pct >= 80) return 'pm-strategy-card optimal';
+    if (pct >= 60) return 'pm-strategy-card borderline';
+    return 'pm-strategy-card';
+  };
+
+  const avgConfidence = decisions.length > 0
+    ? (decisions.reduce((sum, d) => sum + d.confidence, 0) / decisions.length) * 100
     : 0;
 
   return (
-    <Card className="border-[#38383F] bg-[#1F1F27] rounded-none shadow-2xl">
-      <div className="p-6">
-        <div className="flex items-center justify-between mb-8 border-b border-f1-red pb-4">
-          <div>
-            <h3 className="text-[18px] font-display font-extrabold text-white flex items-center gap-2 uppercase tracking-tight">
-              <FileText className="w-5 h-5 text-f1-red" />
-              DECISION LOG
-            </h3>
+    <div
+      style={{
+        border: "none",
+        background: "transparent",
+        borderRadius: 0,
+        boxShadow: "none",
+        padding: 0,
+      }}
+    >
+      <div>
+        {/* Header */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            marginBottom: 16,
+          }}
+        >
+          <div className="pm-panel-title">Decision Log</div>
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <span
+              style={{
+                fontFamily: "'IBM Plex Mono', monospace",
+                fontSize: 9,
+                color: "var(--text-secondary)",
+              }}
+            >
+              {decisions.length} CALLS · {decisions.filter((d) => d.approved).length} APPROVED
+            </span>
+            <button
+              onClick={onExportSession}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 6,
+                padding: "5px 12px",
+                border: "1px solid var(--border)",
+                background: "var(--carbon-light)",
+                color: "var(--text-secondary)",
+                fontFamily: "'Barlow Condensed', sans-serif",
+                fontSize: 9,
+                fontWeight: 700,
+                letterSpacing: "0.15em",
+                textTransform: "uppercase",
+                cursor: "pointer",
+                clipPath: "polygon(8px 0, 100% 0, calc(100% - 8px) 100%, 0 100%)",
+                transition: "all 0.2s",
+              }}
+              onMouseEnter={(e) => {
+                (e.currentTarget as HTMLElement).style.color = "var(--text-primary)";
+                (e.currentTarget as HTMLElement).style.borderColor = "var(--border-active)";
+              }}
+              onMouseLeave={(e) => {
+                (e.currentTarget as HTMLElement).style.color = "var(--text-secondary)";
+                (e.currentTarget as HTMLElement).style.borderColor = "var(--border)";
+              }}
+            >
+              <Download style={{ width: 10, height: 10 }} />
+              EXPORT
+            </button>
           </div>
-          <button
-            onClick={onExportSession}
-            className="flex items-center gap-2 px-4 py-2 border border-[#38383F] bg-[#2D2D35] text-white text-[11px] font-bold uppercase tracking-[0.2em] hover:bg-[#38383F] transition-all"
-          >
-            <Download className="w-4 h-4" />
-            EXPORT
-          </button>
         </div>
 
-        <div className="space-y-4">
-          {decisions.map((decision) => (
+        {/* Cards */}
+        {decisions.map((decision) => (
+          <div
+            key={decision.id}
+            className={getCardClass(decision.confidence)}
+            onClick={() => setExpandedId(expandedId === decision.id ? null : decision.id)}
+            style={{ borderRadius: 0 }}
+          >
+            {/* Card header */}
             <div
-              key={decision.id}
-              className="p-4 bg-[#1F1F27] border-l-[4px] border-f1-red border border-[#38383F] transition-all hover:bg-[#2D2D35]"
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "flex-start",
+                marginBottom: 6,
+              }}
             >
-              <div
-                className="cursor-pointer"
-                onClick={() => setExpandedId(expandedId === decision.id ? null : decision.id)}
-              >
-                <div className="flex items-start justify-between gap-4 mb-3">
-                  <div className="flex-1">
-                    <h4 className="text-[16px] font-display font-extrabold text-white uppercase tracking-tight">
-                      {decision.action}
-                    </h4>
-                    <div className="flex items-center gap-2 mt-1">
-                      <span className="text-[10px] font-bold text-[#FFC906] uppercase tracking-wider">
-                        {decision.confidence * 100 < 40 ? 'RISKY CALL' : decision.confidence * 100 < 70 ? 'BORDERLINE CALL' : 'OPTIMAL CALL'}
-                      </span>
-                      <span className="text-[10px] text-[#67676D] font-mono">
-                        LAP {decision.lap} • {decision.timestamp}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div 
-                    className="px-3 py-1 text-[12px] font-display font-bold uppercase"
-                    style={getConfidenceBadgeStyle(decision.confidence)}
-                  >
-                    {(decision.confidence * 100).toFixed(0)}%
-                  </div>
-                </div>
-
-                <p className="text-[13px] font-body text-[#C4C4C4] leading-relaxed mb-3">
-                  {decision.reasoning}
-                </p>
-
-                <div className="flex items-center justify-between">
-                  <button 
-                    className="text-[11px] font-semibold text-f1-red uppercase tracking-wider hover:underline"
-                  >
-                    {expandedId === decision.id ? 'HIDE DETAILS' : 'VIEW DETAILS'}
-                  </button>
-                  {decision.annotation && (
-                    <div className="flex items-center gap-1.5 text-[10px] text-[#67676D] font-bold uppercase">
-                      <MessageSquare className="w-3 h-3" />
-                      {decision.annotation.length > 20 ? decision.annotation.slice(0, 20) + '...' : decision.annotation}
-                    </div>
-                  )}
-                </div>
+              <div className="pm-strategy-action">{decision.action}</div>
+              <div className={`pm-confidence-badge ${getConfClass(decision.confidence)}`} style={{ borderRadius: 0 }}>
+                {(decision.confidence * 100).toFixed(0)}%
               </div>
+            </div>
 
-              {expandedId === decision.id && (
-                <div className="mt-4 pt-4 border-t border-[#38383F] space-y-4">
-                  {decision.approved && (
-                    <div className="flex items-center gap-2 text-[11px] font-bold text-[#39B54A] uppercase tracking-wider">
-                      <CheckCircle className="w-4 h-4" />
-                      <span>Approved by {decision.approvedBy}</span>
-                    </div>
-                  )}
-                  <div className="bg-[#15151E] p-3 border border-[#38383F]">
-                    <h5 className="text-[10px] font-bold text-[#67676D] uppercase mb-2">Detailed Reasoning</h5>
-                    <p className="text-[12px] text-[#C4C4C4] leading-relaxed">{decision.reasoning}</p>
-                  </div>
+            {/* Call label + lap */}
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 10,
+                marginBottom: 6,
+              }}
+            >
+              <span
+                style={{
+                  fontFamily: "'Barlow Condensed', sans-serif",
+                  fontSize: 9,
+                  fontWeight: 700,
+                  letterSpacing: "0.15em",
+                  textTransform: "uppercase",
+                  color:
+                    decision.confidence >= 0.8
+                      ? "var(--neon-green)"
+                      : decision.confidence >= 0.6
+                      ? "var(--amber)"
+                      : "var(--f1-red)",
+                }}
+              >
+                {getCallLabel(decision.confidence)}
+              </span>
+              <span
+                style={{
+                  fontFamily: "'IBM Plex Mono', monospace",
+                  fontSize: 9,
+                  color: "var(--text-secondary)",
+                }}
+              >
+                LAP {decision.lap} · {decision.timestamp}
+              </span>
+            </div>
+
+            {/* Reasoning */}
+            <div className="pm-strategy-text">{decision.reasoning}</div>
+
+            {/* Meta */}
+            <div style={{ display: "flex", gap: 12, marginTop: 8, flexWrap: "wrap" }}>
+              {decision.approved && (
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 4,
+                    fontFamily: "'Barlow Condensed', sans-serif",
+                    fontSize: 9,
+                    fontWeight: 700,
+                    letterSpacing: "0.15em",
+                    textTransform: "uppercase",
+                    color: "var(--neon-green)",
+                  }}
+                >
+                  <CheckCircle style={{ width: 10, height: 10 }} />
+                  {decision.approvedBy ?? "APPROVED"}
                 </div>
               )}
             </div>
+
+            {/* Expanded details */}
+            {expandedId === decision.id && decision.outcome && (
+              <div
+                style={{
+                  marginTop: 10,
+                  paddingTop: 10,
+                  borderTop: "1px solid var(--border)",
+                }}
+              >
+                <div
+                  style={{
+                    fontFamily: "'Barlow Condensed', sans-serif",
+                    fontSize: 9,
+                    fontWeight: 700,
+                    letterSpacing: "0.15em",
+                    textTransform: "uppercase",
+                    color: "var(--text-secondary)",
+                    marginBottom: 4,
+                  }}
+                >
+                  Outcome
+                </div>
+                <div className="pm-strategy-text">
+                  P{decision.outcome.resultPosition} · Gap: {decision.outcome.resultGap > 0 ? "+" : ""}{decision.outcome.resultGap}s<br />
+                  {decision.outcome.notes}
+                </div>
+                {decision.annotation && (
+                  <div
+                    style={{
+                      marginTop: 6,
+                      fontFamily: "'IBM Plex Mono', monospace",
+                      fontSize: 9,
+                      color: "var(--text-secondary)",
+                      fontStyle: "italic",
+                    }}
+                  >
+                    ※ {decision.annotation}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        ))}
+
+        {/* Footer stats */}
+        <div
+          style={{
+            marginTop: 16,
+            paddingTop: 12,
+            borderTop: "1px solid var(--border)",
+            display: "grid",
+            gridTemplateColumns: "1fr 1fr 1fr",
+            gap: 0,
+          }}
+        >
+          {[
+            { val: decisions.length,                                    label: "Total Calls",    color: "var(--text-primary)" },
+            { val: decisions.filter((d) => d.approved).length,         label: "Approved",       color: "var(--neon-green)" },
+            { val: `${avgConfidence.toFixed(0)}%`,                     label: "Avg Confidence", color: "var(--text-primary)" },
+          ].map((stat) => (
+            <div key={stat.label} style={{ textAlign: "center", padding: "0 8px" }}>
+              <div
+                style={{
+                  fontFamily: "'Orbitron', sans-serif",
+                  fontSize: 22,
+                  fontWeight: 700,
+                  color: stat.color,
+                  lineHeight: 1,
+                  marginBottom: 4,
+                }}
+              >
+                {stat.val}
+              </div>
+              <div
+                style={{
+                  fontFamily: "'Barlow Condensed', sans-serif",
+                  fontSize: 9,
+                  fontWeight: 700,
+                  letterSpacing: "0.15em",
+                  textTransform: "uppercase",
+                  color: "var(--text-secondary)",
+                }}
+              >
+                {stat.label}
+              </div>
+            </div>
           ))}
         </div>
-
-        <div className="mt-8 pt-6 border-t border-[#38383F] grid grid-cols-3 divide-x divide-[#38383F]">
-          <div className="text-center px-4">
-            <div className="text-[28px] font-display font-extrabold text-white leading-none mb-1">{decisions.length}</div>
-            <div className="text-[11px] font-semibold text-[#67676D] uppercase tracking-wider">Total Calls</div>
-          </div>
-          <div className="text-center px-4">
-            <div className="text-[28px] font-display font-extrabold text-[#39B54A] leading-none mb-1">
-              {decisions.filter((d) => d.approved).length}
-            </div>
-            <div className="text-[11px] font-semibold text-[#67676D] uppercase tracking-wider">Approved</div>
-          </div>
-          <div className="text-center px-4">
-            <div className="text-[28px] font-display font-extrabold text-white leading-none mb-1">
-              {avgConfidence.toFixed(0)}%
-            </div>
-            <div className="text-[11px] font-semibold text-[#67676D] uppercase tracking-wider">Avg Confidence</div>
-          </div>
-        </div>
       </div>
-    </Card>
+    </div>
   );
 };

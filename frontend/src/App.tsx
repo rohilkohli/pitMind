@@ -1,4 +1,4 @@
-import React, { Suspense } from "react";
+import React, { Suspense, useEffect, useRef } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useOptionalAuthUser } from "./hooks/useOptionalAuthUser";
 import { RoleProvider } from "./contexts/RoleContext";
@@ -9,14 +9,25 @@ import { Skeleton } from "./components/ui/skeleton";
 const Dashboard = React.lazy(() => import("./pages/Dashboard").then((module) => ({ default: module.Dashboard })));
 const FanMode = React.lazy(() => import("./pages/FanMode").then((module) => ({ default: module.FanMode })));
 const Login = React.lazy(() => import("./pages/Login").then((module) => ({ default: module.Login })));
+const Strategy = React.lazy(() => import("./pages/Strategy").then((module) => ({ default: module.Strategy })));
+const Telemetry = React.lazy(() => import("./pages/Telemetry").then((module) => ({ default: module.Telemetry })));
+const Landing = React.lazy(() => import("./pages/Landing").then((module) => ({ default: module.Landing })));
 
 function PageLoader({ label }: { label: string }) {
   return (
     <div className="flex min-h-[60vh] items-center justify-center px-4 py-10">
-      <div className="w-full max-w-md rounded-3xl border border-white/10 bg-white/5 p-6 text-center shadow-[0_18px_48px_rgba(0,0,0,0.25)] backdrop-blur">
+      <div
+        className="w-full max-w-md p-6 text-center"
+        style={{ background: "var(--carbon-light)", border: "1px solid var(--border)" }}
+      >
         <Skeleton className="mx-auto h-3 w-24" />
         <Skeleton className="mx-auto mt-4 h-9 w-48" />
-        <p className="mt-4 text-sm text-f1-muted">{label}</p>
+        <p
+          className="mt-4 text-sm"
+          style={{ fontFamily: "'IBM Plex Mono', monospace", color: "var(--text-secondary)" }}
+        >
+          {label}
+        </p>
       </div>
     </div>
   );
@@ -26,7 +37,14 @@ function RequireAuth({ children }: { children: React.ReactElement }) {
   const { user, loading } = useOptionalAuthUser();
 
   if (loading) {
-    return <div className="flex h-screen items-center justify-center bg-f1-black text-f1-muted">Checking authentication...</div>;
+    return (
+      <div
+        className="flex h-screen items-center justify-center"
+        style={{ background: "var(--carbon)", color: "var(--text-secondary)", fontFamily: "'IBM Plex Mono', monospace" }}
+      >
+        Checking authentication...
+      </div>
+    );
   }
 
   // Only bypass authentication in development when explicitly enabled
@@ -39,73 +57,259 @@ function RequireAuth({ children }: { children: React.ReactElement }) {
   return children;
 }
 
+// ── SPEED LINES CANVAS ───────────────────────────────────────────────────
+function SpeedLinesCanvas() {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    const resize = () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    };
+    resize();
+    window.addEventListener("resize", resize);
+
+    const lines = Array.from({ length: 60 }, () => ({
+      x: Math.random() * window.innerWidth,
+      y: Math.random() * window.innerHeight,
+      len: 40 + Math.random() * 120,
+      speed: 8 + Math.random() * 20,
+      opacity: 0.05 + Math.random() * 0.12,
+      width: 0.5 + Math.random() * 1,
+    }));
+
+    let animId: number;
+
+    function draw() {
+      if (!canvas || !ctx) return;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      lines.forEach((l) => {
+        ctx.strokeStyle = `rgba(232,0,45,${l.opacity})`;
+        ctx.lineWidth = l.width;
+        ctx.beginPath();
+        ctx.moveTo(l.x, l.y);
+        ctx.lineTo(l.x + l.len, l.y);
+        ctx.stroke();
+        l.x += l.speed;
+        if (l.x > canvas.width + 200) {
+          l.x = -200;
+          l.y = Math.random() * canvas.height;
+          l.speed = 8 + Math.random() * 20;
+          l.len = 40 + Math.random() * 120;
+        }
+      });
+      animId = requestAnimationFrame(draw);
+    }
+
+    draw();
+
+    return () => {
+      window.removeEventListener("resize", resize);
+      cancelAnimationFrame(animId);
+    };
+  }, []);
+
+  return (
+    <canvas
+      ref={canvasRef}
+      id="pm-speed-canvas"
+      style={{
+        position: "fixed",
+        inset: 0,
+        zIndex: 0,
+        pointerEvents: "none",
+        opacity: 0.35,
+      }}
+    />
+  );
+}
+
+// ── CUSTOM CURSOR ─────────────────────────────────────────────────────────
+function CustomCursor() {
+  const dotRef = useRef<HTMLDivElement>(null);
+  const ringRef = useRef<HTMLDivElement>(null);
+  const mouse = useRef({ x: 0, y: 0 });
+  const ring = useRef({ x: 0, y: 0 });
+  const animRef = useRef<number>(0);
+
+  useEffect(() => {
+    const onMove = (e: MouseEvent) => {
+      mouse.current = { x: e.clientX, y: e.clientY };
+    };
+    window.addEventListener("mousemove", onMove);
+
+    const onEnter = () => {
+      if (ringRef.current) {
+        ringRef.current.style.transform = "translate(-50%,-50%) scale(2)";
+        ringRef.current.style.borderColor = "var(--f1-red)";
+      }
+    };
+    const onLeave = () => {
+      if (ringRef.current) {
+        ringRef.current.style.transform = "translate(-50%,-50%) scale(1)";
+        ringRef.current.style.borderColor = "var(--f1-red-glow)";
+      }
+    };
+
+    const interactables = document.querySelectorAll("button, a, [role='button'], .pm-chip, .pm-nav-item, .pm-standing-row, .pm-strategy-card, .pm-tl-item, input");
+    interactables.forEach((el) => {
+      el.addEventListener("mouseenter", onEnter);
+      el.addEventListener("mouseleave", onLeave);
+    });
+
+    function animate() {
+      ring.current.x += (mouse.current.x - ring.current.x) * 0.15;
+      ring.current.y += (mouse.current.y - ring.current.y) * 0.15;
+
+      if (dotRef.current) {
+        dotRef.current.style.left = mouse.current.x + "px";
+        dotRef.current.style.top = mouse.current.y + "px";
+      }
+      if (ringRef.current) {
+        ringRef.current.style.left = ring.current.x + "px";
+        ringRef.current.style.top = ring.current.y + "px";
+      }
+      animRef.current = requestAnimationFrame(animate);
+    }
+    animate();
+
+    return () => {
+      window.removeEventListener("mousemove", onMove);
+      cancelAnimationFrame(animRef.current);
+    };
+  }, []);
+
+  return (
+    <>
+      <div ref={dotRef} className="pm-cursor" />
+      <div ref={ringRef} className="pm-cursor-ring" />
+    </>
+  );
+}
+
 export default function App() {
   const defaultWsUrl = import.meta.env.VITE_WS_URL || 
     ((window.location.protocol === 'https:' ? 'wss://' : 'ws://') + window.location.host + '/api/v1/stream/telemetry');
 
   return (
     <BrowserRouter>
-      <Routes>
-        <Route
-          path="/login"
-          element={
-            <Suspense fallback={<PageLoader label="Loading login..." />}>
-              <Login />
-            </Suspense>
-          }
-        />
-        
-        {/* Fan Mode is unauthenticated */}
-        <Route
-          path="/fan"
-          element={
-            <PageShell>
-              <Suspense fallback={<PageLoader label="Loading fan view..." />}>
-                <FanMode />
+      {/* Global overlays */}
+      <SpeedLinesCanvas />
+      <CustomCursor />
+
+      {/* App content above canvas */}
+      <div style={{ position: "relative", zIndex: 10, minHeight: "100vh" }}>
+        <Routes>
+          <Route
+            path="/login"
+            element={
+              <Suspense fallback={<PageLoader label="Loading login..." />}>
+                <Login />
               </Suspense>
-            </PageShell>
-          }
-        />
-        
-        {/* Dashboard is restricted to authenticated engineers */}
-        <Route
-          path="/dashboard"
-          element={
-            <RequireAuth>
-              <StreamProvider wsUrl={defaultWsUrl}>
-                <RoleProvider>
-                  <PageShell>
-                    <Suspense fallback={<PageLoader label="Loading engineer console..." />}>
-                      <Dashboard />
-                    </Suspense>
-                  </PageShell>
-                </RoleProvider>
-              </StreamProvider>
-            </RequireAuth>
-          }
-        />
-        
-        {/* Copilot is an alias for the Dashboard view in this version */}
-        <Route
-          path="/copilot"
-          element={
-            <RequireAuth>
-              <StreamProvider wsUrl={defaultWsUrl}>
-                <RoleProvider>
-                  <PageShell>
-                    <Suspense fallback={<PageLoader label="Loading Copilot workspace..." />}>
-                      <Dashboard />
-                    </Suspense>
-                  </PageShell>
-                </RoleProvider>
-              </StreamProvider>
-            </RequireAuth>
-          }
-        />
-        
-        {/* Default route */}
-        <Route path="/" element={<Navigate to="/fan" replace />} />
-      </Routes>
+            }
+          />
+          
+          {/* Fan Mode is unauthenticated */}
+          <Route
+            path="/fan"
+            element={
+              <PageShell>
+                <Suspense fallback={<PageLoader label="Loading fan view..." />}>
+                  <FanMode />
+                </Suspense>
+              </PageShell>
+            }
+          />
+          
+          {/* Dashboard is restricted to authenticated engineers */}
+          <Route
+            path="/dashboard"
+            element={
+              <RequireAuth>
+                <StreamProvider wsUrl={defaultWsUrl}>
+                  <RoleProvider>
+                    <PageShell>
+                      <Suspense fallback={<PageLoader label="Loading engineer console..." />}>
+                        <Dashboard />
+                      </Suspense>
+                    </PageShell>
+                  </RoleProvider>
+                </StreamProvider>
+              </RequireAuth>
+            }
+          />
+
+          <Route
+            path="/strategy"
+            element={
+              <RequireAuth>
+                <StreamProvider wsUrl={defaultWsUrl}>
+                  <RoleProvider>
+                    <PageShell>
+                      <Suspense fallback={<PageLoader label="Loading Strategy Workspace..." />}>
+                        <Strategy />
+                      </Suspense>
+                    </PageShell>
+                  </RoleProvider>
+                </StreamProvider>
+              </RequireAuth>
+            }
+          />
+
+          <Route
+            path="/telemetry"
+            element={
+              <RequireAuth>
+                <StreamProvider wsUrl={defaultWsUrl}>
+                  <RoleProvider>
+                    <PageShell>
+                      <Suspense fallback={<PageLoader label="Loading Telemetry..." />}>
+                        <Telemetry />
+                      </Suspense>
+                    </PageShell>
+                  </RoleProvider>
+                </StreamProvider>
+              </RequireAuth>
+            }
+          />
+          
+          {/* Copilot is an alias for the Dashboard view in this version */}
+          <Route
+            path="/copilot"
+            element={
+              <RequireAuth>
+                <StreamProvider wsUrl={defaultWsUrl}>
+                  <RoleProvider>
+                    <PageShell>
+                      <Suspense fallback={<PageLoader label="Loading Copilot workspace..." />}>
+                        <Dashboard />
+                      </Suspense>
+                    </PageShell>
+                  </RoleProvider>
+                </StreamProvider>
+              </RequireAuth>
+            }
+          />
+          
+          {/* Default route */}
+          <Route 
+            path="/" 
+            element={
+              <PageShell>
+                <Suspense fallback={<PageLoader label="Loading PitMind..." />}>
+                  <Landing />
+                </Suspense>
+              </PageShell>
+            } 
+          />
+        </Routes>
+      </div>
     </BrowserRouter>
   );
 }

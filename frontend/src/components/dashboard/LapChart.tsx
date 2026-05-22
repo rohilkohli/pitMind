@@ -3,7 +3,7 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import type { TooltipProps } from "recharts";
 import type { ValueType, NameType } from "recharts/types/component/DefaultTooltipContent";
 
-export function LapChart({ data }: { data?: any[] }) {
+export function LapChart({ data, minimal = false }: { data?: any[], minimal?: boolean }) {
   const [selectedDrivers, setSelectedDrivers] = useState<string[]>(["VER", "LEC", "NOR"]);
   
   const isEmpty = !data || data.length === 0;
@@ -24,15 +24,15 @@ export function LapChart({ data }: { data?: any[] }) {
   const CustomTooltip = ({ active, payload, label }: TooltipProps<ValueType, NameType>) => {
     if (active && payload && payload.length && !isEmpty) {
       return (
-        <div className="border border-f1-border bg-f1-dark p-3 shadow-[0_12px_36px_rgba(0,0,0,0.45)]">
-          <p className="mb-2 text-xs font-bold uppercase text-f1-muted">Lap {label}</p>
+        <div className="border border-[var(--border)] bg-[var(--carbon-mid)] p-3 shadow-2xl">
+          <p className="mb-2 text-xs font-label uppercase text-[var(--text-secondary)] tracking-widest">Lap {label}</p>
           {payload.map((p) => (
-            <div key={p.dataKey} className="flex items-center justify-between gap-4 py-1 text-sm">
+            <div key={p.dataKey} className="flex items-center justify-between gap-6 py-1 text-sm">
               <div className="flex items-center gap-2">
-                <span className="h-2 w-2 rounded-full" style={{ backgroundColor: p.color }} />
-                <span className="font-bold text-f1-white">{p.dataKey}</span>
+                <span className="h-2 w-2" style={{ backgroundColor: p.color }} />
+                <span className="font-label font-bold text-[var(--text-primary)] uppercase">{p.dataKey}</span>
               </div>
-              <span className="f1-mono text-f1-white">{typeof p.value === "number" ? p.value.toFixed(3) : p.value}s</span>
+              <span className="font-tele text-[var(--text-primary)]">{typeof p.value === "number" ? p.value.toFixed(3) : p.value}s</span>
             </div>
           ))}
         </div>
@@ -42,80 +42,84 @@ export function LapChart({ data }: { data?: any[] }) {
   };
 
   return (
-    <div className="flex h-full flex-col p-6">
-      <div className="mb-6">
-        <h2 className="f1-section-title !mb-4">Lap Time Trace</h2>
-        
-        <div className="flex flex-wrap gap-2 mb-4">
-          {drivers.map((d) => (
-            <button
-              key={d.id}
-              onClick={() => setSelectedDrivers(prev => prev.includes(d.id) ? prev.filter(id => id !== d.id) : [...prev, d.id])}
-              className={`flex items-center gap-2 px-3 py-1.5 rounded-full border text-[11px] font-bold uppercase transition-all ${
-                selectedDrivers.includes(d.id) 
-                ? "bg-f1-red/10 border-f1-red text-white" 
-                : "bg-transparent border-[#38383F] text-[#67676D] hover:border-[#67676D]"
-              }`}
-            >
-              <div className="w-2 h-2 rounded-full" style={{ backgroundColor: d.color }} />
-              {d.id}
-            </button>
-          ))}
+    <div className={`flex h-full flex-col ${minimal ? 'p-2' : 'p-6'}`}>
+      {!minimal && (
+        <div className="mb-6">
+          <h2 className="pm-panel-title text-xl mb-4">Lap Time Trace</h2>
+          
+          <div className="flex flex-wrap gap-2 mb-4">
+            {drivers.map((d) => (
+              <button
+                key={d.id}
+                onClick={() => setSelectedDrivers(prev => prev.includes(d.id) ? prev.filter(id => id !== d.id) : [...prev, d.id])}
+                className={`flex items-center gap-2 px-3 py-1.5 border font-label text-[11px] font-bold uppercase transition-all clip-para-sm ${
+                  selectedDrivers.includes(d.id) 
+                  ? "bg-[var(--f1-red-dim)] border-[var(--f1-red)] text-[var(--text-primary)]" 
+                  : "bg-[var(--carbon-mid)] border-[var(--border)] text-[var(--text-secondary)] hover:border-[var(--text-secondary)]"
+                }`}
+              >
+                <div className="w-2 h-2" style={{ backgroundColor: d.color }} />
+                {d.id}
+              </button>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
       
-      <div className="relative min-h-[400px] flex-1">
-        {isEmpty && (
+      <div className={`relative flex-1 ${minimal ? 'min-h-[100px]' : 'min-h-[400px]'}`}>
+        {isEmpty && !minimal && (
           <div className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none">
-            <p className="text-[18px] font-display font-semibold text-[#67676D] uppercase tracking-widest">
+            <p className="font-label text-[18px] font-semibold text-[var(--text-secondary)] uppercase tracking-widest">
               Upload Telemetry to Begin
             </p>
           </div>
         )}
         
-        <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#38383F" vertical={false} opacity={0.3} />
-            <XAxis 
-              dataKey="lap" 
-              stroke="#67676D" 
-              fontSize={10} 
-              tickLine={false} 
-              axisLine={false}
-              domain={[1, 57]}
-            />
-            <YAxis 
-              stroke="#67676D" 
-              fontSize={10} 
-              tickLine={false} 
-              axisLine={false}
-              domain={[85, 100]}
-              tickFormatter={(val) => val.toFixed(0) + 's'}
-              reversed={true}
-            />
-            {!isEmpty && <Tooltip content={<CustomTooltip />} />}
-            
-            {isEmpty ? (
-              <>
-                <Line type="monotone" dataKey="ghost1" stroke="#38383F" strokeWidth={1} dot={false} opacity={0.2} />
-                <Line type="monotone" dataKey="ghost2" stroke="#38383F" strokeWidth={1} dot={false} opacity={0.2} />
-                <Line type="monotone" dataKey="ghost3" stroke="#38383F" strokeWidth={1} dot={false} opacity={0.2} />
-              </>
-            ) : (
-              drivers.filter(d => selectedDrivers.includes(d.id)).map(d => (
-                <Line 
-                  key={d.id}
-                  type="monotone" 
-                  dataKey={d.id} 
-                  stroke={d.color} 
-                  strokeWidth={2} 
-                  dot={false} 
-                  activeDot={{ r: 6 }} 
-                />
-              ))
-            )}
-          </LineChart>
-        </ResponsiveContainer>
+        <div className="absolute inset-0">
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} opacity={0.3} />
+              <XAxis 
+                dataKey="lap" 
+                stroke="var(--text-secondary)" 
+                fontSize={10} 
+                tickLine={false} 
+                axisLine={false}
+                domain={[1, 57]}
+              />
+              <YAxis 
+                stroke="var(--text-secondary)" 
+                fontSize={10} 
+                tickLine={false} 
+                axisLine={false}
+                domain={['auto', 'auto']}
+                tickFormatter={(val) => val.toFixed(0) + 's'}
+                reversed={true}
+              />
+              {!isEmpty && <Tooltip content={<CustomTooltip />} />}
+              
+              {isEmpty ? (
+                <>
+                  <Line type="monotone" dataKey="ghost1" stroke="var(--border)" strokeWidth={1} dot={false} opacity={0.2} />
+                  <Line type="monotone" dataKey="ghost2" stroke="var(--border)" strokeWidth={1} dot={false} opacity={0.2} />
+                  <Line type="monotone" dataKey="ghost3" stroke="var(--border)" strokeWidth={1} dot={false} opacity={0.2} />
+                </>
+              ) : (
+                drivers.filter(d => minimal || selectedDrivers.includes(d.id)).map(d => (
+                  <Line 
+                    key={d.id}
+                    type="monotone" 
+                    dataKey={d.id} 
+                    stroke={d.color} 
+                    strokeWidth={2} 
+                    dot={false} 
+                    activeDot={{ r: 6 }} 
+                  />
+                ))
+              )}
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
       </div>
     </div>
   );

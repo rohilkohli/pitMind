@@ -162,6 +162,9 @@ export interface StrategyRecommendation {
   alternative: string;
   pipeline_steps: string[];
   confidence_decomposition?: ConfidenceDecomposition;
+  urgency_score?: number;
+  model_used?: string | null;
+  explanation_source?: string | null;
 }
 
 /**
@@ -299,6 +302,8 @@ export interface FanPredictRequest {
 export interface FanPredictResponse {
   narrative: string;
   prediction_id?: string;
+  model?: string;
+  confidence?: number | null;
 }
 
 /**

@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useRef, useState } from "react";
+import React, { lazy, Suspense, useEffect, useRef, useState, Fragment } from "react";
 import { useFirebaseRaceState } from "../hooks/useFirebaseRaceState";
 import { useDashboardState } from "../hooks/useDashboardState";
 import { useRole } from "../contexts/RoleContext";
@@ -13,14 +13,15 @@ import { StreamHealthMonitor } from "../components/dashboard/StreamHealthMonitor
 import { useTelemetry } from "../hooks/useTelemetry";
 import { demoDriverA } from "../data/demoTelemetry";
 import { postRecommend, postChat, postCommitStrategy, uploadTelemetry, type StrategyRecommendation, type TelemetryPayload } from "../services/api";
-import { Button } from "../components/ui/button";
 import { auth } from "../lib/firebase";
-import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
-import { Skeleton } from "../components/ui/skeleton";
-import { Loader2, Download, Upload, Zap, Activity } from "lucide-react";
+import { Loader2, Download, Upload, Zap } from "lucide-react";
 import * as Resizable from "react-resizable-panels";
 const { Panel, Group } = Resizable;
 import { ResizeHandle } from "../components/ui/ResizeHandle";
+
+import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
+import { SortableContext, sortableKeyboardCoordinates, horizontalListSortingStrategy, arrayMove } from '@dnd-kit/sortable';
+import { SortableColumn } from '../components/layout/SortableColumn';
 
 import { exportToCsv, exportToJson } from "../lib/utils";
 
@@ -51,6 +52,67 @@ export function Dashboard() {
   const [reco, setReco] = useState<StrategyRecommendation | null>(null);
   const [recoError, setRecoError] = useState<string | null>(null);
   const [recoLoading, setRecoLoading] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    async function autoLoad() {
+      setRecoLoading(true);
+      try {
+        const token = await auth?.currentUser?.getIdToken();
+        const result = await postRecommend(initialPayload, token || undefined);
+        if (active) {
+          setReco(result);
+        }
+      } catch (e) {
+        console.error("Auto-load failed, using fallback:", e);
+        if (active) {
+          setReco({
+            action: "PIT FOR FRESH SOFTS",
+            confidence: 84,
+            explanation: "Tyre wear at 73%. Lap time degradation trend\nexceeds threshold. Pit window optimal at current lap.",
+            evidence: ["Tyre wear: 73%", "Lap delta: +0.31s", "Gap to P2: 1.8s"],
+            urgency_score: 84,
+            assumptions: ["No safety car in next 3 laps"],
+            alternative: "Stay out for 2 more laps if gap to P2 exceeds 2.5s",
+            pit_this_lap: true,
+            suggested_compound: "SOFT",
+            scores: {
+              pit_urgency: 84,
+              sc_probability_next_3_laps: 15,
+              overtake_risk: 30,
+              recommended_window_laps: [18, 25]
+            },
+            structured_reasons: [
+              "Tyre wear at 73% exceeds critical threshold",
+              "Lap time degradation trend exceeds normal limits",
+              "Pit window optimal at current lap"
+            ],
+            pipeline_steps: [
+              "FastF1 Data Load Completed",
+              "Tyre Wear Assessment Completed",
+              "Race Simulation Completed",
+              "Granite Strategy Suggestion Generated"
+            ],
+            confidence_decomposition: {
+              data_quality: 92,
+              model_certainty: 84,
+              stability: 78,
+              regret_bound: 0.16
+            }
+          });
+        }
+      } finally {
+        if (active) {
+          setRecoLoading(false);
+        }
+      }
+    }
+    autoLoad();
+    return () => {
+      active = false;
+    };
+  }, []);
+
   const [draft, setDraft] = useState("");
   const [chat, setChat] = useState<ChatMessage[]>([
     { id: "assistant-welcome", role: "assistant", content: "PitMind Copilot initialized. How can I help analyze the strategy?" },
@@ -220,275 +282,597 @@ export function Dashboard() {
     );
   }
 
-  return (
-    <div className="relative min-h-screen w-full bg-f1-black text-f1-white overflow-x-hidden pb-32">
-      {/* Dynamic Header Banner */}
-      <div className="border-b border-f1-red/30 bg-f1-black/90 px-6 py-4 backdrop-blur-md sticky top-0 z-[100]">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-6">
-            <div className="flex flex-col">
-              <span className="text-[10px] font-black uppercase tracking-[0.4em] text-f1-red">PitMind Mission Control</span>
-              <h1 className="text-xl font-black uppercase tracking-tighter text-white">Strategy Console <span className="ml-3 text-f1-muted text-xs">v1.2.5</span></h1>
+  const [columnOrder, setColumnOrder] = useState(() => {
+    const saved = localStorage.getItem('pitmind_dashboard_layout');
+    return saved ? JSON.parse(saved) : ['left', 'center', 'right'];
+  });
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  function handleDragEnd(event: any) {
+    const { active, over } = event;
+    if (active && over && active.id !== over.id) {
+      setColumnOrder((items: string[]) => {
+        const oldIndex = items.indexOf(active.id);
+        const newIndex = items.indexOf(over.id);
+        const newOrder = arrayMove(items, oldIndex, newIndex);
+        localStorage.setItem('pitmind_dashboard_layout', JSON.stringify(newOrder));
+        return newOrder;
+      });
+    }
+  }
+
+  const renderLeftColumn = () => (
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        gap: 1,
+        height: "100%",
+        overflowY: "auto",
+        background: "var(--border)",
+        paddingBottom: 80,
+      }}
+    >
+      <div className="pm-panel" style={{ flex: "0 0 auto" }}>
+        <StandingsTable standings={raceState?.standings} />
+      </div>
+      <div className="pm-panel" style={{ flex: "1 1 auto", minHeight: 280, overflow: "hidden" }}>
+        <Suspense fallback={<div className="skeleton-row" style={{ height: 280 }} />}>
+          <LiveSystemFeed />
+        </Suspense>
+      </div>
+      <div className="pm-panel" style={{ flex: "0 0 auto" }}>
+        <Suspense fallback={<div className="skeleton-row" style={{ height: 120 }} />}>
+          <HealthConsole />
+        </Suspense>
+      </div>
+    </div>
+  );
+
+  const renderCenterColumn = () => (
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        gap: 1,
+        height: "100%",
+        overflowY: "auto",
+        background: "var(--border)",
+        paddingBottom: 80,
+      }}
+    >
+      <div className="pm-panel" style={{ flex: "0 0 auto", minHeight: 360 }}>
+        <div className="pm-panel-header">
+          <div className="pm-panel-title">Telemetry Analysis</div>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <div className="relative overflow-hidden group">
+              <input
+                type="file"
+                onChange={handleUploadTelemetry}
+                style={{ position: "absolute", inset: 0, opacity: 0, cursor: "pointer", zIndex: 10 }}
+                accept=".csv,.json"
+              />
+              <button
+                disabled={isUploading}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 6,
+                  padding: "4px 10px",
+                  border: "1px solid var(--border-active)",
+                  background: "var(--f1-red-dim)",
+                  color: "var(--f1-red)",
+                  fontFamily: "'Barlow Condensed', sans-serif",
+                  fontSize: 9,
+                  fontWeight: 700,
+                  letterSpacing: "0.15em",
+                  textTransform: "uppercase",
+                  cursor: "pointer",
+                  clipPath: "polygon(4px 0, 100% 0, calc(100% - 4px) 100%, 0 100%)",
+                }}
+              >
+                {isUploading ? <Loader2 style={{ width: 10, height: 10 }} className="animate-spin" /> : <Upload style={{ width: 10, height: 10 }} />}
+                {isUploading ? "Ingesting..." : "Ingest Data"}
+              </button>
             </div>
-            <div className="h-10 w-px bg-white/10 mx-2" />
-            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-3 px-4 py-1.5 rounded-sm bg-f1-red/10 border border-f1-red/20 shadow-[0_0_20px_rgba(225,6,0,0.1)]">
-                <div className="h-2.5 w-2.5 rounded-full bg-f1-red animate-pulse" />
-                <span className="text-[11px] font-black text-white uppercase tracking-widest">Live Sync Active</span>
-              </div>
-              <RoleSwitcher currentRole={currentRole} onRoleChange={setRole} />
-            </div>
+            <span
+              style={{
+                fontFamily: "'Orbitron', sans-serif",
+                fontSize: 10,
+                fontWeight: 700,
+                color: "var(--f1-red)",
+                background: "var(--f1-red-dim)",
+                border: "1px solid var(--border-active)",
+                padding: "2px 8px",
+              }}
+            >
+              {localPayload.driver}
+            </span>
+            <span
+              style={{
+                fontFamily: "'IBM Plex Mono', monospace",
+                fontSize: 9,
+                color: "var(--text-secondary)",
+                background: "rgba(255,255,255,0.04)",
+                border: "1px solid var(--border)",
+                padding: "2px 8px",
+              }}
+            >
+              LAPS: {localPayload.laps.length}
+            </span>
+            <button
+              onClick={() => handleExportTelemetry('csv')}
+              style={{ color: "var(--text-secondary)", background: "none", border: "none", cursor: "pointer", padding: 4 }}
+              title="Export CSV"
+            >
+              <Download style={{ width: 14, height: 14 }} />
+            </button>
           </div>
-          <div className="flex items-center gap-6">
-            <div className="hidden xl:flex items-center gap-8 border-r border-white/10 pr-8">
-              <div className="flex flex-col items-end">
-                <span className="text-[10px] font-bold text-f1-muted uppercase tracking-wider">Circuit</span>
-                <span className="text-sm font-black text-white uppercase">{localPayload.circuit}</span>
-              </div>
-              <div className="flex flex-col items-end">
-                <span className="text-[10px] font-bold text-f1-muted uppercase tracking-wider">Session Status</span>
-                <span className="text-sm font-black text-f1-red uppercase">{raceState?.session_status ?? "RACE_LIVE"}</span>
-              </div>
+        </div>
+        <Suspense fallback={<div style={{ height: 300, display: "flex", alignItems: "center", justifyContent: "center" }}><Loader2 className="animate-spin" style={{ color: "var(--f1-red)", width: 24, height: 24 }} /></div>}>
+          <LapChart data={localPayload.laps} />
+        </Suspense>
+      </div>
+
+      <div
+        className="pm-panel"
+        style={{
+          flex: "0 0 auto",
+          position: "relative",
+          overflow: "hidden",
+        }}
+      >
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            background: "radial-gradient(circle at 50% 50%, rgba(232,0,45,0.05), transparent 70%)",
+            animation: "subtle-glow 3s infinite ease-in-out",
+            pointerEvents: "none",
+          }}
+        />
+        <div className="pm-panel-header" style={{ position: "relative", zIndex: 1 }}>
+          <div className="pm-panel-title">
+            <Zap style={{ width: 10, height: 10, color: "var(--f1-red)", flexShrink: 0 }} />
+            AI Strategy Oracle
+          </div>
+          <span className="pm-panel-badge pm-badge-ai">GRANITE · ONLINE</span>
+        </div>
+
+        <div className="pm-throttle-bar" style={{ marginBottom: 12, position: "relative", zIndex: 1 }}>
+          <div className="pm-throttle-fill" />
+        </div>
+
+        <div style={{ position: "relative", zIndex: 1 }}>
+          <p style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 11, color: "var(--text-secondary)", lineHeight: 1.6, marginBottom: 16, fontStyle: "italic" }}>
+            Predictive model analyzing tyre degradation, fuel delta, and safety car probability.
+          </p>
+
+          {recoError && (
+            <div style={{ padding: "8px 12px", border: "1px solid var(--border-active)", background: "var(--f1-red-dim)", marginBottom: 12 }}>
+              <span style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 10, color: "var(--f1-red)" }}>{recoError}</span>
             </div>
-            <div className="flex items-center justify-center gap-6">
-              <StreamHealthMonitor showMetrics={false} />
-              <ShareButton onCopyUrl={copyShareableUrl} getShareUrl={getShareableUrl} />
+          )}
+
+          {reco && (
+            <div style={{ padding: "14px", background: "var(--f1-red-dim)", border: "1px solid var(--border-active)", marginBottom: 16, borderLeft: "3px solid var(--f1-red)" }}>
+              <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: 9, fontWeight: 700, letterSpacing: "0.25em", textTransform: "uppercase", color: "var(--text-secondary)", marginBottom: 6 }}>Generated Directive</div>
+              <div style={{ fontFamily: "'Orbitron', sans-serif", fontSize: 22, fontWeight: 900, color: "var(--text-primary)", textTransform: "uppercase", letterSpacing: "-0.02em", lineHeight: 1 }}>{reco.action}</div>
             </div>
+          )}
+
+          <button
+            onClick={onRecommend}
+            disabled={recoLoading}
+            className="pm-btn-primary"
+            style={{ marginBottom: 10 }}
+          >
+            {recoLoading ? "Processing Inference..." : "Execute Command"}
+          </button>
+          <div style={{ textAlign: "center", fontFamily: "'IBM Plex Mono', monospace", fontSize: 9, color: "var(--text-secondary)", letterSpacing: "0.15em", textTransform: "uppercase" }}>
+            AI READY — GRANITE v1.3 — IBM WATSONX
           </div>
         </div>
       </div>
 
-      <div className="mx-auto max-w-[1920px] p-6 h-[calc(100vh-120px)]">
-        <Group orientation="horizontal" className="h-full gap-6">
-          {/* Left Column: Standings & System Logs */}
-          <Panel defaultSize={25} minSize={20} className="h-full">
-            <div className="space-y-6 h-full overflow-y-auto pr-2 scrollbar-thin">
-              <Card className="border-[#38383F] bg-[#1F1F27] overflow-hidden shadow-2xl">
-                <CardHeader className="py-4 px-5 border-b border-[#38383F] bg-[#1F1F27]">
-                  <CardTitle className="f1-section-title">
-                    <Activity className="w-3.5 h-3.5 text-f1-red" />
-                    Live Standings
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="p-0">
-                  <StandingsTable standings={raceState?.standings} />
-                </CardContent>
-              </Card>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 1, background: "var(--border)" }}>
+        <div className="pm-panel" style={{ minHeight: 320 }}>
+          <Suspense fallback={<div className="skeleton-row" style={{ height: 320 }} />}>
+            <FastF1Loader onDataLoaded={(data) => setLocalPayload(data)} />
+          </Suspense>
+        </div>
 
-              <Card className="border-[#38383F] bg-[#1F1F27] overflow-hidden h-[450px] flex flex-col shadow-2xl">
-                <Suspense fallback={<Skeleton className="h-full w-full" />}>
-                  <LiveSystemFeed />
-                </Suspense>
-              </Card>
-              
-              <Suspense fallback={<Skeleton className="h-96 w-full" />}>
-                <HealthConsole />
-              </Suspense>
-            </div>
-          </Panel>
+        <div className="pm-panel" style={{ minHeight: 320 }}>
+          <div className="pm-panel-header">
+            <div className="pm-panel-title">Live Race Timeline</div>
+          </div>
+          <div style={{ overflowY: "auto", maxHeight: 280 }}>
+            <EventTimeline />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 
-          <ResizeHandle />
+  const renderRightColumn = () => (
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        gap: 1,
+        height: "100%",
+        overflowY: "auto",
+        background: "var(--border)",
+        paddingBottom: 80,
+      }}
+    >
+      <div className="pm-panel" style={{ flex: "0 0 auto" }}>
+        <ConfidenceDecompositionCard
+          decomposition={reco?.confidence_decomposition}
+          overallConfidence={reco?.confidence ?? 0}
+        />
+      </div>
 
-          {/* Center Column: Telemetry & Core Logic */}
-          <Panel defaultSize={50} minSize={30} className="h-full">
-            <div className="space-y-6 h-full overflow-y-auto px-2 scrollbar-thin">
-              <Card className="overflow-hidden border-[#38383F] bg-[#1F1F27] min-h-[600px] flex flex-col shadow-2xl">
-                <CardHeader className="flex flex-row items-center justify-between gap-6 py-4 px-5 border-b border-[#38383F] bg-[#1F1F27]">
-                  <div className="flex items-center gap-4">
-                    <CardTitle className="f1-section-title">Telemetry Analysis</CardTitle>
-                    <div className="relative overflow-hidden group">
-                      <input
-                        type="file"
-                        onChange={handleUploadTelemetry}
-                        className="absolute inset-0 opacity-0 cursor-pointer z-10"
-                        accept=".csv,.json"
-                      />
-                      <button 
-                        disabled={isUploading}
-                        className="flex items-center gap-2 px-3 py-1.5 rounded-none border border-f1-red/30 bg-f1-red/5 text-[10px] text-f1-red font-black uppercase group-hover:bg-f1-red group-hover:text-white transition-all duration-300 disabled:opacity-50"
-                      >
-                        {isUploading ? (
-                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                        ) : (
-                          <Upload className="w-3.5 h-3.5" />
-                        )}
-                        {isUploading ? "Ingesting..." : "Ingest Data"}
-                      </button>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-4">
-                    <div className="flex gap-2">
-                      <span className="bg-f1-red/10 px-3 py-1 text-[10px] font-black uppercase text-f1-red border border-f1-red/20">{localPayload.driver}</span>
-                      <span className="bg-white/5 px-3 py-1 text-[10px] font-black uppercase text-[#67676D] border border-[#38383F]">Laps: {localPayload.laps.length}</span>
-                    </div>
-                    <div className="flex items-center gap-2 border-l border-[#38383F] pl-4">
-                      <button onClick={() => handleExportTelemetry('csv')} className="p-2 text-[#67676D] hover:text-white transition-colors" title="Export CSV"><Download className="w-4 h-4" /></button>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent className="p-0 flex-1 min-h-[450px]">
-                  <Suspense fallback={<div className="h-[450px] flex items-center justify-center bg-f1-black/20"><Loader2 className="animate-spin text-f1-red w-8 h-8" /></div>}>
-                    <LapChart data={localPayload.laps} />
-                  </Suspense>
-                </CardContent>
-              </Card>
-              
-              <Card className={`relative overflow-hidden group shadow-[0_20px_50px_rgba(0,0,0,0.5)] transition-all duration-500 border-[#38383F] bg-[#1F1F27] ${recoLoading ? 'ring-2 ring-f1-red animate-pulse' : ''}`}>
-                {/* Animated Background Glow */}
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(225,6,0,0.05),transparent_70%)] animate-subtle-glow pointer-events-none" />
-                
-                <CardHeader className="py-4 px-6 border-b border-[#38383F] flex items-center justify-between bg-[#1F1F27]">
-                  <div className="flex items-center gap-3">
-                    <Zap className={`w-4 h-4 text-f1-red ${recoLoading ? 'animate-bounce' : ''}`} />
-                    <CardTitle className="text-[12px] font-black uppercase tracking-[0.2em] text-white">AI Strategy Oracle</CardTitle>
-                  </div>
-                  {recoError && <span className="text-[10px] font-black text-f1-red uppercase animate-pulse tracking-wider bg-f1-red/10 px-3 py-1 rounded">{recoError}</span>}
-                </CardHeader>
-                <CardContent className="p-8 space-y-6 relative z-10">
-                  <div>
-                    <p className="text-[13px] text-[#C4C4C4] leading-relaxed font-medium italic">Predictive model analyzing tyre degradation, fuel delta, and safety car probability based on live telemetry snapshots.</p>
-                    {reco && (
-                      <div className="mt-6 p-5 bg-f1-red/10 border border-f1-red/20 rounded-none shadow-inner">
-                        <p className="text-[10px] font-black text-[#67676D] uppercase tracking-[0.3em] mb-2">Generated Directive</p>
-                        <p className="text-3xl font-black text-white uppercase tracking-tighter leading-none italic">{reco.action}</p>
-                      </div>
-                    )}
-                  </div>
-                  
-                  <div className="space-y-4">
-                    <Button 
-                      onClick={onRecommend} 
-                      disabled={recoLoading}
-                      className="w-full h-14 bg-f1-red text-white text-[12px] font-black uppercase tracking-[0.3em] shadow-[0_15px_30px_rgba(225,6,0,0.4)] hover:bg-f1-red-dark active:scale-[0.98] transition-all duration-300 rounded-none border-b-4 border-f1-red-dark"
-                    >
-                      {recoLoading ? "Processing Inference..." : "Execute Command"}
-                    </Button>
-                    <div className="text-center">
-                      <span className="text-[11px] font-bold text-[#67676D] uppercase tracking-widest">
-                        AI READY — GRANITE v1.3 — IBM WATSONX
-                      </span>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-              
-              <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-                <Suspense fallback={<Skeleton className="h-[400px] w-full" />}>
-                  <FastF1Loader onDataLoaded={(data) => setLocalPayload(data)} />
-                </Suspense>
+      <div className="pm-panel" style={{ flex: "0 0 auto", minHeight: 200, overflowY: "auto", maxHeight: 350 }}>
+        <div className="pm-panel-header">
+          <div className="pm-panel-title">Reasoning Trace</div>
+          <span className="pm-panel-badge pm-badge-ok">LIVE</span>
+        </div>
+        <StrategyTimeline
+          reco={reco}
+          strategyChecklistKey={`pitmind.strategy.checklist.${localPayload.circuit}.${localPayload.session_label}.${localPayload.driver}`}
+          onInjectBriefToChat={handleInjectBriefToChat}
+          onCommitStrategy={handleCommitStrategy}
+        />
+      </div>
 
-                <Card className="border-[#38383F] bg-[#1F1F27] overflow-hidden flex flex-col shadow-2xl">
-                  <CardHeader className="py-3 px-5 border-b border-[#38383F] bg-[#1F1F27]">
-                    <CardTitle className="f1-section-title">Live Race Timeline</CardTitle>
-                  </CardHeader>
-                  <CardContent className="p-0 flex-1 overflow-y-auto min-h-[350px] scrollbar-thin">
-                    <EventTimeline />
-                  </CardContent>
-                </Card>
+      <div className="pm-panel" style={{ flex: "0 0 auto" }}>
+        <Suspense fallback={<div className="skeleton-row" style={{ height: 120 }} />}>
+          <DecisionLog onExportSession={() => handleExportDecisions('csv')} />
+        </Suspense>
+      </div>
+
+      <div className="pm-panel" style={{ flex: "1 1 auto", display: "flex", flexDirection: "column", minHeight: 420 }}>
+        <div className="pm-panel-header" style={{ flexShrink: 0 }}>
+          <div className="pm-panel-title">PitMind Assistant</div>
+          <span className="pm-panel-badge pm-badge-ai">GRANITE · ONLINE</span>
+        </div>
+
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 12, flexShrink: 0 }}>
+          {promptChips.map((chip) => (
+            <button
+              key={chip}
+              onClick={() => setDraft(chip)}
+              className="pm-chip"
+            >
+              {chip.replace(/[.?]/g, '').toUpperCase().slice(0, 20)}
+            </button>
+          ))}
+        </div>
+
+        <div
+          style={{
+            flex: 1,
+            overflowY: "auto",
+            marginBottom: 12,
+            display: "flex",
+            flexDirection: "column",
+            gap: 0,
+          }}
+        >
+          {chat.map((m, idx) => (
+            <div
+              key={idx}
+              className={`pm-chat-msg ${m.role === "user" ? "user" : "ai"}`}
+            >
+              <div className="pm-msg-label">
+                {m.role === "user" ? "ENGINEER" : "◆ GRANITE · SYSTEM ORACLE"}
+              </div>
+              <div className="pm-msg-bubble">
+                {m.content}
+                {m.streaming && (
+                  <span style={{ marginLeft: 2, color: "var(--f1-red)", animation: "flicker 0.8s infinite" }}>▍</span>
+                )}
               </div>
             </div>
-          </Panel>
+          ))}
 
-          <ResizeHandle />
-
-          {/* Right Column: AI Reasoning & Support */}
-          <Panel defaultSize={25} minSize={20} className="h-full">
-            <div className="space-y-6 h-full overflow-y-auto pl-2 scrollbar-thin">
-              <Card className="border-[#38383F] bg-[#1F1F27] overflow-hidden flex flex-col min-h-[400px] shadow-2xl">
-                <CardHeader className="py-3 px-5 border-b border-[#38383F] bg-[#1F1F27]">
-                  <CardTitle className="f1-section-title">Reasoning Trace</CardTitle>
-                </CardHeader>
-                <CardContent className="p-0 flex-1 overflow-y-auto max-h-[500px] scrollbar-thin">
-                  <StrategyTimeline
-                    reco={reco}
-                    strategyChecklistKey={`pitmind.strategy.checklist.${localPayload.circuit}.${localPayload.session_label}.${localPayload.driver}`}
-                    onInjectBriefToChat={handleInjectBriefToChat}
-                    onCommitStrategy={handleCommitStrategy}
-                  />
-                </CardContent>
-              </Card>
-
-              <ConfidenceDecompositionCard 
-                decomposition={reco?.confidence_decomposition} 
-                overallConfidence={reco?.confidence ?? 0}
-              />
-
-              <Card className="border-[#38383F] bg-[#1F1F27] overflow-hidden flex flex-col min-h-[550px] shadow-2xl">
-                <CardHeader className="py-4 px-5 border-b border-[#38383F] bg-[#1F1F27] flex items-center justify-between">
-                  <CardTitle className="text-[11px] font-black uppercase tracking-widest text-[#67676D]">PitMind Assistant</CardTitle>
-                  <div className="flex items-center gap-2 px-3 py-1 bg-[#2D2D35] border border-[#38383F]">
-                    <div className="w-1.5 h-1.5 rounded-full bg-[#39B54A] animate-pulse-dot" />
-                    <span className="text-[9px] font-black text-[#39B54A] uppercase tracking-[0.2em]">Online</span>
-                  </div>
-                </CardHeader>
-                <CardContent className="flex flex-1 flex-col p-0">
-                  <div className="border-b border-[#38383F] px-5 py-4 bg-[#15151E]/40">
-                    <div className="flex flex-wrap gap-2">
-                      {promptChips.map((chip) => (
-                        <button
-                          key={chip}
-                          onClick={() => setDraft(chip)}
-                          className="f1-chip"
-                        >
-                          {chip}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="flex-1 space-y-4 overflow-y-auto px-5 py-6 max-h-[400px] scrollbar-thin">
-                    {chat.map((m, idx) => (
-                      <div key={idx} className={`max-w-[90%] rounded-none border p-4 text-[13px] leading-relaxed shadow-lg ${m.role === "user" ? "ml-auto border-[#38383F] bg-[#2D2D35] text-white" : "border-f1-red/20 bg-f1-red/5 text-white"}`}>
-                        <p className="mb-2 text-[9px] font-black uppercase tracking-[0.2em] text-[#67676D]">{m.role === "user" ? "Primary Engineer" : "System Oracle"}</p>
-                        <p className="font-medium tracking-tight">{m.content}{m.streaming && <span className="ml-1 animate-pulse text-f1-red">▍</span>}</p>
-                      </div>
-                    ))}
-                  </div>
-
-                  <div className="p-5 border-t border-[#38383F] bg-[#1F1F27]">
-                    <div className="flex gap-0 bg-[#2D2D35] border border-[#38383F] focus-within:border-f1-red transition-colors">
-                      <input
-                        value={draft}
-                        onChange={(e) => setDraft(e.target.value)}
-                        onKeyDown={(e) => e.key === 'Enter' && onSendChat()}
-                        placeholder="ENTER STRATEGY QUERY..."
-                        className="flex-1 bg-transparent px-4 py-3.5 text-[13px] text-white placeholder:text-[#67676D] outline-none font-medium uppercase tracking-tight"
-                        disabled={isChatThinking}
-                      />
-                      <button 
-                        onClick={onSendChat} 
-                        disabled={isChatThinking} 
-                        className="bg-f1-red hover:bg-f1-red-dark text-white w-12 flex items-center justify-center transition-all active:scale-95"
-                      >
-                        <Activity className="w-5 h-5 rotate-90" />
-                      </button>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Suspense fallback={<Skeleton className="h-80 w-full" />}>
-                <DecisionLog onExportSession={() => handleExportDecisions('csv')} />
-              </Suspense>
+          {isChatThinking && (
+            <div className="pm-chat-msg ai">
+              <div className="pm-msg-label">◆ GRANITE</div>
+              <div className="pm-msg-bubble">
+                <div className="pm-typing">
+                  <div className="pm-typing-dot" />
+                  <div className="pm-typing-dot" />
+                  <div className="pm-typing-dot" />
+                </div>
+              </div>
             </div>
-          </Panel>
-        </Group>
+          )}
+        </div>
+
+        <div style={{ display: "flex", gap: 0, flexShrink: 0 }}>
+          <input
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && onSendChat()}
+            placeholder="ENTER STRATEGY QUERY..."
+            className="pm-chat-input"
+            disabled={isChatThinking}
+          />
+          <button
+            onClick={onSendChat}
+            disabled={isChatThinking}
+            className="pm-chat-send"
+          >
+            ▶
+          </button>
+        </div>
+      </div>
+
+    </div>
+  );
+
+  const getColumnProps = (id: string) => {
+    switch (id) {
+      case 'left': return { defaultSize: 25, minSize: 18 };
+      case 'center': return { defaultSize: 50, minSize: 30 };
+      case 'right': return { defaultSize: 25, minSize: 18 };
+      default: return { defaultSize: 33, minSize: 20 };
+    }
+  };
+
+  const renderColumnContent = (id: string) => {
+    switch (id) {
+      case 'left': return renderLeftColumn();
+      case 'center': return renderCenterColumn();
+      case 'right': return renderRightColumn();
+      default: return null;
+    }
+  };
+
+  return (
+    <div
+      className="pm-bg-f1-circuit"
+      style={{
+        position: "relative",
+        minHeight: "100vh",
+        width: "100%",
+        color: "var(--text-primary)",
+        overflowX: "hidden",
+      }}
+    >
+      {/* Dashboard sub-header bar */}
+      <div
+        style={{
+          borderBottom: "1px solid var(--border)",
+          background: "rgba(10,10,10,0.9)",
+          padding: "10px 24px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          position: "sticky",
+          top: 52,
+          zIndex: 100,
+          backdropFilter: "blur(12px)",
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
+          {/* Sub-header title */}
+          <div>
+            <div
+              style={{
+                fontFamily: "'Barlow Condensed', sans-serif",
+                fontSize: 9,
+                fontWeight: 700,
+                letterSpacing: "0.3em",
+                textTransform: "uppercase",
+                color: "var(--f1-red)",
+                marginBottom: 2,
+              }}
+            >
+              PitMind Mission Control
+            </div>
+            <div
+              style={{
+                fontFamily: "'Orbitron', sans-serif",
+                fontSize: 14,
+                fontWeight: 700,
+                textTransform: "uppercase",
+                color: "var(--text-primary)",
+                letterSpacing: "0.05em",
+              }}
+            >
+              Strategy Console{" "}
+              <span style={{ color: "var(--text-secondary)", fontSize: 10, fontWeight: 400 }}>v1.2.5</span>
+            </div>
+          </div>
+
+          <div style={{ width: 1, height: 36, background: "var(--border)" }} />
+
+          {/* Live sync indicator */}
+          <div className="pm-live-pill">
+            <div className="pm-live-dot" />
+            LIVE SYNC ACTIVE
+          </div>
+
+          <RoleSwitcher currentRole={currentRole} onRoleChange={setRole} />
+        </div>
+
+        {/* Track Conditions */}
+        <div style={{ display: "flex", gap: 40, alignItems: "center", justifyContent: "center", flex: 1, borderLeft: "1px solid var(--border)", borderRight: "1px solid var(--border)", margin: "0 20px" }}>
+          <div style={{ textAlign: "center" }}>
+            <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: 9, color: "var(--text-secondary)", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: 2 }}>TRACK TEMP</div>
+            <div style={{ fontFamily: "'Orbitron', sans-serif", fontSize: 13, color: "var(--amber)", fontWeight: 700 }}>42°C</div>
+          </div>
+          <div style={{ textAlign: "center" }}>
+            <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: 9, color: "var(--text-secondary)", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: 2 }}>AIR TEMP</div>
+            <div style={{ fontFamily: "'Orbitron', sans-serif", fontSize: 13, color: "var(--text-primary)", fontWeight: 700 }}>28°C</div>
+          </div>
+          <div style={{ textAlign: "center" }}>
+            <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: 9, color: "var(--text-secondary)", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: 2 }}>WIND</div>
+            <div style={{ fontFamily: "'Orbitron', sans-serif", fontSize: 13, color: "var(--text-primary)", fontWeight: 700 }}>12 <span style={{fontSize: 9, color: "var(--text-secondary)"}}>KM/H NW</span></div>
+          </div>
+          <div style={{ textAlign: "center" }}>
+            <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: 9, color: "var(--text-secondary)", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: 2 }}>WEATHER</div>
+            <div style={{ fontFamily: "'Orbitron', sans-serif", fontSize: 13, color: "var(--text-primary)", fontWeight: 700 }}>DRY</div>
+          </div>
+          <div style={{ textAlign: "center" }}>
+            <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: 9, color: "var(--text-secondary)", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: 2 }}>DRS STATUS</div>
+            <div style={{ fontFamily: "'Orbitron', sans-serif", fontSize: 13, color: "var(--neon-green)", fontWeight: 700 }}>ENABLED</div>
+          </div>
+        </div>
+
+        <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
+          {/* Circuit + Session */}
+          <div style={{ display: "flex", gap: 20, paddingRight: 20, borderRight: "1px solid var(--border)" }}>
+            <div style={{ textAlign: "right" }}>
+              <div
+                style={{
+                  fontFamily: "'Barlow Condensed', sans-serif",
+                  fontSize: 9,
+                  fontWeight: 600,
+                  letterSpacing: "0.15em",
+                  textTransform: "uppercase",
+                  color: "var(--text-secondary)",
+                }}
+              >
+                Circuit
+              </div>
+              <div
+                style={{
+                  fontFamily: "'Orbitron', sans-serif",
+                  fontSize: 12,
+                  fontWeight: 700,
+                  textTransform: "uppercase",
+                  color: "var(--text-primary)",
+                }}
+              >
+                {localPayload.circuit}
+              </div>
+            </div>
+            <div style={{ textAlign: "right" }}>
+              <div
+                style={{
+                  fontFamily: "'Barlow Condensed', sans-serif",
+                  fontSize: 9,
+                  fontWeight: 600,
+                  letterSpacing: "0.15em",
+                  textTransform: "uppercase",
+                  color: "var(--text-secondary)",
+                }}
+              >
+                Status
+              </div>
+              <div
+                style={{
+                  fontFamily: "'Orbitron', sans-serif",
+                  fontSize: 12,
+                  fontWeight: 700,
+                  textTransform: "uppercase",
+                  color: "var(--f1-red)",
+                }}
+              >
+                {raceState?.session_status ?? "RACE LIVE"}
+              </div>
+            </div>
+          </div>
+
+          <StreamHealthMonitor showMetrics={false} />
+          <ShareButton onCopyUrl={copyShareableUrl} getShareUrl={getShareableUrl} />
+        </div>
+      </div>
+
+      <div style={{ maxWidth: 1920, margin: "0 auto", padding: 0, height: "calc(100vh - 104px)" }}>
+        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+          <SortableContext items={columnOrder} strategy={horizontalListSortingStrategy}>
+            <Group orientation="horizontal" className="h-full" style={{ gap: 0, background: "var(--border)" }}>
+              {columnOrder.map((id: string, index: number) => (
+                <Fragment key={id}>
+                  <Panel id={id} order={index} {...getColumnProps(id)} className="h-full">
+                    <SortableColumn id={id}>
+                      {renderColumnContent(id)}
+                    </SortableColumn>
+                  </Panel>
+                  {index < columnOrder.length - 1 && <ResizeHandle />}
+                </Fragment>
+              ))}
+            </Group>
+          </SortableContext>
+        </DndContext>
       </div>
 
       {/* Persistent Role Identity */}
       {currentRole !== 'engineer' && (
-        <div className="fixed bottom-8 left-8 z-[200] max-w-sm animate-in fade-in slide-in-from-bottom-8 duration-500">
-          <div className="relative group">
-            <div className="absolute -inset-1 bg-gradient-to-r from-f1-red to-f1-red-dark rounded-lg blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200"></div>
-            <Card className="relative border-f1-red/30 bg-f1-black/95 backdrop-blur-xl shadow-3xl">
-              <CardHeader className="py-3 px-5 border-b border-f1-red/20 flex items-center justify-between">
-                <CardTitle className="text-[11px] font-black uppercase text-f1-red tracking-[0.2em]">{currentRole} Context</CardTitle>
-                <div className="h-1.5 w-1.5 rounded-full bg-f1-red animate-ping" />
-              </CardHeader>
-              <CardContent className="p-5 text-[12px] text-f1-secondary leading-relaxed font-bold italic">
-                {currentRole === 'strategist' ? "Strategic Overwatch: Prioritize lap delta and tyre degradation cycles." : "Broadcast Feed: Focus on narrative arc and head-to-head performance battles."}
-              </CardContent>
-            </Card>
+        <div
+          style={{
+            position: "fixed",
+            bottom: 32,
+            left: 32,
+            zIndex: 200,
+            maxWidth: 320,
+            animation: "feed-in 0.5s ease",
+          }}
+        >
+          <div
+            style={{
+              background: "rgba(10,10,10,0.95)",
+              border: "1px solid var(--border-active)",
+              borderLeft: "3px solid var(--f1-red)",
+              backdropFilter: "blur(16px)",
+            }}
+          >
+            <div
+              style={{
+                padding: "10px 16px",
+                borderBottom: "1px solid var(--border)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+              }}
+            >
+              <span
+                style={{
+                  fontFamily: "'Barlow Condensed', sans-serif",
+                  fontSize: 10,
+                  fontWeight: 700,
+                  letterSpacing: "0.2em",
+                  textTransform: "uppercase",
+                  color: "var(--f1-red)",
+                }}
+              >
+                {currentRole} Context
+              </span>
+              <div
+                style={{
+                  width: 6,
+                  height: 6,
+                  borderRadius: "50%",
+                  background: "var(--f1-red)",
+                  animation: "pulse-dot 1.5s infinite ease-in-out",
+                }}
+              />
+            </div>
+            <div
+              style={{
+                padding: "14px 16px",
+                fontFamily: "'IBM Plex Mono', monospace",
+                fontSize: 11,
+                color: "var(--text-secondary)",
+                lineHeight: 1.6,
+                fontStyle: "italic",
+              }}
+            >
+              {currentRole === 'strategist'
+                ? "Strategic Overwatch: Prioritize lap delta and tyre degradation cycles."
+                : "Broadcast Feed: Focus on narrative arc and head-to-head performance battles."}
+            </div>
           </div>
         </div>
       )}

@@ -11,84 +11,208 @@ export const ConfidenceDecompositionCard: React.FC<ConfidenceDecompositionCardPr
   decomposition,
   overallConfidence = 0,
 }) => {
+  const getConfidenceColor = (value: number): string => {
+    if (value >= 70) return 'var(--neon-green)';
+    if (value >= 40) return 'var(--amber)';
+    return 'var(--f1-red)';
+  };
+
   if (!decomposition) {
     return (
-      <Card className="p-6 text-center border-white/10 bg-white/5">
-        <p className="text-f1-secondary text-sm font-medium">Run strategy analysis to see confidence breakdown</p>
-      </Card>
+      <div
+        style={{
+          background: "var(--carbon-light)",
+          border: "1px solid var(--border)",
+          padding: "16px",
+          textAlign: "center",
+        }}
+      >
+        <p
+          style={{
+            fontFamily: "'IBM Plex Mono', monospace",
+            fontSize: 11,
+            color: "var(--text-secondary)",
+          }}
+        >
+          Run strategy analysis to see confidence breakdown
+        </p>
+      </div>
     );
   }
 
-  const getConfidenceColor = (value: number) => {
-    if (value >= 70) return '#39B54A';
-    if (value >= 40) return '#FFC906';
-    return '#E10600';
-  };
+  const metrics = [
+    { label: "Data Quality",    value: decomposition.data_quality },
+    { label: "Model Certainty", value: decomposition.model_certainty },
+    { label: "Stability",       value: decomposition.stability },
+  ];
 
   return (
-    <Card className="p-6">
-      <h3 className="f1-section-title text-lg">Confidence Analysis</h3>
-
-      <div className="mb-6">
-        <div className="flex justify-between items-center mb-2">
-          <span className="text-f1-secondary text-[10px] font-black uppercase tracking-widest opacity-80">OVERALL CONFIDENCE</span>
-          <span className="font-display font-black text-f1-white text-lg">{overallConfidence.toFixed(0)}%</span>
+    <Card
+      style={{
+        border: "1px solid var(--border)",
+        background: "var(--carbon)",
+        borderRadius: 0,
+        boxShadow: "none",
+        position: "relative",
+        overflow: "hidden",
+      }}
+    >
+      <div style={{ padding: "16px" }}>
+        {/* Header */}
+        <div style={{ marginBottom: 16 }}>
+          <div className="pm-panel-title">Confidence Analysis</div>
         </div>
-        <div className="w-full h-2 bg-f1-border">
+
+        {/* Overall */}
+        <div style={{ marginBottom: 16 }}>
           <div
-            className="h-full transition-all duration-300"
-            style={{ width: `${Math.min(overallConfidence, 100)}%`, backgroundColor: getConfidenceColor(overallConfidence) }}
-          />
-        </div>
-      </div>
-
-      <div className="space-y-4">
-        <div className="border-l-2 border-f1-red pl-3">
-          <p className="text-f1-secondary text-[10px] font-black uppercase tracking-widest opacity-80">Data Quality</p>
-          <div className="flex justify-between items-center mt-2">
-            <span className="font-display font-black text-f1-white text-base">{decomposition.data_quality.toFixed(0)}%</span>
-            <div className="flex-1 ml-4 h-1 bg-f1-border">
-              <div className="h-full" style={{ width: `${decomposition.data_quality}%`, backgroundColor: getConfidenceColor(decomposition.data_quality) }} />
-            </div>
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              marginBottom: 6,
+            }}
+          >
+            <span
+              style={{
+                fontFamily: "'Barlow Condensed', sans-serif",
+                fontSize: 9,
+                fontWeight: 600,
+                letterSpacing: "0.18em",
+                textTransform: "uppercase",
+                color: "var(--text-secondary)",
+              }}
+            >
+              Overall Confidence
+            </span>
+            <span
+              style={{
+                fontFamily: "'Orbitron', sans-serif",
+                fontSize: 18,
+                fontWeight: 700,
+                color: getConfidenceColor(overallConfidence),
+                lineHeight: 1,
+              }}
+            >
+              {overallConfidence.toFixed(0)}%
+            </span>
+          </div>
+          <div
+            style={{
+              width: "100%",
+              height: 3,
+              background: "var(--border)",
+              position: "relative",
+              overflow: "hidden",
+            }}
+          >
+            <div
+              style={{
+                height: "100%",
+                width: `${Math.min(overallConfidence, 100)}%`,
+                background: getConfidenceColor(overallConfidence),
+                transition: "width 0.4s ease",
+                boxShadow: `0 0 6px ${getConfidenceColor(overallConfidence)}`,
+              }}
+            />
           </div>
         </div>
 
-        <div className="border-l-2 border-f1-red pl-3">
-          <p className="text-f1-secondary text-[10px] font-black uppercase tracking-widest opacity-80">Model Certainty</p>
-          <div className="flex justify-between items-center mt-2">
-            <span className="font-display font-black text-f1-white text-base">{decomposition.model_certainty.toFixed(0)}%</span>
-            <div className="flex-1 ml-4 h-1 bg-f1-border">
-              <div className="h-full" style={{ width: `${decomposition.model_certainty}%`, backgroundColor: getConfidenceColor(decomposition.model_certainty) }} />
+        {/* Breakdown */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+          {metrics.map((metric) => (
+            <div
+              key={metric.label}
+              style={{
+                borderLeft: "2px solid var(--f1-red)",
+                paddingLeft: 10,
+              }}
+            >
+              <div
+                style={{
+                  fontFamily: "'Barlow Condensed', sans-serif",
+                  fontSize: 9,
+                  fontWeight: 600,
+                  letterSpacing: "0.15em",
+                  textTransform: "uppercase",
+                  color: "var(--text-secondary)",
+                  marginBottom: 4,
+                }}
+              >
+                {metric.label}
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <span
+                  style={{
+                    fontFamily: "'Orbitron', sans-serif",
+                    fontSize: 14,
+                    fontWeight: 700,
+                    color: getConfidenceColor(metric.value),
+                    minWidth: 36,
+                  }}
+                >
+                  {metric.value.toFixed(0)}%
+                </span>
+                <div
+                  style={{
+                    flex: 1,
+                    height: 2,
+                    background: "var(--border)",
+                    overflow: "hidden",
+                  }}
+                >
+                  <div
+                    style={{
+                      height: "100%",
+                      width: `${metric.value}%`,
+                      background: getConfidenceColor(metric.value),
+                      transition: "width 0.4s ease",
+                    }}
+                  />
+                </div>
+              </div>
             </div>
-          </div>
+          ))}
         </div>
 
-        <div className="border-l-2 border-f1-red pl-3">
-          <p className="text-f1-secondary text-[10px] font-black uppercase tracking-widest opacity-80">Stability</p>
-          <div className="flex justify-between items-center mt-2">
-            <span className="font-display font-black text-f1-white text-base">{decomposition.stability.toFixed(0)}%</span>
-            <div className="flex-1 ml-4 h-1 bg-f1-border">
-              <div className="h-full" style={{ width: `${decomposition.stability}%`, backgroundColor: getConfidenceColor(decomposition.stability) }} />
-            </div>
+        {/* Assessment */}
+        <div
+          style={{
+            marginTop: 14,
+            padding: "10px 12px",
+            background: "var(--carbon-light)",
+            borderLeft: "2px solid var(--f1-red)",
+          }}
+        >
+          <div
+            style={{
+              fontFamily: "'Barlow Condensed', sans-serif",
+              fontSize: 9,
+              fontWeight: 700,
+              letterSpacing: "0.15em",
+              textTransform: "uppercase",
+              color: "var(--text-secondary)",
+              marginBottom: 4,
+            }}
+          >
+            Assessment
           </div>
+          <p
+            style={{
+              fontFamily: "'IBM Plex Mono', monospace",
+              fontSize: 10,
+              color: "var(--text-secondary)",
+              lineHeight: 1.5,
+            }}
+          >
+            {overallConfidence >= 70
+              ? <><span style={{ color: "var(--neon-green)", fontWeight: 600 }}>HIGH CONFIDENCE</span> — Strategy well-supported. Safe to execute immediately.</>
+              : overallConfidence >= 40
+              ? <><span style={{ color: "var(--amber)", fontWeight: 600 }}>MODERATE CONFIDENCE</span> — Good strategy. Consider alternatives.</>
+              : <><span style={{ color: "var(--f1-red)", fontWeight: 600 }}>LOW CONFIDENCE</span> — High uncertainty. Collect more telemetry.</>
+            }
+          </p>
         </div>
-      </div>
-
-      <div className="mt-6 p-3 bg-f1-elevated border-l-2 border-f1-red">
-        <p className="text-[10px] font-black uppercase tracking-widest text-f1-secondary opacity-80 mb-2">Assessment</p>
-        {overallConfidence >= 70 ? (
-          <p className="text-sm text-f1-secondary">
-            <span className="font-bold">HIGH CONFIDENCE</span> — Strategy well-supported. Safe to execute immediately.
-          </p>
-        ) : overallConfidence >= 40 ? (
-          <p className="text-sm text-f1-secondary">
-            <span className="font-bold">MODERATE CONFIDENCE</span> — Good strategy. Consider alternatives.
-          </p>
-        ) : (
-          <p className="text-sm text-f1-secondary">
-            <span className="font-bold">LOW CONFIDENCE</span> — High uncertainty. Collect more telemetry.
-          </p>
-        )}
       </div>
     </Card>
   );

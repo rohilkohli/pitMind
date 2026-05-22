@@ -20,19 +20,19 @@ interface StreamHealthMonitorProps {
 const getStatusColor = (status: ConnectionStatus) => {
   switch (status) {
     case 'connected':
-      return 'bg-emerald-500/20 border-emerald-500/30 text-emerald-300';
+      return 'bg-[var(--neon-green-dim)] border-[var(--neon-green)] text-[var(--neon-green)]';
     case 'connecting':
-      return 'bg-amber-500/20 border-amber-500/30 text-amber-300 animate-pulse';
+      return 'bg-[var(--amber-dim)] border-[var(--amber)] text-[var(--amber)] animate-pulse';
     case 'reconnecting':
-      return 'bg-amber-500/20 border-amber-500/30 text-amber-300 animate-pulse';
+      return 'bg-[var(--amber-dim)] border-[var(--amber)] text-[var(--amber)] animate-pulse';
     case 'disconnected':
-      return 'bg-red-500/20 border-red-500/30 text-red-300';
+      return 'bg-[var(--f1-red-dim)] border-[var(--f1-red)] text-[var(--f1-red)]';
     case 'error':
-      return 'bg-red-500/20 border-red-500/30 text-red-300';
+      return 'bg-[var(--f1-red-dim)] border-[var(--f1-red)] text-[var(--f1-red)]';
     case 'offline':
-      return 'bg-slate-500/20 border-slate-500/30 text-slate-300';
+      return 'bg-[var(--carbon-mid)] border-[var(--border)] text-[var(--text-secondary)]';
     default:
-      return 'bg-slate-500/20 border-slate-500/30 text-slate-300';
+      return 'bg-[var(--carbon-mid)] border-[var(--border)] text-[var(--text-secondary)]';
   }
 };
 
@@ -93,13 +93,13 @@ export const StreamHealthMonitor: React.FC<StreamHealthMonitorProps> = ({
   };
 
   return (
-    <div className={`rounded-sm border p-2 ${showMetrics ? 'p-4 border-2 rounded-xl' : 'p-2 border-1'} ${getStatusColor(state.status)} transition-all duration-300`}>
+    <div className={`border p-2 ${showMetrics ? 'p-4 border-2' : 'p-2 border'} ${getStatusColor(state.status)} transition-all duration-300`}>
       <div className={`flex items-center justify-between ${showMetrics ? 'mb-3' : 'mb-0'} gap-4`}>
         <div className="flex items-center gap-2">
           <div className={`${showMetrics ? '' : 'scale-75'}`}>
             {getStatusIcon(state.status)}
           </div>
-          <span className={`font-black uppercase tracking-widest ${showMetrics ? 'text-sm' : 'text-[10px]'}`}>
+          <span className={`font-label uppercase tracking-widest ${showMetrics ? 'text-sm' : 'text-[10px]'}`}>
             {getStatusLabel(state.status)}
           </span>
         </div>
@@ -107,7 +107,7 @@ export const StreamHealthMonitor: React.FC<StreamHealthMonitorProps> = ({
         {(state.status === 'disconnected' || state.status === 'error') && (
           <button
             onClick={reconnect}
-            className="px-2 py-1 rounded-sm bg-white/10 hover:bg-white/20 text-[9px] font-black uppercase transition flex items-center gap-1"
+            className="px-2 py-1 bg-[var(--carbon-mid)] hover:bg-[var(--carbon-light)] text-[9px] font-label font-bold uppercase transition flex items-center gap-1 border border-[var(--border)]"
           >
             <RotateCcw className="w-2.5 h-2.5" />
             Reconnect
@@ -117,18 +117,18 @@ export const StreamHealthMonitor: React.FC<StreamHealthMonitorProps> = ({
 
       {/* Metrics grid */}
       {showMetrics && (
-        <div className="grid grid-cols-3 gap-2 text-xs mb-3">
+        <div className="grid grid-cols-3 gap-2 text-xs mb-3 font-tele">
           <div>
-            <div className="text-[10px] opacity-80">Latency</div>
-            <div className="font-mono font-semibold">{state.latency}ms</div>
+            <div className="text-[10px] text-[var(--text-secondary)] font-label uppercase tracking-wider">Latency</div>
+            <div className="font-semibold text-[var(--text-primary)]">{state.latency}ms</div>
           </div>
           <div>
-            <div className="text-[10px] opacity-80">Packet Loss</div>
-            <div className="font-mono font-semibold">{state.packetLoss.toFixed(2)}%</div>
+            <div className="text-[10px] text-[var(--text-secondary)] font-label uppercase tracking-wider">Packet Loss</div>
+            <div className="font-semibold text-[var(--text-primary)]">{state.packetLoss.toFixed(2)}%</div>
           </div>
           <div>
-            <div className="text-[10px] opacity-80">Uptime</div>
-            <div className="font-mono font-semibold">{formatUptime(uptime)}</div>
+            <div className="text-[10px] text-[var(--text-secondary)] font-label uppercase tracking-wider">Uptime</div>
+            <div className="font-semibold text-[var(--text-primary)]">{formatUptime(uptime)}</div>
           </div>
         </div>
       )}
@@ -137,26 +137,26 @@ export const StreamHealthMonitor: React.FC<StreamHealthMonitorProps> = ({
       {state.status === 'connected' && (
         <div className="mt-3 space-y-2">
           <div>
-            <div className="flex justify-between items-center mb-1">
-              <span className="text-[10px]">Signal Strength</span>
-              <span className="text-[10px]">{Math.round((1 - state.latency / 500) * 100)}%</span>
+            <div className="flex justify-between items-center mb-1 font-tele">
+              <span className="text-[10px] text-[var(--text-secondary)] font-label uppercase tracking-wider">Signal Strength</span>
+              <span className="text-[10px] text-[var(--text-primary)]">{Math.round((1 - state.latency / 500) * 100)}%</span>
             </div>
-            <div className="h-1 bg-white/20 rounded-full overflow-hidden">
+            <div className="h-1 bg-[var(--carbon-mid)] overflow-hidden">
               <div
-                className="h-full bg-emerald-500"
+                className="h-full bg-[var(--neon-green)]"
                 style={{ width: `${Math.round((1 - state.latency / 500) * 100)}%` }}
               />
             </div>
           </div>
 
           <div>
-            <div className="flex justify-between items-center mb-1">
-              <span className="text-[10px]">Link Quality</span>
-              <span className="text-[10px]">{Math.round((1 - state.packetLoss / 5) * 100)}%</span>
+            <div className="flex justify-between items-center mb-1 font-tele">
+              <span className="text-[10px] text-[var(--text-secondary)] font-label uppercase tracking-wider">Link Quality</span>
+              <span className="text-[10px] text-[var(--text-primary)]">{Math.round((1 - state.packetLoss / 5) * 100)}%</span>
             </div>
-            <div className="h-1 bg-white/20 rounded-full overflow-hidden">
+            <div className="h-1 bg-[var(--carbon-mid)] overflow-hidden">
               <div
-                className="h-full bg-emerald-500"
+                className="h-full bg-[var(--neon-green)]"
                 style={{ width: `${Math.round((1 - state.packetLoss / 5) * 100)}%` }}
               />
             </div>
@@ -166,16 +166,16 @@ export const StreamHealthMonitor: React.FC<StreamHealthMonitorProps> = ({
 
       {/* Error state */}
       {(state.status === 'disconnected' || state.status === 'error') && (
-        <div className="mt-3 p-2 rounded-lg bg-white/10 flex items-start gap-2 text-[11px]">
-          <AlertTriangle className="w-3 h-3 mt-0.5 flex-shrink-0" />
+        <div className="mt-3 p-2 bg-[var(--carbon-mid)] border border-[var(--border)] flex items-start gap-2 text-[11px] font-tele text-[var(--text-secondary)]">
+          <AlertTriangle className="w-3 h-3 mt-0.5 flex-shrink-0 text-[var(--f1-red)]" />
           <span>Connection to telemetry stream lost. Data may be stale. Click Reconnect to restore.</span>
         </div>
       )}
 
       {/* Reconnecting state */}
       {state.status === 'reconnecting' && (
-        <div className="mt-3 p-2 rounded-lg bg-white/10 flex items-start gap-2 text-[11px]">
-          <AlertTriangle className="w-3 h-3 mt-0.5 flex-shrink-0 animate-pulse" />
+        <div className="mt-3 p-2 bg-[var(--carbon-mid)] border border-[var(--border)] flex items-start gap-2 text-[11px] font-tele text-[var(--text-secondary)]">
+          <AlertTriangle className="w-3 h-3 mt-0.5 flex-shrink-0 animate-pulse text-[var(--amber)]" />
           <span>Reconnection attempt {state.reconnectAttempts}. Retrying...</span>
         </div>
       )}

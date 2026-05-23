@@ -1,149 +1,175 @@
 import pytest
-import pandas as pd
-from unittest.mock import patch, MagicMock
-from backend.services.fastf1_service import fetch_session_telemetry, is_fastf1_available
 import sys
-import builtins
-import importlib
-import logging
-import backend.services.fastf1_service
+import pandas as pd
+from unittest.mock import AsyncMock, patch, MagicMock
 
-def test_fastf1_available():
-    with patch("builtins.__import__") as mock_import:
-        mock_import.return_value = MagicMock()
-        assert is_fastf1_available() is True
+from backend.services.fastf1_service import is_fastf1_available, fetch_session_telemetry
+from backend.models.race_state import TelemetryPayload, LapPoint
 
-def test_fastf1_not_available():
-    with patch("builtins.__import__", side_effect=ImportError):
+@pytest.fixture
+def mock_fastf1_module():
+    """Provides a mocked fastf1 module."""
+    mock_fastf1 = MagicMock()
+
+    # Mocking Cache
+    mock_fastf1.Cache.enable_cache = MagicMock()
+
+    # Mocking get_session
+    mock_session = MagicMock()
+    mock_session.load = MagicMock()
+
+    mock_fastf1.get_session = MagicMock(return_value=mock_session)
+
+    with patch.dict("sys.modules", {"fastf1": mock_fastf1}):
+        yield mock_fastf1, mock_session
+
+
+def test_is_fastf1_available_true(mock_fastf1_module):
+    """Test that is_fastf1_available returns True when fastf1 is importable."""
+    assert is_fastf1_available() is True
+
+
+def test_is_fastf1_available_false():
+    """Test that is_fastf1_available returns False when fastf1 raises ImportError."""
+    with patch.dict("sys.modules", {"fastf1": None}):
         assert is_fastf1_available() is False
 
-def test_import_fallback_direct():
-    import builtins
-
-    original_import = builtins.__import__
-    def mock_import(name, globals=None, locals=None, fromlist=(), level=0):
-        # The line is `from ..models.race_state import TelemetryPayload, LapPoint`
-        if fromlist and 'TelemetryPayload' in fromlist and level > 0:
-            raise ImportError("Simulated import error")
-        return original_import(name, globals, locals, fromlist, level)
-
-    with patch("builtins.__import__", side_effect=mock_import):
-        if "backend.services.fastf1_service" in sys.modules:
-            del sys.modules["backend.services.fastf1_service"]
-        import backend.services.fastf1_service
-        assert hasattr(backend.services.fastf1_service, 'LapPoint')
 
 @pytest.mark.asyncio
-async def test_fetch_session_telemetry_no_fastf1():
-    import backend.services.fastf1_service
-    with patch("backend.services.fastf1_service.is_fastf1_available", return_value=False):
-        with pytest.raises(RuntimeError, match="FastF1 is not installed"):
-            await backend.services.fastf1_service.fetch_session_telemetry(2023, "Monza", "R", "VER")
+async def test_fetch_session_telemetry_fastf1_unavailable():
+    """Test fetch_session_telemetry raises RuntimeError when fastf1 is unavailable."""
+    with patch.dict("sys.modules", {"fastf1": None}):
+        with patch("backend.services.fastf1_service.is_fastf1_available", return_value=False):
+            with pytest.raises(RuntimeError, match="FastF1 is not installed"):
+                await fetch_session_telemetry(2023, "Monza", "Race", "VER")
+
 
 @pytest.mark.asyncio
-@patch("backend.services.fastf1_service.is_fastf1_available", return_value=True)
-async def test_fetch_session_telemetry_success(mock_avail):
-    # Setup mock data
-    mock_session = MagicMock()
-    mock_laps = MagicMock()
-    mock_driver_laps = MagicMock()
+async def test_fetch_session_telemetry_happy_path(mock_fastf1_module):
+    """Test fetch_session_telemetry with valid fastf1 data."""
+    mock_fastf1, mock_session = mock_fastf1_module
 
-    # Empty DataFrame check
-    mock_driver_laps.empty = False
+    # Mocking driver laps dataframe
+    df_data = {
+        "Compound": ["SOFT", "MEDIUM", "HARD"],
+        "LapNumber": [1, 2, 3],
+        "LapTime": [pd.Timedelta(seconds=80), pd.Timedelta(seconds=82), pd.Timedelta(seconds=84)],
+        "Sector1Time": [pd.Timedelta(seconds=25), pd.Timedelta(seconds=26), pd.Timedelta(seconds=27)],
+        "Sector2Time": [pd.Timedelta(seconds=30), pd.Timedelta(seconds=31), pd.Timedelta(seconds=32)],
+        "Sector3Time": [pd.Timedelta(seconds=25), pd.Timedelta(seconds=25), pd.Timedelta(seconds=25)],
+    }
+    mock_df = pd.DataFrame(df_data)
 
-    # Mock lap data
-    lap_data = [
-        {"Compound": "SOFT", "LapNumber": 1, "LapTime": pd.Timedelta(seconds=82.5),
-         "Sector1Time": pd.Timedelta(seconds=27.1), "Sector2Time": pd.Timedelta(seconds=28.2),
-         "Sector3Time": pd.Timedelta(seconds=27.2)},
-        {"Compound": "MEDIUM", "LapNumber": 2, "LapTime": pd.Timedelta(seconds=83.1),
-         "Sector1Time": pd.Timedelta(seconds=27.3), "Sector2Time": pd.Timedelta(seconds=28.4),
-         "Sector3Time": pd.Timedelta(seconds=27.4)},
-        {"Compound": "HARD", "LapNumber": 3, "LapTime": pd.Timedelta(seconds=84.1),
-         "Sector1Time": pd.Timedelta(seconds=27.5), "Sector2Time": pd.Timedelta(seconds=28.6),
-         "Sector3Time": pd.Timedelta(seconds=28.0)},
-        {"Compound": "HARD", "LapNumber": 4, "LapTime": None,
-         "Sector1Time": None, "Sector2Time": None,
-         "Sector3Time": None},
-        {"Compound": "HARD", "LapNumber": 5, "LapTime": float('nan'),
-         "Sector1Time": float('nan'), "Sector2Time": float('nan'),
-         "Sector3Time": float('nan')}, # testing pd.notnull
-    ]
+    mock_session.laps.pick_driver = MagicMock(return_value=mock_df)
 
-    # We will simulate object without total_seconds callable
-    class NoTotalSeconds:
-        pass
-    lap_data.append({"Compound": "HARD", "LapNumber": 6, "LapTime": NoTotalSeconds(),
-         "Sector1Time": float('nan'), "Sector2Time": float('nan'),
-         "Sector3Time": float('nan')})
+    with patch("backend.services.fastf1_service.is_fastf1_available", return_value=True):
+        payload = await fetch_session_telemetry(2023, "Monza", "Race", "VER")
 
-    # Mock iterrows for DataFrame
-    def mock_iterrows():
-        for i, row in enumerate(lap_data):
-            yield i, pd.Series(row)
+        assert isinstance(payload, TelemetryPayload)
+        assert payload.circuit == "Monza"
+        assert payload.session_label == "2023 Monza Race"
+        assert payload.driver == "VER"
+        assert len(payload.laps) == 3
 
-    mock_driver_laps.iterrows = mock_iterrows
-    mock_laps.pick_driver.return_value = mock_driver_laps
-    mock_session.laps = mock_laps
+        # Verify first lap (SOFT compound)
+        lap1 = payload.laps[0]
+        assert lap1.lap == 1
+        assert lap1.tyre_compound == "SOFT"
+        assert lap1.lap_time_s == 80.0
+        assert lap1.sector1_s == 25.0
+        assert lap1.sector2_s == 30.0
+        assert lap1.sector3_s == 25.0
+        # SOFT wear is 2.0% per lap, so 1 * 2.0 = 2.0
+        assert lap1.tyre_wear_pct == 2.0
 
-    mock_fastf1 = MagicMock()
-    mock_fastf1.get_session.return_value = mock_session
+        # Verify second lap (MEDIUM compound)
+        lap2 = payload.laps[1]
+        assert lap2.lap == 2
+        assert lap2.tyre_compound == "MEDIUM"
+        assert lap2.lap_time_s == 82.0
+        # MEDIUM wear is 1.2% per lap, so 2 * 1.2 = 2.4
+        assert lap2.tyre_wear_pct == 2.4
 
-    with patch.dict('sys.modules', {'fastf1': mock_fastf1}):
-        # In order for local import `import fastf1` inside `fetch_session_telemetry` to hit our mock,
-        # we added it to `sys.modules`. Python will use our mock!
+        # Verify third lap (HARD compound)
+        lap3 = payload.laps[2]
+        assert lap3.lap == 3
+        assert lap3.tyre_compound == "HARD"
+        assert lap3.lap_time_s == 84.0
+        # HARD wear is 0.8% per lap, so 3 * 0.8 = 2.4
+        assert lap3.tyre_wear_pct == 2.4
 
-        result = await backend.services.fastf1_service.fetch_session_telemetry(2023, "Monza", "R", "VER")
-
-        mock_fastf1.get_session.assert_called_once_with(2023, "Monza", "R")
+        # Check mock calls
+        mock_fastf1.get_session.assert_called_once_with(2023, "Monza", "Race")
         mock_session.load.assert_called_once_with(laps=True, telemetry=False, weather=False)
-        mock_laps.pick_driver.assert_called_once_with("VER")
+        mock_session.laps.pick_driver.assert_called_once_with("VER")
 
-        assert result.circuit == "Monza"
-        assert result.session_label == "2023 Monza R"
-        assert result.driver == "VER"
-        assert len(result.laps) == 6
 
 @pytest.mark.asyncio
-@patch("backend.services.fastf1_service.is_fastf1_available", return_value=True)
-async def test_fetch_session_telemetry_no_laps_found(mock_avail):
-    import backend.services.fastf1_service
-    mock_session = MagicMock()
-    mock_laps = MagicMock()
-    mock_driver_laps = MagicMock()
-    mock_driver_laps.empty = True
+async def test_fetch_session_telemetry_empty_laps(mock_fastf1_module):
+    """Test fetch_session_telemetry handles empty laps dataframe."""
+    mock_fastf1, mock_session = mock_fastf1_module
 
-    mock_laps.pick_driver.return_value = mock_driver_laps
-    mock_session.laps = mock_laps
+    # Mock empty dataframe
+    mock_df = pd.DataFrame()
+    mock_session.laps.pick_driver = MagicMock(return_value=mock_df)
 
-    mock_fastf1 = MagicMock()
-    mock_fastf1.get_session.return_value = mock_session
+    with patch("backend.services.fastf1_service.is_fastf1_available", return_value=True):
+        with pytest.raises(RuntimeError, match="Failed to fetch FastF1 data: No laps found for driver 'VER'"):
+            await fetch_session_telemetry(2023, "Monza", "Race", "VER")
 
-    with patch.dict('sys.modules', {'fastf1': mock_fastf1}):
-        with pytest.raises(RuntimeError, match="No laps found for driver 'VER' in session 2023 Monza R"):
-            await backend.services.fastf1_service.fetch_session_telemetry(2023, "Monza", "R", "VER")
 
 @pytest.mark.asyncio
-@patch("backend.services.fastf1_service.is_fastf1_available", return_value=True)
-async def test_fetch_session_telemetry_api_error(mock_avail):
-    import backend.services.fastf1_service
-    mock_fastf1 = MagicMock()
-    mock_fastf1.get_session.side_effect = Exception("API Error")
+async def test_fetch_session_telemetry_cache_failure(mock_fastf1_module, caplog):
+    """Test fetch_session_telemetry warns if cache enable fails but continues."""
+    mock_fastf1, mock_session = mock_fastf1_module
 
-    with patch.dict('sys.modules', {'fastf1': mock_fastf1}):
-        with pytest.raises(RuntimeError, match="Failed to fetch FastF1 data: API Error"):
-            await backend.services.fastf1_service.fetch_session_telemetry(2023, "Monza", "R", "VER")
-
-@pytest.mark.asyncio
-@patch("backend.services.fastf1_service.is_fastf1_available", return_value=True)
-async def test_fetch_session_telemetry_cache_error(mock_avail):
-    import backend.services.fastf1_service
-    mock_fastf1 = MagicMock()
     mock_fastf1.Cache.enable_cache.side_effect = Exception("Cache error")
-    mock_fastf1.get_session.side_effect = Exception("API Error")
 
-    with patch.dict('sys.modules', {'fastf1': mock_fastf1}), \
-         patch("backend.services.fastf1_service.logger.warning") as mock_warning:
-        with pytest.raises(RuntimeError, match="Failed to fetch FastF1 data: API Error"):
-            await backend.services.fastf1_service.fetch_session_telemetry(2023, "Monza", "R", "VER")
-        mock_warning.assert_called()
+    # Mocking driver laps dataframe with just one lap
+    df_data = {
+        "Compound": ["SOFT"],
+        "LapNumber": [1],
+        "LapTime": [pd.Timedelta(seconds=80)],
+        "Sector1Time": [pd.Timedelta(seconds=25)],
+        "Sector2Time": [pd.Timedelta(seconds=30)],
+        "Sector3Time": [pd.Timedelta(seconds=25)],
+    }
+    mock_df = pd.DataFrame(df_data)
+    mock_session.laps.pick_driver = MagicMock(return_value=mock_df)
+
+    with patch("backend.services.fastf1_service.is_fastf1_available", return_value=True):
+        payload = await fetch_session_telemetry(2023, "Monza", "Race", "VER")
+
+        # Ensures it still returns a valid payload
+        assert len(payload.laps) == 1
+
+        # Check logs for the warning
+        assert "Could not enable FastF1 cache" in caplog.text
+
+
+@pytest.mark.asyncio
+async def test_fetch_session_telemetry_handles_missing_timedelta(mock_fastf1_module):
+    """Test fetch_session_telemetry handles missing/NaN timedelta values."""
+    mock_fastf1, mock_session = mock_fastf1_module
+
+    # Mocking dataframe with missing times (NaT or None)
+    df_data = {
+        "Compound": ["SOFT"],
+        "LapNumber": [1],
+        "LapTime": [pd.NaT],
+        "Sector1Time": [None],
+        "Sector2Time": [float('nan')],
+        "Sector3Time": [pd.Timedelta(seconds=25)],
+    }
+    mock_df = pd.DataFrame(df_data)
+    mock_session.laps.pick_driver = MagicMock(return_value=mock_df)
+
+    with patch("backend.services.fastf1_service.is_fastf1_available", return_value=True):
+        payload = await fetch_session_telemetry(2023, "Monza", "Race", "VER")
+
+        assert len(payload.laps) == 1
+        lap1 = payload.laps[0]
+        assert lap1.lap_time_s is None
+        assert lap1.sector1_s is None
+        assert lap1.sector2_s is None
+        assert lap1.sector3_s == 25.0

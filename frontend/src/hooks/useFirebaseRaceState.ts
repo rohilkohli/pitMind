@@ -39,9 +39,9 @@ export function useFirebaseRaceState(raceId: string = "current_race") {
     }
 
     const raceRef = ref(database, `races/${raceId}`);
-    
+
     setLoading(true);
-    
+
     const unsubscribe = onValue(
       raceRef,
       (snapshot) => {
@@ -56,7 +56,7 @@ export function useFirebaseRaceState(raceId: string = "current_race") {
         console.error("Firebase DB error:", err);
         setError(err);
         setLoading(false);
-      }
+      },
     );
 
     return () => {

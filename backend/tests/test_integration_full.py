@@ -83,7 +83,6 @@ class TestCompleteUserFlow:
     async def test_redis_database_api_integration(self, complete_telemetry_payload):
         """Test integration between Redis, Database, and API."""
         from backend.services import redis_client
-        from backend.models import database as db
         
         # Mock Redis
         with patch('backend.services.redis_client._redis_client') as mock_redis, \
@@ -241,7 +240,6 @@ class TestWebSocketIntegration:
     @pytest.mark.asyncio
     async def test_websocket_with_redis_tracking(self):
         """Test WebSocket connection tracking in Redis."""
-        from backend.services import redis_client
         
         manager = ConnectionManager()
         

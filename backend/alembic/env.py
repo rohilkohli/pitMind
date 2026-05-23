@@ -16,8 +16,6 @@ from alembic import context
 
 # Import the Base and all models for autogeneration
 from models.database import Base
-from models.audit_log import AuditLog
-from models.session import RaceSession
 from config import get_settings
 
 # this is the Alembic Config object, which provides

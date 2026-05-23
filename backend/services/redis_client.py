@@ -14,7 +14,6 @@ import logging
 from typing import Any, Optional
 from contextlib import asynccontextmanager
 
-import redis.asyncio as redis
 from redis.asyncio import Redis, ConnectionPool
 from redis.exceptions import RedisError, ConnectionError, TimeoutError
 

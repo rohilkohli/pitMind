@@ -245,15 +245,6 @@ class QueryCache:
         }
 
 
-# Global query cache instance
-_query_cache = QueryCache()
-
-
-def get_query_cache() -> QueryCache:
-    """Get global query cache instance."""
-    return _query_cache
-
-
 # Index recommendations for common query patterns
 INDEX_RECOMMENDATIONS = {
     "audit_logs": [

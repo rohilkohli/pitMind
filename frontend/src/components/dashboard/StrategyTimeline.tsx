@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useRef } from "react";
 import { AlertTriangle, ClipboardCheck, Gauge, Lock, ShieldCheck, TimerReset } from "lucide-react";
 import type { StrategyCommitResponse, StrategyRecommendation } from "../../services/api";
 import { EvidenceDrilldownModal, type EvidenceDrilldown } from "./EvidenceDrilldownModal";
@@ -104,9 +104,26 @@ export function StrategyTimeline({
     }
   }, [strategyChecklistKey]);
 
+  // Keep track of latest checklist state in a ref to avoid stale closures on unmount
+  const checklistRef = useRef(checklist);
   useEffect(() => {
-    window.localStorage.setItem(strategyChecklistKey, JSON.stringify(checklist));
+    checklistRef.current = checklist;
+  }, [checklist]);
+
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      window.localStorage.setItem(strategyChecklistKey, JSON.stringify(checklist));
+    }, 150); // 150ms debounce
+
+    return () => clearTimeout(timeoutId);
   }, [checklist, strategyChecklistKey]);
+
+  // Ensure final state is saved on unmount using the ref
+  useEffect(() => {
+    return () => {
+      window.localStorage.setItem(strategyChecklistKey, JSON.stringify(checklistRef.current));
+    };
+  }, [strategyChecklistKey]);
 
   const executionBrief = useMemo(() => {
     if (!reco) return "";

@@ -49,6 +49,7 @@ export interface LapPoint {
   fuel_kg?: number | null;
   gap_ahead_s?: number | null;
   gap_behind_s?: number | null;
+  [key: string]: number | string | null | undefined;
 }
 
 /**

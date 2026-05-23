@@ -1,6 +1,6 @@
-import React from 'react';
-import { Card } from '../ui/card';
-import type { ConfidenceDecomposition } from '../../services/api';
+import React from "react";
+import { Card } from "../ui/card";
+import type { ConfidenceDecomposition } from "../../services/api";
 
 interface ConfidenceDecompositionCardProps {
   decomposition?: ConfidenceDecomposition | null;
@@ -12,9 +12,9 @@ export const ConfidenceDecompositionCard: React.FC<ConfidenceDecompositionCardPr
   overallConfidence = 0,
 }) => {
   const getConfidenceColor = (value: number): string => {
-    if (value >= 70) return 'var(--neon-green)';
-    if (value >= 40) return 'var(--amber)';
-    return 'var(--f1-red)';
+    if (value >= 70) return "var(--neon-green)";
+    if (value >= 40) return "var(--amber)";
+    return "var(--f1-red)";
   };
 
   if (!decomposition) {
@@ -46,9 +46,9 @@ export const ConfidenceDecompositionCard: React.FC<ConfidenceDecompositionCardPr
   }
 
   const metrics = [
-    { label: "Data Quality",    value: decomposition.data_quality },
+    { label: "Data Quality", value: decomposition.data_quality },
     { label: "Model Certainty", value: decomposition.model_certainty },
-    { label: "Stability",       value: decomposition.stability },
+    { label: "Stability", value: decomposition.stability },
   ];
 
   return (
@@ -207,12 +207,22 @@ export const ConfidenceDecompositionCard: React.FC<ConfidenceDecompositionCardPr
               lineHeight: 1.5,
             }}
           >
-            {overallConfidence >= 70
-              ? <><span style={{ color: "var(--neon-green)", fontWeight: 600 }}>HIGH CONFIDENCE</span> — Strategy well-supported. Safe to execute immediately.</>
-              : overallConfidence >= 40
-              ? <><span style={{ color: "var(--amber)", fontWeight: 600 }}>MODERATE CONFIDENCE</span> — Good strategy. Consider alternatives.</>
-              : <><span style={{ color: "var(--f1-red)", fontWeight: 600 }}>LOW CONFIDENCE</span> — High uncertainty. Collect more telemetry.</>
-            }
+            {overallConfidence >= 70 ? (
+              <>
+                <span style={{ color: "var(--neon-green)", fontWeight: 600 }}>HIGH CONFIDENCE</span>{" "}
+                — Strategy well-supported. Safe to execute immediately.
+              </>
+            ) : overallConfidence >= 40 ? (
+              <>
+                <span style={{ color: "var(--amber)", fontWeight: 600 }}>MODERATE CONFIDENCE</span>{" "}
+                — Good strategy. Consider alternatives.
+              </>
+            ) : (
+              <>
+                <span style={{ color: "var(--f1-red)", fontWeight: 600 }}>LOW CONFIDENCE</span> —
+                High uncertainty. Collect more telemetry.
+              </>
+            )}
           </p>
         </div>
       </div>

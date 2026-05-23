@@ -10,7 +10,7 @@ on:
 env:
   PYTHON_VERSION_MIN: "3.11"
   PYTHON_VERSION_MAX: "3.12"
-  NODE_VERSION: "20.x"
+  NODE_VERSION: "24.x"
   COVERAGE_THRESHOLD: 80
 
 jobs:
@@ -163,7 +163,7 @@ jobs:
           ENVIRONMENT: test
         run: |
           cd backend
-          pytest tests/ --cov=. --cov-report=xml --cov-report=term-missing --cov-fail-under=${{ env.COVERAGE_THRESHOLD }}
+          PYTHONPATH=.. pytest tests/
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4

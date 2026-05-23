@@ -12,7 +12,6 @@ try:
     from ..models.strategy import StrategyRecommendation, StrategyScores  # noqa: F401
     from .cache_manager import (  # noqa: F401
         generate_heuristic_cache_key,
-        generate_strategy_cache_key,
         get_cached_strategy,
         set_cached_strategy,
     )

@@ -2,7 +2,7 @@ import logging
 import os
 import pandas as pd
 try:
-    from ..models.race_state import TelemetryPayload, LapPoint
+    from ..models.race_state import TelemetryPayload, LapPoint  # noqa: F401
 except ImportError:
     from models.race_state import TelemetryPayload, LapPoint
 
@@ -24,7 +24,7 @@ async def fetch_session_telemetry(year: int, event: str, session_type: str, driv
     if not is_fastf1_available():
         raise RuntimeError("FastF1 is not installed. Please uncomment it in requirements.txt and install it.")
 
-    import fastf1
+    import fastf1  # noqa: F401
     
     # Enable caching to speed up repeated requests
     cache_dir = os.path.join(os.getcwd(), "data", "fastf1_cache")

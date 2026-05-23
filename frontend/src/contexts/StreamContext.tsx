@@ -1,6 +1,6 @@
-import React, { createContext, useContext } from 'react';
-import { useStreamConnection, type StreamConnectionState } from '../hooks/useStreamConnection';
-import type { WebSocketMessageType } from '../types/api';
+import React, { createContext, useContext } from "react";
+import { useStreamConnection, type StreamConnectionState } from "../hooks/useStreamConnection";
+import type { WebSocketMessageType } from "../types/api";
 
 interface StreamContextType {
   state: StreamConnectionState;
@@ -33,17 +33,13 @@ export const StreamProvider: React.FC<StreamProviderProps> = ({
     maxBackoffMs: 30000,
   });
 
-  return (
-    <StreamContext.Provider value={stream}>
-      {children}
-    </StreamContext.Provider>
-  );
+  return <StreamContext.Provider value={stream}>{children}</StreamContext.Provider>;
 };
 
 export const useStream = () => {
   const context = useContext(StreamContext);
   if (!context) {
-    throw new Error('useStream must be used within StreamProvider');
+    throw new Error("useStream must be used within StreamProvider");
   }
   return context;
 };

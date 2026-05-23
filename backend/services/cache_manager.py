@@ -18,10 +18,13 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Any, Optional
 
+import asyncio
+
 try:
-    from ..config import get_settings
-    from ..models.race_state import TelemetryPayload
-    from .redis_client import cache_get, cache_set, redis_operation
+    from ..config import get_settings  # noqa: F401
+    from ..models.race_state import TelemetryPayload  # noqa: F401
+    from ..models.strategy import StrategyRecommendation  # noqa: F401
+    from .redis_client import cache_get, cache_set, cache_delete, redis_operation  # noqa: F401
 except ImportError:
     from config import get_settings
     from models.race_state import TelemetryPayload
@@ -46,18 +49,6 @@ _cache_stats = {
     "invalidations": 0,
     "errors": 0,
 }
-
-
-@dataclass
-class CacheStats:
-    """Cache statistics for monitoring."""
-    hits: int
-    misses: int
-    sets: int
-    invalidations: int
-    errors: int
-    hit_rate: float
-    total_requests: int
 
 
 def _normalize_telemetry_for_hash(payload: TelemetryPayload) -> dict[str, Any]:
@@ -374,37 +365,15 @@ async def invalidate_session_cache(session_id: str) -> int:
     return await invalidate_cache(pattern)
 
 
-def get_cache_stats() -> CacheStats:
-    """
-    Get current cache statistics.
-    
-    Returns:
-        CacheStats object with hit/miss rates and counts
-    """
-    total_requests = _cache_stats["hits"] + _cache_stats["misses"]
-    hit_rate = (_cache_stats["hits"] / total_requests * 100) if total_requests > 0 else 0.0
-    
-    return CacheStats(
-        hits=_cache_stats["hits"],
-        misses=_cache_stats["misses"],
-        sets=_cache_stats["sets"],
-        invalidations=_cache_stats["invalidations"],
-        errors=_cache_stats["errors"],
-        hit_rate=round(hit_rate, 2),
-        total_requests=total_requests,
-    )
-
-
 def reset_cache_stats() -> None:
     """Reset cache statistics counters."""
-    global _cache_stats
-    _cache_stats = {
+    _cache_stats.update({
         "hits": 0,
         "misses": 0,
         "sets": 0,
         "invalidations": 0,
         "errors": 0,
-    }
+    })
     logger.info("Cache statistics reset")
 
 
@@ -428,19 +397,25 @@ async def warm_cache_for_scenario(
     """
     warmed = 0
     
-    for strategy_type in strategy_types:
+    async def check_and_prepare(strategy_type: str) -> bool:
         cache_key = generate_strategy_cache_key(payload, strategy_type, session_id)
         
         # Check if already cached
         existing = await get_cached_strategy(cache_key)
         if existing is not None:
             logger.debug(f"Cache already warm for {cache_key}")
-            continue
-        
+            return False
+
         # Note: Actual strategy computation would happen here
         # For now, we just generate the key structure
         logger.debug(f"Cache warming prepared for {cache_key}")
-        warmed += 1
+        return True
+
+    results = await asyncio.gather(
+        *(check_and_prepare(strategy_type) for strategy_type in strategy_types)
+    )
+
+    warmed = sum(1 for result in results if result)
     
     return warmed
 

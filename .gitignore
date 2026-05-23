@@ -59,3 +59,4 @@ backup-*.yaml
 
 # GitHub Actions
 .github/workflows/*.log
+data/fastf1_cache/

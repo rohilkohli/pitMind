@@ -3,13 +3,7 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 
 export function Card({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
-  return (
-    <div
-      role="region"
-      className={cn("f1-card", className)}
-      {...props}
-    />
-  );
+  return <div role="region" className={cn("f1-card", className)} {...props} />;
 }
 
 export function CardHeader({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
@@ -23,7 +17,14 @@ export function CardTitle({
   ...props
 }: React.HTMLAttributes<HTMLHeadingElement> & { id?: string }) {
   return (
-    <h2 id={id} className={cn("text-sm font-bold tracking-widest text-f1-white uppercase font-display", className)} {...props}>
+    <h2
+      id={id}
+      className={cn(
+        "text-sm font-bold tracking-widest text-f1-white uppercase font-display",
+        className,
+      )}
+      {...props}
+    >
       {children}
     </h2>
   );

@@ -5,21 +5,24 @@ import type { LapPoint, TelemetryPayload } from "@/services/api";
 export function useTelemetry(initial: TelemetryPayload) {
   const [payload, setPayload] = useState<TelemetryPayload>(initial);
 
-  const upsertLive = useCallback((sample: { lap: number; lap_time_s: number; tyre_wear_pct: number }) => {
-    setPayload((p) => {
-      const laps = [...p.laps];
-      const idx = laps.findIndex((l) => l.lap === sample.lap);
-      const row: LapPoint = {
-        lap: sample.lap,
-        lap_time_s: sample.lap_time_s,
-        tyre_wear_pct: sample.tyre_wear_pct,
-      };
-      if (idx >= 0) laps[idx] = { ...laps[idx], ...row };
-      else laps.push(row);
-      laps.sort((a, b) => a.lap - b.lap);
-      return { ...p, laps };
-    });
-  }, []);
+  const upsertLive = useCallback(
+    (sample: { lap: number; lap_time_s: number; tyre_wear_pct: number }) => {
+      setPayload((p) => {
+        const laps = [...p.laps];
+        const idx = laps.findIndex((l) => l.lap === sample.lap);
+        const row: LapPoint = {
+          lap: sample.lap,
+          lap_time_s: sample.lap_time_s,
+          tyre_wear_pct: sample.tyre_wear_pct,
+        };
+        if (idx >= 0) laps[idx] = { ...laps[idx], ...row };
+        else laps.push(row);
+        laps.sort((a, b) => a.lap - b.lap);
+        return { ...p, laps };
+      });
+    },
+    [],
+  );
 
   const metrics = useMemo(() => {
     const laps = [...payload.laps].sort((a, b) => a.lap - b.lap);

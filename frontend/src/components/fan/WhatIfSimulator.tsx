@@ -1,17 +1,23 @@
 import { useState } from "react";
 import type { RaceState } from "../../hooks/useFirebaseRaceState";
-import { postFanPredict, type FanPredictRequest, type FanPredictResponse } from "../../services/api";
+import {
+  postFanPredict,
+  type FanPredictRequest,
+  type FanPredictResponse,
+} from "../../services/api";
 
 const REAL_DRIVERS = ["VER", "LEC", "NOR", "HAM", "SAI", "PIA", "RUS", "ALO"];
 
 const FALLBACK_NARRATIVES: Record<string, Record<string, string>> = {
   VER: {
     PIT: "Verstappen boxes for fresh softs — emerges P3 with 8 laps of clear air. Tyre delta +0.38s/lap vs Leclerc on worn mediums. High undercut probability: 87%. Granite confidence: 91%.",
-    STAY_OUT: "Verstappen stays out — track position hold, 12 laps on ageing softs. Gap erosion rate +0.21s/lap. Window closes in 4 laps. If no SC, this becomes the defining stint call.",
+    STAY_OUT:
+      "Verstappen stays out — track position hold, 12 laps on ageing softs. Gap erosion rate +0.21s/lap. Window closes in 4 laps. If no SC, this becomes the defining stint call.",
   },
   LEC: {
     PIT: "Leclerc pits for mediums — Ferrari playing the long game. Emerges P4 with fastest lap potential. Tyre life advantage: 18 laps. Granite model rates this 79% optimal.",
-    STAY_OUT: "Leclerc holds position — critical to defend against Verstappen undercut. Monitor gap every lap. Tyre wear accelerating at 1.8% per lap above threshold.",
+    STAY_OUT:
+      "Leclerc holds position — critical to defend against Verstappen undercut. Monitor gap every lap. Tyre wear accelerating at 1.8% per lap above threshold.",
   },
 };
 
@@ -23,7 +29,8 @@ export function WhatIfSimulator({ raceState }: { raceState: RaceState | null }) 
   const [result, setResult] = useState<string | null>(null);
   const [confidence, setConfidence] = useState<number | null>(null);
 
-  const drivers = raceState?.standings?.map((s) => s.driver.slice(0, 3).toUpperCase()) || REAL_DRIVERS;
+  const drivers =
+    raceState?.standings?.map((s) => s.driver.slice(0, 3).toUpperCase()) || REAL_DRIVERS;
 
   const handleSimulate = async () => {
     setLoading(true);
@@ -39,7 +46,11 @@ export function WhatIfSimulator({ raceState }: { raceState: RaceState | null }) 
 
       const response: FanPredictResponse = await postFanPredict(request);
       setResult(response.narrative || getFallback());
-      setConfidence(response.confidence !== undefined && response.confidence !== null ? response.confidence : null);
+      setConfidence(
+        response.confidence !== undefined && response.confidence !== null
+          ? response.confidence
+          : null,
+      );
     } catch {
       setResult(getFallback());
       setConfidence(null);
@@ -223,7 +234,16 @@ export function WhatIfSimulator({ raceState }: { raceState: RaceState | null }) 
           }}
         >
           {/* Header Row */}
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10, flexWrap: "wrap", gap: 8 }}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              marginBottom: 10,
+              flexWrap: "wrap",
+              gap: 8,
+            }}
+          >
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               <span
                 style={{
@@ -291,15 +311,44 @@ export function WhatIfSimulator({ raceState }: { raceState: RaceState | null }) 
               gap: 4,
             }}
           >
-            <div style={{ display: "flex", alignItems: "start", gap: 6, fontFamily: "'IBM Plex Mono', monospace", fontSize: 10, color: "var(--text-secondary)" }}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "start",
+                gap: 6,
+                fontFamily: "'IBM Plex Mono', monospace",
+                fontSize: 10,
+                color: "var(--text-secondary)",
+              }}
+            >
               <span style={{ color: "var(--f1-red)" }}>•</span>
-              <span>Action: {action} on lap {raceState?.current_lap ?? 1}</span>
+              <span>
+                Action: {action} on lap {raceState?.current_lap ?? 1}
+              </span>
             </div>
-            <div style={{ display: "flex", alignItems: "start", gap: 6, fontFamily: "'IBM Plex Mono', monospace", fontSize: 10, color: "var(--text-secondary)" }}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "start",
+                gap: 6,
+                fontFamily: "'IBM Plex Mono', monospace",
+                fontSize: 10,
+                color: "var(--text-secondary)",
+              }}
+            >
               <span style={{ color: "var(--f1-red)" }}>•</span>
               <span>Predicted window: {laps} laps</span>
             </div>
-            <div style={{ display: "flex", alignItems: "start", gap: 6, fontFamily: "'IBM Plex Mono', monospace", fontSize: 10, color: "var(--text-secondary)" }}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "start",
+                gap: 6,
+                fontFamily: "'IBM Plex Mono', monospace",
+                fontSize: 10,
+                color: "var(--text-secondary)",
+              }}
+            >
               <span style={{ color: "var(--f1-red)" }}>•</span>
               <span>Tyre delta: estimated from current wear rate</span>
             </div>

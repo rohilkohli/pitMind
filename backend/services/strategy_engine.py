@@ -7,10 +7,10 @@ from statistics import mean
 from typing import Optional
 
 try:
-    from ..config import get_settings
-    from ..models.race_state import LapPoint, TelemetryPayload
-    from ..models.strategy import StrategyRecommendation, StrategyScores
-    from .cache_manager import (
+    from ..config import get_settings  # noqa: F401
+    from ..models.race_state import LapPoint, TelemetryPayload  # noqa: F401
+    from ..models.strategy import StrategyRecommendation, StrategyScores  # noqa: F401
+    from .cache_manager import (  # noqa: F401
         generate_heuristic_cache_key,
         generate_strategy_cache_key,
         get_cached_strategy,

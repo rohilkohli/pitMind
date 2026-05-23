@@ -5,7 +5,41 @@ from backend.services.granite import (
     _extract_json_object,
     _repair_strategy_payload,
     _coerce_strategy_payload,
+    _local_fallback_response,
 )
+
+def test_local_fallback_response_normal():
+    system = "You are an AI."
+    user = "Should I pit now?"
+    result = _local_fallback_response(system, user)
+    assert "AI provider is not configured" in result
+    assert "Context preview: Should I pit now?" in result
+
+def test_local_fallback_response_empty():
+    system = "You are an AI."
+    user = ""
+    result = _local_fallback_response(system, user)
+    assert result == "No chat context was provided. Share telemetry or a strategy question to continue."
+
+def test_local_fallback_response_whitespace_only():
+    system = "You are an AI."
+    user = "   \n  \t   "
+    result = _local_fallback_response(system, user)
+    assert result == "No chat context was provided. Share telemetry or a strategy question to continue."
+
+def test_local_fallback_response_whitespace_cleanup():
+    system = "You are an AI."
+    user = "  Hello \n world,   this\tis  a test.  "
+    result = _local_fallback_response(system, user)
+    assert "Context preview: Hello world, this is a test." in result
+
+def test_local_fallback_response_truncation():
+    system = "You are an AI."
+    user = "A" * 500
+    result = _local_fallback_response(system, user)
+    assert "Context preview: " + "A" * 420 in result
+    assert len("Context preview: " + "A" * 420) <= len(result)
+    assert "A" * 421 not in result
 
 def test_normalize_strategy_json_valid():
     content = '{"recommendation": "Pit now", "prose": "Pit for hard tires.", "evidence": ["high wear"], "confidence": 90, "assumptions": [], "alternative": "Stay out"}'
@@ -127,12 +161,3 @@ def test_coerce_confidence():
     assert _coerce_confidence(-10) == 0
     assert _coerce_confidence("invalid") == 0
     assert _coerce_confidence(None) == 0
-
-def test_local_fallback_response():
-    from backend.services.granite import _local_fallback_response
-
-    response = _local_fallback_response("system", "  clean this   ")
-    assert "AI provider is not configured" in response
-
-    empty_response = _local_fallback_response("system", "   ")
-    assert "No chat context was provided" in empty_response

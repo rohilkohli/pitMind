@@ -795,7 +795,7 @@ export function Dashboard() {
             <Group orientation="horizontal" className="h-full" style={{ gap: 0, background: "var(--border)" }}>
               {columnOrder.map((id: string, index: number) => (
                 <Fragment key={id}>
-                  <Panel id={id} order={index} {...getColumnProps(id)} className="h-full">
+                  <Panel id={id} {...getColumnProps(id)} className="h-full">
                     <SortableColumn id={id}>
                       {renderColumnContent(id)}
                     </SortableColumn>

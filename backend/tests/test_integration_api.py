@@ -13,7 +13,6 @@ This module tests:
 import pytest
 from unittest.mock import AsyncMock, patch, MagicMock
 from fastapi.testclient import TestClient
-from datetime import datetime
 
 from backend.main import app
 from backend.models.race_state import TelemetryPayload, LapPoint
@@ -280,7 +279,7 @@ class TestStrategyRecommendationFlow:
         """Test that recommendations use caching."""
         with patch('backend.services.strategy_engine.predict_strategy', new_callable=AsyncMock) as mock_predict, \
              patch('backend.services.cache_manager.get_cached_strategy') as mock_cache_get, \
-             patch('backend.services.cache_manager.set_cached_strategy') as mock_cache_set:
+             patch('backend.services.cache_manager.set_cached_strategy'):
             
             # First request - cache miss
             mock_cache_get.return_value = None

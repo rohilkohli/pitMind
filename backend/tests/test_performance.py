@@ -16,10 +16,10 @@ import asyncio
 from unittest.mock import AsyncMock, patch, MagicMock
 from fastapi.testclient import TestClient
 
-from backend.main import app
-from backend.models.race_state import LapPoint, TelemetryPayload
-from backend.models.strategy import StrategyScores, StrategyRecommendation
-from backend.services.strategy_engine import predict_strategy
+from main import app
+from models.race_state import LapPoint, TelemetryPayload
+from models.strategy import StrategyScores, StrategyRecommendation
+from services.strategy_engine import predict_strategy
 
 
 # Performance thresholds (in seconds)
@@ -108,7 +108,7 @@ class TestAPIPerformance:
             pipeline_steps=["heuristic", "granite"]
         )
         
-        with patch('backend.routes.strategy.pipeline_svc.run_strategy_pipeline') as mock_run:
+        with patch('routes.strategy.pipeline_svc.run_strategy_pipeline') as mock_run:
             mock_run.return_value = mock_rec
             
             start_time = time.time()
@@ -194,9 +194,9 @@ class TestCachePerformance:
     @pytest.mark.asyncio
     async def test_redis_set_performance(self):
         """Test Redis set operation performance."""
-        from backend.services import redis_client
+        from services import redis_client
         
-        with patch('backend.services.redis_client._redis_client') as mock_redis:
+        with patch('services.redis_client._redis_client') as mock_redis:
             mock_redis.setex = AsyncMock()
             
             start_time = time.time()
@@ -209,9 +209,9 @@ class TestCachePerformance:
     @pytest.mark.asyncio
     async def test_redis_get_performance(self):
         """Test Redis get operation performance."""
-        from backend.services import redis_client
+        from services import redis_client
         
-        with patch('backend.services.redis_client._redis_client') as mock_redis:
+        with patch('services.redis_client._redis_client') as mock_redis:
             mock_redis.get = AsyncMock(return_value='{"data": "test"}')
             
             start_time = time.time()
@@ -269,11 +269,11 @@ class TestConcurrentRequests:
     @pytest.mark.slow
     async def test_concurrent_cache_operations(self):
         """Test concurrent cache operations."""
-        from backend.services import redis_client
+        from services import redis_client
         
         concurrent_ops = 20
         
-        with patch('backend.services.redis_client._redis_client') as mock_redis:
+        with patch('services.redis_client._redis_client') as mock_redis:
             mock_redis.setex = AsyncMock()
             mock_redis.get = AsyncMock(return_value='{"data": "test"}')
             
@@ -299,7 +299,7 @@ class TestWebSocketPerformance:
     @pytest.mark.asyncio
     async def test_websocket_message_broadcast_latency(self):
         """Test WebSocket message broadcast latency."""
-        from backend.main import ConnectionManager
+        from main import ConnectionManager
         
         manager = ConnectionManager()
         mock_websockets = []
@@ -334,7 +334,7 @@ class TestWebSocketPerformance:
     @pytest.mark.slow
     async def test_websocket_high_frequency_messages(self):
         """Test WebSocket performance with high-frequency messages."""
-        from backend.main import ConnectionManager
+        from main import ConnectionManager
         
         manager = ConnectionManager()
         mock_ws = AsyncMock()
@@ -368,9 +368,9 @@ class TestDatabasePerformance:
     @pytest.mark.asyncio
     async def test_database_health_check_performance(self):
         """Test database health check performance."""
-        from backend.models import database as db
+        from models import database as db
         
-        with patch('backend.models.database.get_engine') as mock_get_engine:
+        with patch('models.database.get_engine') as mock_get_engine:
             mock_engine = MagicMock()
             mock_conn = AsyncMock()
             mock_result = MagicMock()
@@ -442,7 +442,7 @@ class TestPerformanceBenchmarks:
     @pytest.mark.asyncio
     async def test_end_to_end_latency_benchmark(self, performance_telemetry_payload):
         """Benchmark end-to-end latency for complete flow."""
-        from backend.services import redis_client
+        from services import redis_client
         
         # Simulate complete flow: receive telemetry → predict → cache → respond
         start_time = time.time()
@@ -454,7 +454,7 @@ class TestPerformanceBenchmarks:
         )
         
         # 2. Cache result (simulated)
-        with patch('backend.services.redis_client._redis_client') as mock_redis:
+        with patch('services.redis_client._redis_client') as mock_redis:
             mock_redis.setex = AsyncMock()
             await redis_client.cache_set(
                 "benchmark_result",

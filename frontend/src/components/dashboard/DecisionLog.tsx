@@ -73,7 +73,7 @@ const MOCK_DECISIONS: StrategyDecision[] = [
 
 export const DecisionLog: React.FC<DecisionLogProps> = ({
   decisions = MOCK_DECISIONS,
-
+  onAddAnnotation: _onAddAnnotation,
   onExportSession,
 }) => {
   const [expandedId, setExpandedId] = useState<string | null>(null);

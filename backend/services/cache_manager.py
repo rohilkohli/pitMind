@@ -50,18 +50,6 @@ _cache_stats = {
 }
 
 
-@dataclass
-class CacheStats:
-    """Cache statistics for monitoring."""
-    hits: int
-    misses: int
-    sets: int
-    invalidations: int
-    errors: int
-    hit_rate: float
-    total_requests: int
-
-
 def _normalize_telemetry_for_hash(payload: TelemetryPayload) -> dict[str, Any]:
     """
     Normalize telemetry payload for deterministic hashing.
@@ -376,37 +364,15 @@ async def invalidate_session_cache(session_id: str) -> int:
     return await invalidate_cache(pattern)
 
 
-def get_cache_stats() -> CacheStats:
-    """
-    Get current cache statistics.
-    
-    Returns:
-        CacheStats object with hit/miss rates and counts
-    """
-    total_requests = _cache_stats["hits"] + _cache_stats["misses"]
-    hit_rate = (_cache_stats["hits"] / total_requests * 100) if total_requests > 0 else 0.0
-    
-    return CacheStats(
-        hits=_cache_stats["hits"],
-        misses=_cache_stats["misses"],
-        sets=_cache_stats["sets"],
-        invalidations=_cache_stats["invalidations"],
-        errors=_cache_stats["errors"],
-        hit_rate=round(hit_rate, 2),
-        total_requests=total_requests,
-    )
-
-
 def reset_cache_stats() -> None:
     """Reset cache statistics counters."""
-    global _cache_stats
-    _cache_stats = {
+    _cache_stats.update({
         "hits": 0,
         "misses": 0,
         "sets": 0,
         "invalidations": 0,
         "errors": 0,
-    }
+    })
     logger.info("Cache statistics reset")
 
 

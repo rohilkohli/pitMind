@@ -10,10 +10,9 @@ import uuid
 from datetime import datetime
 from typing import Any
 
-from fastapi import FastAPI, File, HTTPException, Request, UploadFile, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, Request, WebSocket, WebSocketDisconnect
 from fastapi.responses import Response
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import Response
 import firebase_admin
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
@@ -22,13 +21,7 @@ from slowapi.util import get_remote_address
 try:
     # When executed as a package module (e.g., `uvicorn backend.main:app`)
     from .config import cors_origin_list, get_settings
-    from .models.chat import ChatRequest, ChatResponse, DebriefResponse
-    from .models.strategy import StrategyRecommendation, DriverCompareRequest, DriverCompareResponse
-    from .models.race_state import TelemetryPayload
-    from .services import sanitize
-    from .services import pipeline as pipeline_svc
     from .services import granite
-    from .services.strategy_engine import predict_strategy
     from .services import redis_client
     from .services.cache_manager import get_cache_stats
     from .services.logger import get_logger, RequestIDMiddleware
@@ -37,13 +30,7 @@ try:
 except ImportError:
     # When executed from the `backend/` directory (e.g., `uvicorn main:app`)
     from config import cors_origin_list, get_settings
-    from models.chat import ChatRequest, ChatResponse, DebriefResponse
-    from models.strategy import StrategyRecommendation, DriverCompareRequest, DriverCompareResponse
-    from models.race_state import TelemetryPayload
-    from services import sanitize
-    from services import pipeline as pipeline_svc
     from services import granite
-    from services.strategy_engine import predict_strategy
     from services import redis_client
     from services.cache_manager import get_cache_stats
     from services.logger import get_logger, RequestIDMiddleware

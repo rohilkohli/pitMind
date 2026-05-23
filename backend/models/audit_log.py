@@ -97,6 +97,7 @@ class AuditLog(Base):
         Index("idx_session_lap", "session_id", "lap"),
         Index("idx_driver_timestamp", "driver", "timestamp"),
         Index("idx_strategy_confidence", "strategy_type", "confidence"),
+        {"extend_existing": True}
     )
     
     def __repr__(self) -> str:

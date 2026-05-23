@@ -1,5 +1,4 @@
 import pytest
-from unittest.mock import patch, AsyncMock, MagicMock
 
 from backend.models.race_state import LapPoint, TelemetryPayload
 from backend.services.strategy_engine import predict_strategy

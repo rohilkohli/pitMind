@@ -11,7 +11,7 @@ This module tests:
 
 import pytest
 import json
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, patch
 from redis.exceptions import RedisError, ConnectionError, TimeoutError
 
 from backend.services import redis_client

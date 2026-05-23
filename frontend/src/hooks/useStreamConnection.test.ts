@@ -190,12 +190,12 @@ describe('useStreamConnection', () => {
     const ws = MockWebSocket.instances[0];
 
     act(() => {
-      result.current.send('custom_action', { foo: 'bar' });
+      result.current.send('telemetry_update', { foo: 'bar' });
     });
 
     expect(ws.send).toHaveBeenCalled();
     const sentData = JSON.parse(ws.send.mock.calls[0][0]);
-    expect(sentData.type).toBe('custom_action');
+    expect(sentData.type).toBe('telemetry_update');
     expect(sentData.data).toEqual({ foo: 'bar' });
   });
 

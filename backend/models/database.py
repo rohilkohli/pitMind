@@ -17,7 +17,6 @@ from sqlalchemy.ext.asyncio import (
     create_async_engine,
 )
 from sqlalchemy.orm import DeclarativeBase
-from sqlalchemy.pool import NullPool
 from sqlalchemy import text
 
 from config import get_settings

@@ -14,9 +14,9 @@ import pytest
 from unittest.mock import AsyncMock, patch, MagicMock
 from fastapi.testclient import TestClient
 
-from backend.main import app
-from backend.models.race_state import TelemetryPayload, LapPoint
-from backend.models.strategy import StrategyScores, StrategyRecommendation
+from main import app
+from models.race_state import TelemetryPayload, LapPoint
+from models.strategy import StrategyScores, StrategyRecommendation
 
 
 @pytest.fixture
@@ -98,7 +98,7 @@ class TestStrategyEndpoint:
     
     def test_strategy_endpoint_accepts_telemetry(self, client, sample_telemetry_payload):
         """Test that strategy endpoint accepts valid telemetry."""
-        with patch('backend.services.strategy_engine.predict_strategy', new_callable=AsyncMock) as mock_predict:
+        with patch('services.strategy_engine.predict_strategy', new_callable=AsyncMock) as mock_predict:
             # Mock strategy response
             mock_scores = StrategyScores(pit_urgency=75, sc_probability_next_3_laps=10, overtake_risk=50.0, recommended_window_laps=(20, 24))
             mock_predict.return_value = (mock_scores, ["Test explanation"], {"circuit": "Monza", "wear": 80.0, "degradation": 0.5, "gap_volatility": 1.2, "current_lap": 2})
@@ -256,7 +256,7 @@ class TestStrategyRecommendationFlow:
             pipeline_steps=["heuristics", "ai_explanation"]
         )
 
-        with patch('backend.services.pipeline.run_strategy_pipeline', new_callable=AsyncMock) as mock_pipeline:
+        with patch('services.pipeline.run_strategy_pipeline', new_callable=AsyncMock) as mock_pipeline:
             mock_pipeline.return_value = mock_recommendation
 
             # Make request
@@ -277,9 +277,9 @@ class TestStrategyRecommendationFlow:
 
     def test_recommendation_with_caching(self, client, sample_telemetry_payload):
         """Test that recommendations use caching."""
-        with patch('backend.services.strategy_engine.predict_strategy', new_callable=AsyncMock) as mock_predict, \
-             patch('backend.services.cache_manager.get_cached_strategy') as mock_cache_get, \
-             patch('backend.services.cache_manager.set_cached_strategy'):
+        with patch('services.strategy_engine.predict_strategy', new_callable=AsyncMock) as mock_predict, \
+             patch('services.cache_manager.get_cached_strategy') as mock_cache_get, \
+             patch('services.cache_manager.set_cached_strategy'):
             
             # First request - cache miss
             mock_cache_get.return_value = None
@@ -300,8 +300,8 @@ class TestDatabaseIntegration:
     
     def test_audit_log_creation(self, client, sample_telemetry_payload):
         """Test that strategy recommendations create audit logs."""
-        with patch('backend.services.strategy_engine.predict_strategy', new_callable=AsyncMock) as mock_predict, \
-             patch('backend.main.db.get_db') as mock_get_db:
+        with patch('services.strategy_engine.predict_strategy', new_callable=AsyncMock) as mock_predict, \
+             patch('main.db.get_db') as mock_get_db:
             
             # Mock database session
             mock_session = AsyncMock()
@@ -337,8 +337,8 @@ class TestRedisIntegration:
     
     def test_api_works_without_redis(self, client, sample_telemetry_payload):
         """Test that API works even when Redis is unavailable."""
-        with patch('backend.main.redis_client.check_redis_health') as mock_redis_health, \
-             patch('backend.services.strategy_engine.predict_strategy', new_callable=AsyncMock) as mock_predict:
+        with patch('main.redis_client.check_redis_health') as mock_redis_health, \
+             patch('services.strategy_engine.predict_strategy', new_callable=AsyncMock) as mock_predict:
             
             # Simulate Redis unavailable
             mock_redis_health.return_value = {
@@ -390,7 +390,7 @@ class TestAPIVersioning:
     
     def test_versioned_strategy_endpoint(self, client, sample_telemetry_payload):
         """Test versioned strategy endpoint."""
-        with patch('backend.services.strategy_engine.predict_strategy', new_callable=AsyncMock) as mock_predict:
+        with patch('services.strategy_engine.predict_strategy', new_callable=AsyncMock) as mock_predict:
             mock_scores = StrategyScores(pit_urgency=75, sc_probability_next_3_laps=10, overtake_risk=50.0, recommended_window_laps=(20, 24))
             mock_predict.return_value = (mock_scores, ["Test explanation"], {"circuit": "Monza", "wear": 80.0, "degradation": 0.5, "gap_volatility": 1.2, "current_lap": 2})
             

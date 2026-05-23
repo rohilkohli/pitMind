@@ -14,9 +14,9 @@ import asyncio
 from unittest.mock import AsyncMock, patch, MagicMock
 from fastapi.testclient import TestClient
 
-from backend.main import app, ConnectionManager
-from backend.models.race_state import LapPoint, TelemetryPayload
-from backend.models.strategy import StrategyScores
+from main import app, ConnectionManager
+from models.race_state import LapPoint, TelemetryPayload
+from models.strategy import StrategyScores
 
 
 @pytest.fixture
@@ -65,7 +65,7 @@ class TestCompleteUserFlow:
         assert "status" in health_data
         
         # 2. Request strategy recommendation
-        with patch('backend.services.strategy_engine.predict_strategy', new_callable=AsyncMock) as mock_predict:
+        with patch('services.strategy_engine.predict_strategy', new_callable=AsyncMock) as mock_predict:
             mock_scores = StrategyScores(pit_urgency=75, sc_probability_next_3_laps=10, overtake_risk=50.0, recommended_window_laps=(20, 24))
             mock_predict.return_value = (mock_scores, ["Test explanation"], {"circuit": "Monza", "wear": 80.0, "degradation": 0.5, "gap_volatility": 1.2, "current_lap": 2})
             
@@ -82,12 +82,12 @@ class TestCompleteUserFlow:
     @pytest.mark.asyncio
     async def test_redis_database_api_integration(self, complete_telemetry_payload):
         """Test integration between Redis, Database, and API."""
-        from backend.services import redis_client
+        from services import redis_client
         
         # Mock Redis
-        with patch('backend.services.redis_client._redis_client') as mock_redis, \
-             patch('backend.services.redis_client._redis_available', True), \
-             patch('backend.models.database.get_db') as mock_get_db:
+        with patch('services.redis_client._redis_client') as mock_redis, \
+             patch('services.redis_client._redis_available', True), \
+             patch('models.database.get_db') as mock_get_db:
             
             mock_redis.setex = AsyncMock()
             mock_redis.get = AsyncMock(return_value=None)  # Cache miss
@@ -103,7 +103,7 @@ class TestCompleteUserFlow:
             assert cached is None
             
             # 2. Compute strategy
-            from backend.services.strategy_engine import predict_strategy
+            from services.strategy_engine import predict_strategy
             scores, reasons, meta = await predict_strategy(
                 complete_telemetry_payload,
                 session_id="integration-test"
@@ -127,7 +127,7 @@ class TestCacheIntegration:
     @pytest.mark.asyncio
     async def test_cache_miss_then_hit_scenario(self, complete_telemetry_payload):
         """Test cache miss followed by cache hit."""
-        from backend.services.strategy_engine import predict_strategy
+        from services.strategy_engine import predict_strategy
         
         session_id = "cache-test-session"
         
@@ -150,7 +150,7 @@ class TestCacheIntegration:
     @pytest.mark.asyncio
     async def test_cache_invalidation_scenario(self, complete_telemetry_payload):
         """Test cache invalidation and refresh."""
-        from backend.services.strategy_engine import predict_strategy
+        from services.strategy_engine import predict_strategy
         
         session_id = "invalidation-test"
         
@@ -178,7 +178,7 @@ class TestConcurrentSessions:
     @pytest.mark.asyncio
     async def test_multiple_concurrent_sessions(self, complete_telemetry_payload):
         """Test multiple users with different sessions."""
-        from backend.services.strategy_engine import predict_strategy
+        from services.strategy_engine import predict_strategy
         
         sessions = ["session-1", "session-2", "session-3"]
         
@@ -243,9 +243,9 @@ class TestWebSocketIntegration:
         
         manager = ConnectionManager()
         
-        with patch('backend.services.redis_client._redis_client') as mock_redis, \
-             patch('backend.services.redis_client._redis_available', True), \
-             patch('backend.services.redis_client._redis_available', True):
+        with patch('services.redis_client._redis_client') as mock_redis, \
+             patch('services.redis_client._redis_available', True), \
+             patch('services.redis_client._redis_available', True):
             mock_redis.sadd = AsyncMock()
             mock_redis.srem = AsyncMock()
             mock_redis.expire = AsyncMock()
@@ -305,9 +305,9 @@ class TestErrorRecovery:
     @pytest.mark.asyncio
     async def test_redis_failure_recovery(self, complete_telemetry_payload):
         """Test system continues when Redis fails."""
-        from backend.services.strategy_engine import predict_strategy
+        from services.strategy_engine import predict_strategy
         
-        with patch('backend.services.redis_client._redis_available', False):
+        with patch('services.redis_client._redis_available', False):
             # Should still work without Redis
             scores, reasons, meta = await predict_strategy(
                 complete_telemetry_payload,
@@ -320,7 +320,7 @@ class TestErrorRecovery:
     @pytest.mark.asyncio
     async def test_database_failure_recovery(self, integration_client, complete_telemetry_payload):
         """Test system continues when database fails."""
-        with patch('backend.models.database.check_db_health') as mock_db_health:
+        with patch('models.database.check_db_health') as mock_db_health:
             mock_db_health.return_value = {
                 "status": "unhealthy",
                 "connected": False,
@@ -366,7 +366,7 @@ class TestDataConsistency:
     @pytest.mark.asyncio
     async def test_strategy_consistency_across_calls(self, complete_telemetry_payload):
         """Test that same input produces consistent output."""
-        from backend.services.strategy_engine import predict_strategy
+        from services.strategy_engine import predict_strategy
         
         session_id = "consistency-test"
         
@@ -388,7 +388,7 @@ class TestDataConsistency:
     @pytest.mark.asyncio
     async def test_session_isolation(self, complete_telemetry_payload):
         """Test that different sessions are properly isolated."""
-        from backend.services.strategy_engine import predict_strategy
+        from services.strategy_engine import predict_strategy
         
         # Different sessions should have independent caches
         scores1, _, _ = await predict_strategy(
@@ -414,7 +414,7 @@ class TestLoadScenarios:
     @pytest.mark.asyncio
     async def test_sustained_load(self, complete_telemetry_payload):
         """Test system under sustained load."""
-        from backend.services.strategy_engine import predict_strategy
+        from services.strategy_engine import predict_strategy
         
         iterations = 20
         session_ids = [f"load-test-{i}" for i in range(5)]
@@ -454,7 +454,7 @@ class TestEndToEndScenarios:
         assert metrics.status_code == 200
         
         # 3. Request strategy recommendation
-        with patch('backend.services.strategy_engine.predict_strategy', new_callable=AsyncMock) as mock_predict:
+        with patch('services.strategy_engine.predict_strategy', new_callable=AsyncMock) as mock_predict:
             mock_scores = StrategyScores(pit_urgency=75, sc_probability_next_3_laps=10, overtake_risk=50.0, recommended_window_laps=(20, 24))
             mock_predict.return_value = (mock_scores, ["Test explanation"], {"circuit": "Monza", "wear": 80.0, "degradation": 0.5, "gap_volatility": 1.2, "current_lap": 2})
             
@@ -473,7 +473,7 @@ class TestEndToEndScenarios:
     @pytest.mark.asyncio
     async def test_multi_driver_race_scenario(self):
         """Test scenario with multiple drivers in same race."""
-        from backend.services.strategy_engine import predict_strategy
+        from services.strategy_engine import predict_strategy
         
         drivers = ["VER", "HAM", "LEC", "SAI", "NOR"]
         

@@ -14,7 +14,7 @@ import json
 from unittest.mock import AsyncMock, patch
 from redis.exceptions import RedisError, ConnectionError, TimeoutError
 
-from backend.services import redis_client
+from services import redis_client
 
 
 @pytest.fixture
@@ -48,8 +48,8 @@ class TestRedisInitialization:
     @pytest.mark.asyncio
     async def test_init_redis_success(self, mock_redis, mock_connection_pool):
         """Test successful Redis initialization."""
-        with patch('backend.services.redis_client.ConnectionPool') as mock_pool_class, \
-             patch('backend.services.redis_client.Redis') as mock_redis_class:
+        with patch('services.redis_client.ConnectionPool') as mock_pool_class, \
+             patch('services.redis_client.Redis') as mock_redis_class:
             
             mock_pool_class.from_url.return_value = mock_connection_pool
             mock_redis_class.return_value = mock_redis
@@ -63,7 +63,7 @@ class TestRedisInitialization:
     @pytest.mark.asyncio
     async def test_init_redis_connection_failure(self):
         """Test Redis initialization with connection failure."""
-        with patch('backend.services.redis_client.ConnectionPool') as mock_pool_class:
+        with patch('services.redis_client.ConnectionPool') as mock_pool_class:
             mock_pool_class.from_url.side_effect = ConnectionError("Connection failed")
             
             result = await redis_client.init_redis()
@@ -75,7 +75,7 @@ class TestRedisInitialization:
     @pytest.mark.asyncio
     async def test_init_redis_timeout(self):
         """Test Redis initialization with timeout."""
-        with patch('backend.services.redis_client.ConnectionPool') as mock_pool_class:
+        with patch('services.redis_client.ConnectionPool') as mock_pool_class:
             mock_pool_class.from_url.side_effect = TimeoutError("Connection timeout")
             
             result = await redis_client.init_redis()

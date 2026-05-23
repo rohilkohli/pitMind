@@ -6,8 +6,8 @@ Tests cache key generation, cache operations, invalidation, and statistics.
 
 import pytest
 
-from backend.models.race_state import LapPoint, TelemetryPayload
-from backend.services.cache_manager import (
+from models.race_state import LapPoint, TelemetryPayload
+from services.cache_manager import (
     generate_strategy_cache_key,
     generate_heuristic_cache_key,
     generate_ai_response_cache_key,
@@ -56,7 +56,7 @@ class MockRedisInMemory:
 @pytest.fixture(autouse=True)
 def setup_mock_redis():
     """Setup mock in-memory Redis client for caching tests."""
-    import backend.services.redis_client as rc
+    import services.redis_client as rc
     
     mock_redis = MockRedisInMemory()
     

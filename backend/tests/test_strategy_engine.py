@@ -1,7 +1,7 @@
 import pytest
 
-from backend.models.race_state import LapPoint, TelemetryPayload
-from backend.services.strategy_engine import predict_strategy
+from models.race_state import LapPoint, TelemetryPayload
+from services.strategy_engine import predict_strategy
 
 
 def _sample_payload(wear: float = 50.0, degradation_trend: float = 0.0) -> TelemetryPayload:

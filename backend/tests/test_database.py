@@ -15,8 +15,8 @@ from unittest.mock import AsyncMock, MagicMock, patch
 from sqlalchemy.exc import SQLAlchemyError, OperationalError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from backend.models import database as db
-from backend.models.audit_log import AuditLog
+from models import database as db
+from models.audit_log import AuditLog
 
 
 @pytest.fixture
@@ -60,7 +60,7 @@ class TestDatabaseInitialization:
         # Reset global engine
         db._engine = None
         
-        with patch('backend.models.database.create_async_engine') as mock_create:
+        with patch('models.database.create_async_engine') as mock_create:
             mock_engine = AsyncMock()
             mock_create.return_value = mock_engine
             
@@ -89,8 +89,8 @@ class TestDatabaseInitialization:
         """Test that get_session_factory creates a factory."""
         db._async_session_factory = None
         
-        with patch('backend.models.database.get_engine') as mock_get_engine, \
-             patch('backend.models.database.async_sessionmaker') as mock_sessionmaker:
+        with patch('models.database.get_engine') as mock_get_engine, \
+             patch('models.database.async_sessionmaker') as mock_sessionmaker:
             
             mock_engine = AsyncMock()
             mock_get_engine.return_value = mock_engine
@@ -114,7 +114,7 @@ class TestDatabaseInitialization:
         mock_begin_ctx.__aenter__.return_value = mock_conn
         mock_engine.begin.return_value = mock_begin_ctx
         
-        with patch('backend.models.database.get_engine', return_value=mock_engine):
+        with patch('models.database.get_engine', return_value=mock_engine):
             await db.init_db()
             
             mock_engine.begin.assert_called_once()
@@ -126,7 +126,7 @@ class TestDatabaseInitialization:
         mock_engine = MagicMock()
         mock_engine.begin.side_effect = SQLAlchemyError("Connection failed")
         
-        with patch('backend.models.database.get_engine', return_value=mock_engine):
+        with patch('models.database.get_engine', return_value=mock_engine):
             with pytest.raises(SQLAlchemyError):
                 await db.init_db()
     
@@ -159,7 +159,7 @@ class TestDatabaseHealthCheck:
         mock_connect_ctx.__aenter__.return_value = mock_conn
         mock_engine.connect.return_value = mock_connect_ctx
         
-        with patch('backend.models.database.get_engine', return_value=mock_engine):
+        with patch('models.database.get_engine', return_value=mock_engine):
             health = await db.check_db_health()
             
             assert health["status"] == "healthy"
@@ -173,7 +173,7 @@ class TestDatabaseHealthCheck:
         mock_engine = MagicMock()
         mock_engine.connect.side_effect = OperationalError("Connection failed", None, None)
         
-        with patch('backend.models.database.get_engine', return_value=mock_engine):
+        with patch('models.database.get_engine', return_value=mock_engine):
             health = await db.check_db_health()
             
             assert health["status"] == "unhealthy"
@@ -190,7 +190,7 @@ class TestDatabaseHealthCheck:
         mock_connect_ctx.__aenter__.return_value = mock_conn
         mock_engine.connect.return_value = mock_connect_ctx
         
-        with patch('backend.models.database.get_engine', return_value=mock_engine):
+        with patch('models.database.get_engine', return_value=mock_engine):
             health = await db.check_db_health()
             
             assert health["status"] == "unhealthy"
@@ -208,7 +208,7 @@ class TestGetDbDependency:
         mock_session_ctx.__aenter__.return_value = mock_session
         mock_factory.return_value = mock_session_ctx
         
-        with patch('backend.models.database.get_session_factory', return_value=mock_factory):
+        with patch('models.database.get_session_factory', return_value=mock_factory):
             async for session in db.get_db():
                 assert session is mock_session
                 break
@@ -222,7 +222,7 @@ class TestGetDbDependency:
         mock_session_ctx.__aexit__.return_value = None
         mock_factory.return_value = mock_session_ctx
         
-        with patch('backend.models.database.get_session_factory', return_value=mock_factory):
+        with patch('models.database.get_session_factory', return_value=mock_factory):
             async for session in db.get_db():
                 pass
             
@@ -236,7 +236,7 @@ class TestGetDbDependency:
         mock_session_ctx.__aenter__.return_value = mock_session
         mock_factory.return_value = mock_session_ctx
         
-        with patch('backend.models.database.get_session_factory', return_value=mock_factory):
+        with patch('models.database.get_session_factory', return_value=mock_factory):
             gen = db.get_db()
             session = await gen.__anext__()
             assert session is mock_session
@@ -463,7 +463,7 @@ class TestDatabaseGracefulDegradation:
         mock_engine = MagicMock()
         mock_engine.connect.side_effect = OperationalError("Database unavailable", None, None)
         
-        with patch('backend.models.database.get_engine', return_value=mock_engine):
+        with patch('models.database.get_engine', return_value=mock_engine):
             health = await db.check_db_health()
             
             assert health["status"] == "unhealthy"
@@ -475,7 +475,7 @@ class TestDatabaseGracefulDegradation:
         mock_engine = MagicMock()
         mock_engine.begin.side_effect = OperationalError("Cannot connect", None, None)
         
-        with patch('backend.models.database.get_engine', return_value=mock_engine):
+        with patch('models.database.get_engine', return_value=mock_engine):
             with pytest.raises(OperationalError):
                 await db.init_db()
 
@@ -515,7 +515,7 @@ class TestDatabaseConnectionPooling:
         """Test that engine is configured with connection pooling."""
         db._engine = None
         
-        with patch('backend.models.database.create_async_engine') as mock_create:
+        with patch('models.database.create_async_engine') as mock_create:
             mock_engine = AsyncMock()
             mock_create.return_value = mock_engine
             
@@ -534,8 +534,8 @@ class TestDatabaseConnectionPooling:
         """Test that session factory is properly configured."""
         db._async_session_factory = None
         
-        with patch('backend.models.database.get_engine') as mock_get_engine, \
-             patch('backend.models.database.async_sessionmaker') as mock_sessionmaker:
+        with patch('models.database.get_engine') as mock_get_engine, \
+             patch('models.database.async_sessionmaker') as mock_sessionmaker:
             
             mock_engine = AsyncMock()
             mock_get_engine.return_value = mock_engine

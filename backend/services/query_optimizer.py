@@ -6,7 +6,7 @@ for database operations.
 """
 
 from typing import Any, Dict, List, Optional, TypeVar, Generic
-from sqlalchemy import select, func
+from sqlalchemy import select, func, text
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload, joinedload
 import time
@@ -294,7 +294,7 @@ async def apply_index_recommendations(session: AsyncSession, table: str):
     
     for index_sql in INDEX_RECOMMENDATIONS[table]:
         try:
-            await session.execute(index_sql)
+            await session.execute(text(index_sql))
             await session.commit()
             logger.info("Applied index", table=table, sql=index_sql)
         except Exception as e:

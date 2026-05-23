@@ -50,10 +50,20 @@ export const EvidenceDrilldownModal: React.FC<EvidenceDrilldownModalProps> = ({
     }
   };
 
-  const minValue = Math.min(...evidence.dataPoints.map((p) => p.value));
-  const maxValue = Math.max(...evidence.dataPoints.map((p) => p.value));
+  const stats = evidence.dataPoints.reduce(
+    (acc, p) => {
+      acc.min = Math.min(acc.min, p.value);
+      acc.max = Math.max(acc.max, p.value);
+      acc.sum += p.value;
+      return acc;
+    },
+    { min: Infinity, max: -Infinity, sum: 0 }
+  );
+
+  const minValue = evidence.dataPoints.length > 0 ? stats.min : Infinity;
+  const maxValue = evidence.dataPoints.length > 0 ? stats.max : -Infinity;
   const range = maxValue - minValue || 1;
-  const avgValue = evidence.dataPoints.reduce((sum, p) => sum + p.value, 0) / evidence.dataPoints.length;
+  const avgValue = evidence.dataPoints.length > 0 ? stats.sum / evidence.dataPoints.length : NaN;
 
   return (
     <div

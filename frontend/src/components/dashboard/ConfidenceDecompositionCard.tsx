@@ -1,6 +1,6 @@
-import React from 'react';
-import { Card } from '../ui/card';
-import type { ConfidenceDecomposition } from '../../services/api';
+import React from "react";
+import { Card } from "../ui/card";
+import type { ConfidenceDecomposition } from "../../services/api";
 
 interface ConfidenceDecompositionCardProps {
   decomposition?: ConfidenceDecomposition | null;
@@ -12,52 +12,54 @@ export const ConfidenceDecompositionCard: React.FC<ConfidenceDecompositionCardPr
   overallConfidence = 0,
 }) => {
   const getConfidenceColor = (value: number): string => {
-    if (value >= 70) return 'var(--neon-green)';
-    if (value >= 40) return 'var(--amber)';
-    return 'var(--f1-red)';
+    if (value >= 70) return "var(--neon-green)";
+    if (value >= 40) return "var(--amber)";
+    return "var(--f1-red)";
   };
 
   if (!decomposition) {
     return (
-      <div
-        style={{
-          background: "var(--carbon-light)",
-          border: "1px solid var(--border)",
-          padding: "16px",
-          textAlign: "center",
-        }}
-      >
-        <p
+      <div style={{ padding: "0" }}>
+        <div style={{ marginBottom: 16 }}>
+          <div className="pm-panel-title">Confidence Analysis</div>
+        </div>
+        <div
           style={{
-            fontFamily: "'IBM Plex Mono', monospace",
-            fontSize: 11,
-            color: "var(--text-secondary)",
+            background: "rgba(255,255,255,0.02)",
+            border: "1px dashed var(--border)",
+            padding: "24px",
+            textAlign: "center",
           }}
         >
-          Run strategy analysis to see confidence breakdown
-        </p>
+          <p
+            style={{
+              fontFamily: "'IBM Plex Mono', monospace",
+              fontSize: 11,
+              color: "var(--text-secondary)",
+            }}
+          >
+            Run strategy analysis to see confidence breakdown
+          </p>
+        </div>
       </div>
     );
   }
 
   const metrics = [
-    { label: "Data Quality",    value: decomposition.data_quality },
+    { label: "Data Quality", value: decomposition.data_quality },
     { label: "Model Certainty", value: decomposition.model_certainty },
-    { label: "Stability",       value: decomposition.stability },
+    { label: "Stability", value: decomposition.stability },
   ];
 
   return (
     <Card
       style={{
-        border: "1px solid var(--border)",
-        background: "var(--carbon)",
-        borderRadius: 0,
+        background: "transparent",
         boxShadow: "none",
         position: "relative",
-        overflow: "hidden",
       }}
     >
-      <div style={{ padding: "16px" }}>
+      <div style={{ padding: "0" }}>
         {/* Header */}
         <div style={{ marginBottom: 16 }}>
           <div className="pm-panel-title">Confidence Analysis</div>
@@ -205,12 +207,22 @@ export const ConfidenceDecompositionCard: React.FC<ConfidenceDecompositionCardPr
               lineHeight: 1.5,
             }}
           >
-            {overallConfidence >= 70
-              ? <><span style={{ color: "var(--neon-green)", fontWeight: 600 }}>HIGH CONFIDENCE</span> — Strategy well-supported. Safe to execute immediately.</>
-              : overallConfidence >= 40
-              ? <><span style={{ color: "var(--amber)", fontWeight: 600 }}>MODERATE CONFIDENCE</span> — Good strategy. Consider alternatives.</>
-              : <><span style={{ color: "var(--f1-red)", fontWeight: 600 }}>LOW CONFIDENCE</span> — High uncertainty. Collect more telemetry.</>
-            }
+            {overallConfidence >= 70 ? (
+              <>
+                <span style={{ color: "var(--neon-green)", fontWeight: 600 }}>HIGH CONFIDENCE</span>{" "}
+                — Strategy well-supported. Safe to execute immediately.
+              </>
+            ) : overallConfidence >= 40 ? (
+              <>
+                <span style={{ color: "var(--amber)", fontWeight: 600 }}>MODERATE CONFIDENCE</span>{" "}
+                — Good strategy. Consider alternatives.
+              </>
+            ) : (
+              <>
+                <span style={{ color: "var(--f1-red)", fontWeight: 600 }}>LOW CONFIDENCE</span> —
+                High uncertainty. Collect more telemetry.
+              </>
+            )}
           </p>
         </div>
       </div>

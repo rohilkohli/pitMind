@@ -31,7 +31,7 @@ try:
     from .services.strategy_engine import predict_strategy
     from .services import redis_client
     from .services.cache_manager import get_cache_stats
-    from .services.logger import get_logger, RequestIDMiddleware, PerformanceTimer
+    from .services.logger import get_logger, RequestIDMiddleware
     from .middleware.error_handler import register_exception_handlers, ErrorTrackingMiddleware
     from .models import database as db
 except ImportError:
@@ -46,7 +46,7 @@ except ImportError:
     from services.strategy_engine import predict_strategy
     from services import redis_client
     from services.cache_manager import get_cache_stats
-    from services.logger import get_logger, RequestIDMiddleware, PerformanceTimer
+    from services.logger import get_logger, RequestIDMiddleware
     from middleware.error_handler import register_exception_handlers, ErrorTrackingMiddleware
     from models import database as db
 

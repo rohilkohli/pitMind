@@ -264,7 +264,7 @@ class TestWebSocketIntegration:
             mock_redis.expire.assert_called_once()
             
             # Disconnect
-            manager.disconnect(mock_ws, session_id)
+            await manager.disconnect(mock_ws, session_id)
             
             # Give async task time to complete
             await asyncio.sleep(0.1)

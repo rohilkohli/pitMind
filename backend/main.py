@@ -359,7 +359,7 @@ class ConnectionManager:
         
         logger.info(f"Client {connection_id} connected to session {session_id}. Active: {len(self.active_connections[session_id])}")
     
-    def disconnect(self, websocket: WebSocket, session_id: str):
+    async def disconnect(self, websocket: WebSocket, session_id: str):
         """Unregister a disconnected WebSocket."""
         # Get connection ID
         connection_id = self.connection_ids.get(websocket, "unknown")
@@ -372,14 +372,15 @@ class ConnectionManager:
                 pass
             if not self.active_connections[session_id]:
                 del self.active_connections[session_id]
-                del self.message_count[session_id]
+                if session_id in self.message_count:
+                    del self.message_count[session_id]
         
         # Remove from connection ID mapping
         if websocket in self.connection_ids:
             del self.connection_ids[websocket]
         
-        # Remove from Redis (fire and forget - don't await)
-        asyncio.create_task(redis_client.remove_websocket_connection(session_id, connection_id))
+        # Remove from Redis
+        await redis_client.remove_websocket_connection(session_id, connection_id)
         
         logger.info(f"Client {connection_id} disconnected from session {session_id}")
     
@@ -394,8 +395,10 @@ class ConnectionManager:
                 except Exception as e:
                     logger.error(f"Error broadcasting telemetry: {e}")
                     stale_connections.append(connection)
-            for stale in stale_connections:
-                self.disconnect(stale, session_id)
+
+            if stale_connections:
+                cleanup_tasks = [self.disconnect(stale, session_id) for stale in stale_connections]
+                await asyncio.gather(*cleanup_tasks)
     
     async def send_to_one(self, websocket: WebSocket, message: dict[str, Any]):
         """Send a message to a single client."""
@@ -499,10 +502,10 @@ async def websocket_telemetry_stream(websocket: WebSocket, session_id: str | Non
         # Run both handlers concurrently
         await asyncio.gather(receive_handler(), broadcast_handler())
     except WebSocketDisconnect:
-        manager.disconnect(websocket, session_id)
+        await manager.disconnect(websocket, session_id)
         logger.info(f"WebSocket closed for session {session_id}")
     except Exception as e:
-        manager.disconnect(websocket, session_id)
+        await manager.disconnect(websocket, session_id)
         logger.error(f"WebSocket error: {e}")
 
 

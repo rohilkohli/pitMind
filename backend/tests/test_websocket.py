@@ -97,7 +97,7 @@ class TestConnectionManager:
         session_id = "test-session-1"
         
         await connection_manager.connect(mock_websocket, session_id)
-        connection_manager.disconnect(mock_websocket, session_id)
+        await connection_manager.disconnect(mock_websocket, session_id)
         
         # Verify connection was removed
         assert session_id not in connection_manager.active_connections
@@ -115,7 +115,7 @@ class TestConnectionManager:
         await connection_manager.connect(mock_ws1, session_id)
         await connection_manager.connect(mock_ws2, session_id)
         
-        connection_manager.disconnect(mock_ws1, session_id)
+        await connection_manager.disconnect(mock_ws1, session_id)
         
         # Verify only one connection remains
         assert len(connection_manager.active_connections[session_id]) == 1
@@ -384,7 +384,7 @@ class TestWebSocketMessageCount:
         await connection_manager.connect(mock_websocket, session_id)
         await connection_manager.broadcast_telemetry(session_id, {"lap": 1})
         
-        connection_manager.disconnect(mock_websocket, session_id)
+        await connection_manager.disconnect(mock_websocket, session_id)
         
         # Verify message count was removed
         assert session_id not in connection_manager.message_count
@@ -400,7 +400,7 @@ class TestWebSocketConnectionCleanup:
         mock_ws = AsyncMock(spec=WebSocket)
         
         # Should not raise exception
-        connection_manager.disconnect(mock_ws, session_id)
+        await connection_manager.disconnect(mock_ws, session_id)
     
     @pytest.mark.asyncio
     async def test_disconnect_handles_missing_session(self, connection_manager, mock_websocket):
@@ -408,7 +408,7 @@ class TestWebSocketConnectionCleanup:
         session_id = "nonexistent-session"
         
         # Should not raise exception
-        connection_manager.disconnect(mock_websocket, session_id)
+        await connection_manager.disconnect(mock_websocket, session_id)
     
     @pytest.mark.asyncio
     async def test_broadcast_to_nonexistent_session(self, connection_manager):

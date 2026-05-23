@@ -41,12 +41,12 @@ const categories = [
 
 interface MarqueeRowProps {
   logos: string[];
-  direction?: "left" | "right";
-  duration?: number;
+
+
   opacity?: number;
 }
 
-const MarqueeRow: React.FC<MarqueeRowProps> = ({ logos, direction = "left", duration = 40, opacity = 0.5 }) => {
+const MarqueeRow: React.FC<MarqueeRowProps> = ({ logos, opacity = 0.5 }) => {
   return (
     <div className="pm-marquee-container">
       <div className="pm-marquee-track pm-static-track">

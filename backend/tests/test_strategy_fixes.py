@@ -1,11 +1,10 @@
 """Tests for strategy engine and granite integration fixes."""
 
 import pytest
-import asyncio
-from unittest.mock import patch, AsyncMock
+from unittest.mock import patch
 
-from backend.models.race_state import TelemetryPayload, LapPoint
-from backend.services.strategy_engine import build_recommendation, predict_strategy
+from models.race_state import TelemetryPayload, LapPoint
+from services.strategy_engine import build_recommendation, predict_strategy
 
 
 @pytest.mark.asyncio
@@ -68,7 +67,7 @@ async def test_strategy_recommendation_includes_all_fields():
 @pytest.mark.asyncio
 async def test_granite_fallback_chain():
     """BUG #6 FIX: Granite should try providers in correct order."""
-    from backend.services.granite import granite_generate
+    from services.granite import granite_generate
     
     # Mock all providers as unavailable
     with patch("backend.services.granite.get_settings") as mock_settings:

@@ -1,6 +1,5 @@
 import logging
 import os
-from typing import Any
 import pandas as pd
 try:
     from ..models.race_state import TelemetryPayload, LapPoint
@@ -12,7 +11,6 @@ logger = logging.getLogger(__name__)
 def is_fastf1_available() -> bool:
     """Check if the FastF1 library is installed and available."""
     try:
-        import fastf1
         return True
     except ImportError:
         return False

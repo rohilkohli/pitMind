@@ -11,13 +11,12 @@ This module tests:
 """
 
 import pytest
-import asyncio
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, patch
 from datetime import datetime
 from fastapi import WebSocket
 from fastapi.testclient import TestClient
 
-from backend.main import app, ConnectionManager, manager
+from main import app, ConnectionManager
 
 
 @pytest.fixture

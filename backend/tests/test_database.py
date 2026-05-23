@@ -15,8 +15,8 @@ from unittest.mock import AsyncMock, MagicMock, patch
 from sqlalchemy.exc import SQLAlchemyError, OperationalError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from backend.models import database as db
-from backend.models.audit_log import AuditLog
+from models import database as db
+from models.audit_log import AuditLog
 
 
 @pytest.fixture
@@ -519,7 +519,7 @@ class TestDatabaseConnectionPooling:
             mock_engine = AsyncMock()
             mock_create.return_value = mock_engine
             
-            engine = db.get_engine()
+            db.get_engine()
             
             # Verify pool configuration was passed
             call_kwargs = mock_create.call_args[1]
@@ -542,7 +542,7 @@ class TestDatabaseConnectionPooling:
             mock_factory = MagicMock()
             mock_sessionmaker.return_value = mock_factory
             
-            factory = db.get_session_factory()
+            db.get_session_factory()
             
             # Verify session configuration
             call_kwargs = mock_sessionmaker.call_args[1]

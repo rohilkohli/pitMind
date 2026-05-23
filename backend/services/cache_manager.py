@@ -21,13 +21,11 @@ from typing import Any, Optional
 try:
     from ..config import get_settings
     from ..models.race_state import TelemetryPayload
-    from ..models.strategy import StrategyRecommendation
-    from .redis_client import cache_get, cache_set, cache_delete, redis_operation
+    from .redis_client import cache_get, cache_set, redis_operation
 except ImportError:
     from config import get_settings
     from models.race_state import TelemetryPayload
-    from models.strategy import StrategyRecommendation
-    from services.redis_client import cache_get, cache_set, cache_delete, redis_operation
+    from services.redis_client import cache_get, cache_set, redis_operation
 
 logger = logging.getLogger(__name__)
 

@@ -78,7 +78,7 @@ class RaceSession(Base):
     )
     
     # Metadata (stored as JSON)
-    metadata: Mapped[dict[str, Any] | None] = mapped_column(
+    session_metadata: Mapped[dict[str, Any] | None] = mapped_column(
         JSON,
         nullable=True,
         comment="Additional session metadata (track, weather, etc.)"
@@ -129,7 +129,7 @@ class RaceSession(Base):
             "start_time": self.start_time.isoformat() if self.start_time else None,
             "end_time": self.end_time.isoformat() if self.end_time else None,
             "status": self.status.value,
-            "metadata": self.metadata,
+            "session_metadata": self.session_metadata,
             "active_connections": self.active_connections,
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "updated_at": self.updated_at.isoformat() if self.updated_at else None,

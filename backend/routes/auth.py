@@ -1,7 +1,3 @@
-import logging
-import jwt
-import os
-
 from fastapi import APIRouter, HTTPException, Header, Depends
 try:
     from firebase_admin import auth as firebase_auth
@@ -10,6 +6,9 @@ except ImportError:
 
 router = APIRouter(prefix="/api/v1/auth", tags=["auth"])
 
+import logging
+import jwt
+import os
 
 logger = logging.getLogger(__name__)
 

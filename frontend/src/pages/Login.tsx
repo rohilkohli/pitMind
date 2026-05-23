@@ -56,9 +56,9 @@ const PitMindLogo = () => (
 
 const features = [
   { label: "Live Strategy", desc: "Engineer-grade recommendations in real time" },
-  { label: "AI Trace", desc: "Structured reasoning and explainable evidence" },
-  { label: "Fan Mode", desc: "Public-facing live race narrative" },
-  { label: "Telemetry", desc: "FastF1-powered lap data analysis" },
+  { label: "AI Trace",      desc: "Structured reasoning and explainable evidence" },
+  { label: "Fan Mode",      desc: "Public-facing live race narrative" },
+  { label: "Telemetry",     desc: "FastF1-powered lap data analysis" },
 ];
 
 export function Login() {
@@ -70,9 +70,7 @@ export function Login() {
     setLoading(true);
     try {
       if (!auth) {
-        setError(
-          "Firebase auth is not configured. Set VITE_FIREBASE_API_KEY and related Firebase env vars.",
-        );
+        setError("Firebase auth is not configured. Set VITE_FIREBASE_API_KEY and related Firebase env vars.");
         return;
       }
       await signInWithPopup(auth, googleProvider);
@@ -143,9 +141,7 @@ export function Login() {
               gap: 8,
             }}
           >
-            <span
-              style={{ width: 16, height: 1, background: "var(--f1-red)", display: "inline-block" }}
-            />
+            <span style={{ width: 16, height: 1, background: "var(--f1-red)", display: "inline-block" }} />
             Engineer Portal
           </div>
 
@@ -187,8 +183,7 @@ export function Login() {
               marginBottom: 32,
             }}
           >
-            Authenticate with Google to access the live strategy workspace, simulation tools, and
-            explanation trace.
+            Authenticate with Google to access the live strategy workspace, simulation tools, and explanation trace.
           </p>
 
           {/* Feature list — red left-border accent lines */}

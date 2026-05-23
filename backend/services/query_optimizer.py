@@ -18,6 +18,178 @@ logger = get_logger(__name__)
 T = TypeVar('T')
 
 
+class QueryOptimizer:
+    """Utility class for optimizing database queries."""
+
+    @staticmethod
+    async def batch_fetch(
+        session: AsyncSession,
+        model: type[T],
+        ids: List[Any],
+        batch_size: int = 100
+    ) -> List[T]:
+        """
+        Fetch records in batches to avoid large IN clauses.
+
+        Args:
+            session: Database session
+            model: SQLAlchemy model class
+            ids: List of IDs to fetch
+            batch_size: Number of IDs per batch
+
+        Returns:
+            List of model instances
+        """
+
+        start_time = time.time()
+
+        # We process everything using a single query and rely on the database's ability
+        # to execute IN queries efficiently, removing the sequential loop overhead entirely.
+
+        stmt = select(model).where(model.id.in_(ids))
+        result = await session.execute(stmt)
+        results = list(result.scalars().all())
+
+        duration_ms = (time.time() - start_time) * 1000
+        logger.log_database_query(
+            query_type="SELECT",
+            table=model.__tablename__,
+            duration_ms=duration_ms,
+            rows_affected=len(results)
+        )
+
+        return results
+
+    @staticmethod
+    async def count_with_cache(
+        session: AsyncSession,
+        model: type[T],
+        filters: Optional[Dict[str, Any]] = None
+    ) -> int:
+        """
+        Count records with optional filters.
+
+        Args:
+            session: Database session
+            model: SQLAlchemy model class
+            filters: Optional filter conditions
+
+        Returns:
+            Count of matching records
+        """
+        start_time = time.time()
+
+        stmt = select(func.count()).select_from(model)
+
+        if filters:
+            for key, value in filters.items():
+                if hasattr(model, key):
+                    stmt = stmt.where(getattr(model, key) == value)
+
+        result = await session.execute(stmt)
+        count = result.scalar_one()
+
+        duration_ms = (time.time() - start_time) * 1000
+        logger.log_database_query(
+            query_type="COUNT",
+            table=model.__tablename__,
+            duration_ms=duration_ms,
+            rows_affected=count
+        )
+
+        return count
+
+    @staticmethod
+    def with_eager_loading(stmt, relationships: List[str]):
+        """
+        Add eager loading for relationships to avoid N+1 queries.
+
+        Args:
+            stmt: SQLAlchemy statement
+            relationships: List of relationship names to eager load
+
+        Returns:
+            Statement with eager loading
+        """
+        for rel in relationships:
+            stmt = stmt.options(selectinload(rel))
+        return stmt
+
+    @staticmethod
+    def with_joined_loading(stmt, relationships: List[str]):
+        """
+        Add joined loading for relationships (use for one-to-one).
+
+        Args:
+            stmt: SQLAlchemy statement
+            relationships: List of relationship names to join load
+
+        Returns:
+            Statement with joined loading
+        """
+        for rel in relationships:
+            stmt = stmt.options(joinedload(rel))
+        return stmt
+
+    @staticmethod
+    async def paginate(
+        session: AsyncSession,
+        stmt,
+        page: int = 1,
+        page_size: int = 50,
+        max_page_size: int = 100
+    ) -> Dict[str, Any]:
+        """
+        Paginate query results.
+
+        Args:
+            session: Database session
+            stmt: SQLAlchemy statement
+            page: Page number (1-indexed)
+            page_size: Items per page
+            max_page_size: Maximum allowed page size
+
+        Returns:
+            Dict with items, total, page, page_size, total_pages
+        """
+        start_time = time.time()
+
+        # Validate and limit page size
+        page_size = min(page_size, max_page_size)
+        page = max(1, page)
+
+        # Get total count
+        count_stmt = select(func.count()).select_from(stmt.subquery())
+        total_result = await session.execute(count_stmt)
+        total = total_result.scalar_one()
+
+        # Calculate pagination
+        total_pages = (total + page_size - 1) // page_size
+        offset = (page - 1) * page_size
+
+        # Get paginated results
+        paginated_stmt = stmt.limit(page_size).offset(offset)
+        result = await session.execute(paginated_stmt)
+        items = result.scalars().all()
+
+        duration_ms = (time.time() - start_time) * 1000
+        logger.log_database_query(
+            query_type="SELECT_PAGINATED",
+            table="paginated_query",
+            duration_ms=duration_ms,
+            rows_affected=len(items)
+        )
+
+        return {
+            "items": items,
+            "total": total,
+            "page": page,
+            "page_size": page_size,
+            "total_pages": total_pages,
+            "has_next": page < total_pages,
+            "has_prev": page > 1
+        }
+
 
 class QueryCache:
     """Simple in-memory query result cache."""

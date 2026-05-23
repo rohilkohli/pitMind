@@ -27,10 +27,7 @@ export function initFirebaseFromEnv(): Database | null {
 
 export type LiveSample = { lap: number; lap_time_s: number; tyre_wear_pct: number };
 
-export function subscribeLiveTelemetry(
-  path: string,
-  cb: (v: LiveSample | null) => void,
-): () => void {
+export function subscribeLiveTelemetry(path: string, cb: (v: LiveSample | null) => void): () => void {
   const database = initFirebaseFromEnv();
   if (!database) {
     cb(null);

@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { Share2, Copy, Check } from "lucide-react";
+import React, { useState } from 'react';
+import { Share2, Copy, Check } from 'lucide-react';
 
 interface ShareButtonProps {
   onCopyUrl: () => Promise<boolean>;
@@ -168,8 +168,7 @@ export const ShareButton: React.FC<ShareButtonProps> = ({ onCopyUrl, getShareUrl
                 lineHeight: "1.4",
               }}
             >
-              Share this URL with your team to show them your current strategy view, telemetry, and
-              live metrics.
+              Share this URL with your team to show them your current strategy view, telemetry, and live metrics.
             </p>
 
             {/* Quick close option */}
@@ -208,7 +207,12 @@ export const ShareButton: React.FC<ShareButtonProps> = ({ onCopyUrl, getShareUrl
       )}
 
       {/* Click outside to close */}
-      {isOpen && <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} />}
+      {isOpen && (
+        <div
+          className="fixed inset-0 z-40"
+          onClick={() => setIsOpen(false)}
+        />
+      )}
     </div>
   );
 };

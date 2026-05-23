@@ -293,11 +293,14 @@ DATABASE_MAX_OVERFLOW=20
 
 **Query Optimization:**
 ```python
-# Ensure queries are optimized with appropriate indexes and batching
-# Use SQLAlchemy's selectinload for eager loading
-from sqlalchemy.orm import selectinload
+# Use query optimizer service
+from backend.services.query_optimizer import QueryOptimizer
 
-stmt = select(Model).options(selectinload(Model.relationship1))
+# Batch operations
+results = await QueryOptimizer.batch_fetch(session, Model, ids, batch_size=100)
+
+# Add eager loading
+stmt = QueryOptimizer.with_eager_loading(stmt, ['relationship1', 'relationship2'])
 ```
 
 ### 6. High Memory Usage

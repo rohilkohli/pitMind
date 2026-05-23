@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import type { RaceState } from "../../hooks/useFirebaseRaceState";
 
 const MONACO_PATH = `
@@ -70,7 +69,14 @@ function MonacoCircuitSVG({ drivers }: { drivers: any[] }) {
         LOEWS
       </text>
       {/* Start/finish line */}
-      <line x1="120" y1="370" x2="120" y2="380" stroke="#39FF14" strokeWidth="4" />
+      <line
+        x1="120"
+        y1="370"
+        x2="120"
+        y2="380"
+        stroke="#39FF14"
+        strokeWidth="4"
+      />
       <text
         x="90"
         y="375"
@@ -87,11 +93,23 @@ function MonacoCircuitSVG({ drivers }: { drivers: any[] }) {
         // Average lap time ~80s. Delay animation based on their gap to the leader.
         // For realistic simulation, we take their actual gap in seconds.
         // If it's missing, we provide a default stagger.
-        const gap = driver.gap_leader_s ?? i * 2.5;
+        const gap = driver.gap_leader_s ?? (i * 2.5);
         return (
           <g key={driver.driver}>
-            <circle r="6" fill={driver.team_color || "#888"} stroke="#fff" strokeWidth="2" />
-            <rect x="-12" y="-18" width="24" height="10" rx="2" fill="rgba(0,0,0,0.8)" />
+            <circle
+              r="6"
+              fill={driver.team_color || "#888"}
+              stroke="#fff"
+              strokeWidth="2"
+            />
+            <rect
+              x="-12"
+              y="-18"
+              width="24"
+              height="10"
+              rx="2"
+              fill="rgba(0,0,0,0.8)"
+            />
             <text
               x="0"
               y="-10"
@@ -103,7 +121,11 @@ function MonacoCircuitSVG({ drivers }: { drivers: any[] }) {
             >
               {driver.driver.slice(0, 3).toUpperCase()}
             </text>
-            <animateMotion dur="80s" repeatCount="indefinite" begin={`-${gap}s`}>
+            <animateMotion
+              dur="80s"
+              repeatCount="indefinite"
+              begin={`-${gap}s`}
+            >
               <mpath href="#monaco-track-path" />
             </animateMotion>
           </g>

@@ -1,6 +1,7 @@
 import * as Resizable from "react-resizable-panels";
 const { Separator } = Resizable;
 
+
 interface ResizeHandleProps {
   direction?: "horizontal" | "vertical";
   className?: string;
@@ -18,20 +19,14 @@ export function ResizeHandle({ direction = "horizontal", className = "", id }: R
       } ${className}`}
     >
       {/* The visible line */}
-      <div
-        className={`absolute bg-f1-border group-hover:bg-f1-red transition-all duration-300 ${
-          direction === "horizontal"
-            ? "w-[1px] group-hover:w-[2px] h-12"
-            : "h-[1px] group-hover:h-[2px] w-12"
-        }`}
-      />
+      <div className={`absolute bg-f1-border group-hover:bg-f1-red transition-all duration-300 ${
+        direction === "horizontal" ? "w-[1px] group-hover:w-[2px] h-12" : "h-[1px] group-hover:h-[2px] w-12"
+      }`} />
 
       {/* Subtle background glow on hover */}
-      <div
-        className={`absolute bg-f1-red/0 group-hover:bg-f1-red/5 transition-all duration-300 ${
-          direction === "horizontal" ? "w-full h-full" : "h-full w-full"
-        }`}
-      />
+      <div className={`absolute bg-f1-red/0 group-hover:bg-f1-red/5 transition-all duration-300 ${
+        direction === "horizontal" ? "w-full h-full" : "h-full w-full"
+      }`} />
     </Separator>
   );
 }

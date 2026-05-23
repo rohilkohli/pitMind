@@ -1,14 +1,14 @@
-import React, { useState } from "react";
+import React, { useState } from 'react';
 
 export interface RaceEvent {
   id: string;
-  type: "safety_car" | "vsc" | "flag" | "incident" | "pit_stop" | "weather" | "gap_spike";
+  type: 'safety_car' | 'vsc' | 'flag' | 'incident' | 'pit_stop' | 'weather' | 'gap_spike';
   lap: number;
   time: string; // HH:MM:SS
   driver?: string;
   title: string;
   description: string;
-  severity?: "critical" | "warning" | "info";
+  severity?: 'critical' | 'warning' | 'info';
 }
 
 interface EventTimelineProps {
@@ -19,110 +19,95 @@ interface EventTimelineProps {
 // Mock race events for demo
 const MOCK_EVENTS: RaceEvent[] = [
   {
-    id: "1",
-    type: "incident",
+    id: '1',
+    type: 'incident',
     lap: 5,
-    time: "00:12:34",
-    driver: "Verstappen",
-    title: "Turn 3 Lock-up",
-    description: "Max ran wide at Turn 3 losing 0.3s to Leclerc",
-    severity: "warning",
+    time: '00:12:34',
+    driver: 'Verstappen',
+    title: 'Turn 3 Lock-up',
+    description: 'Max ran wide at Turn 3 losing 0.3s to Leclerc',
+    severity: 'warning',
   },
   {
-    id: "2",
-    type: "pit_stop",
+    id: '2',
+    type: 'pit_stop',
     lap: 12,
-    time: "00:28:45",
-    driver: "Leclerc",
-    title: "Ferrari P-Stop",
-    description: "Leclerc pit stop: 2.1s (soft → hard)",
-    severity: "info",
+    time: '00:28:45',
+    driver: 'Leclerc',
+    title: 'Ferrari P-Stop',
+    description: 'Leclerc pit stop: 2.1s (soft → hard)',
+    severity: 'info',
   },
   {
-    id: "3",
-    type: "gap_spike",
+    id: '3',
+    type: 'gap_spike',
     lap: 15,
-    time: "00:35:12",
-    title: "Gap Volatility Spike",
-    description: "Leader-P2 gap jumped +0.5s in 2 laps, tyre temp likely cause",
-    severity: "warning",
+    time: '00:35:12',
+    title: 'Gap Volatility Spike',
+    description: 'Leader-P2 gap jumped +0.5s in 2 laps, tyre temp likely cause',
+    severity: 'warning',
   },
   {
-    id: "4",
-    type: "safety_car",
+    id: '4',
+    type: 'safety_car',
     lap: 18,
-    time: "00:41:23",
-    title: "Safety Car Deployed",
-    description: "SC for debris at Turn 8, bunched field",
-    severity: "critical",
+    time: '00:41:23',
+    title: 'Safety Car Deployed',
+    description: 'SC for debris at Turn 8, bunched field',
+    severity: 'critical',
   },
   {
-    id: "5",
-    type: "pit_stop",
+    id: '5',
+    type: 'pit_stop',
     lap: 20,
-    time: "00:46:18",
-    driver: "Verstappen",
-    title: "Red Bull P-Stop",
-    description: "Verstappen pit stop: 1.9s (soft → hard)",
-    severity: "info",
+    time: '00:46:18',
+    driver: 'Verstappen',
+    title: 'Red Bull P-Stop',
+    description: 'Verstappen pit stop: 1.9s (soft → hard)',
+    severity: 'info',
   },
   {
-    id: "6",
-    type: "weather",
+    id: '6',
+    type: 'weather',
     lap: 25,
-    time: "00:55:34",
-    title: "Track Temp Rise",
-    description: "Track temperature increased to 32°C, soft tyres advantaged",
-    severity: "info",
+    time: '00:55:34',
+    title: 'Track Temp Rise',
+    description: 'Track temperature increased to 32°C, soft tyres advantaged',
+    severity: 'info',
   },
 ];
 
-const getDotColor = (type: RaceEvent["type"]): string => {
+const getDotColor = (type: RaceEvent['type']): string => {
   switch (type) {
-    case "pit_stop":
-      return "#39FF14";
-    case "safety_car":
-    case "vsc":
-      return "#ffd200";
-    case "gap_spike":
-    case "incident":
-      return "#E8002D";
-    default:
-      return "#888890";
+    case 'pit_stop':   return '#39FF14';
+    case 'safety_car':
+    case 'vsc':        return '#ffd200';
+    case 'gap_spike':
+    case 'incident':   return '#E8002D';
+    default:           return '#888890';
   }
 };
 
-const getTagClass = (type: RaceEvent["type"]): string => {
+const getTagClass = (type: RaceEvent['type']): string => {
   switch (type) {
-    case "pit_stop":
-      return "pm-tl-event-tag pm-tag-pstop";
-    case "safety_car":
-    case "vsc":
-      return "pm-tl-event-tag pm-tag-sc";
-    case "gap_spike":
-    case "incident":
-      return "pm-tl-event-tag pm-tag-gap";
-    default:
-      return "pm-tl-event-tag pm-tag-track";
+    case 'pit_stop':   return 'pm-tl-event-tag pm-tag-pstop';
+    case 'safety_car':
+    case 'vsc':        return 'pm-tl-event-tag pm-tag-sc';
+    case 'gap_spike':
+    case 'incident':   return 'pm-tl-event-tag pm-tag-gap';
+    default:           return 'pm-tl-event-tag pm-tag-track';
   }
 };
 
-const getTagLabel = (type: RaceEvent["type"]): string => {
+const getTagLabel = (type: RaceEvent['type']): string => {
   switch (type) {
-    case "pit_stop":
-      return "P-STOP";
-    case "safety_car":
-      return "SC";
-    case "vsc":
-      return "VSC";
-    case "gap_spike":
-      return "CRITICAL";
-    case "incident":
-      return "INCIDENT";
-    case "weather":
-      return "TRACK";
-    default:
-      return type.toUpperCase();
+    case 'pit_stop':   return 'P-STOP';
+    case 'safety_car': return 'SC';
+    case 'vsc':        return 'VSC';
+    case 'gap_spike':  return 'CRITICAL';
+    case 'incident':   return 'INCIDENT';
+    case 'weather':    return 'TRACK';
+    default:           return type.toUpperCase();
   }
 };
 
@@ -190,7 +175,7 @@ export const EventTimeline: React.FC<EventTimelineProps> = ({
               fontWeight: 700,
               fontSize: "9px",
               letterSpacing: "0.15em",
-              textTransform: "uppercase",
+              textTransform: "uppercase"
             }}
           >
             EVENTS {events.length}
@@ -203,10 +188,10 @@ export const EventTimeline: React.FC<EventTimelineProps> = ({
               fontWeight: 700,
               fontSize: "9px",
               letterSpacing: "0.15em",
-              textTransform: "uppercase",
+              textTransform: "uppercase"
             }}
           >
-            CRITICAL {events.filter((e) => e.severity === "critical").length}
+            CRITICAL {events.filter((e) => e.severity === 'critical').length}
           </span>
           <span
             className="pm-panel-badge pm-badge-live"
@@ -216,10 +201,10 @@ export const EventTimeline: React.FC<EventTimelineProps> = ({
               fontWeight: 700,
               fontSize: "9px",
               letterSpacing: "0.15em",
-              textTransform: "uppercase",
+              textTransform: "uppercase"
             }}
           >
-            PIT STOPS {events.filter((e) => e.type === "pit_stop").length}
+            PIT STOPS {events.filter((e) => e.type === 'pit_stop').length}
           </span>
         </div>
       </div>
@@ -267,7 +252,7 @@ export const EventTimeline: React.FC<EventTimelineProps> = ({
                       fontWeight: 700,
                       fontSize: "9px",
                       letterSpacing: "0.15em",
-                      textTransform: "uppercase",
+                      textTransform: "uppercase"
                     }}
                   >
                     {getTagLabel(event.type)}
@@ -285,7 +270,7 @@ export const EventTimeline: React.FC<EventTimelineProps> = ({
                         fontWeight: 700,
                         fontSize: "9px",
                         letterSpacing: "0.15em",
-                        textTransform: "uppercase",
+                        textTransform: "uppercase"
                       }}
                     >
                       {event.driver.slice(0, 3).toUpperCase()}

@@ -56,7 +56,7 @@ export function useFirebaseRaceState(raceId: string = "current_race") {
         console.error("Firebase DB error:", err);
         setError(err);
         setLoading(false);
-      },
+      }
     );
 
     return () => {

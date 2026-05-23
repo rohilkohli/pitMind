@@ -24,7 +24,7 @@ try:
         reset_cache_stats,
         warm_cache_for_scenario,
     )
-    from ..services.cache_invalidator import cache_invalidator
+    from ..services.cache_invalidator import get_cache_invalidator
 except ImportError:
     from models.race_state import TelemetryPayload
     from models.strategy import FastF1Request, StrategyCommitRequest, StrategyCommitResponse
@@ -42,7 +42,7 @@ except ImportError:
         reset_cache_stats,
         warm_cache_for_scenario,
     )
-    from services.cache_invalidator import cache_invalidator
+    from services.cache_invalidator import get_cache_invalidator
 
 logger = logging.getLogger(__name__)
 
@@ -447,7 +447,8 @@ async def handle_race_condition(
                 detail=f"Invalid race condition. Must be one of: {[c.value for c in RaceCondition]}"
             )
         
-        invalidated = await cache_invalidator.on_race_condition(
+        invalidator = get_cache_invalidator()
+        invalidated = await invalidator.on_race_condition(
             race_condition,
             session_id,
             driver,
@@ -492,7 +493,8 @@ async def get_invalidation_log(
     try:
         limit = min(limit, 100)
         
-        events = cache_invalidator.get_invalidation_log(limit)
+        invalidator = get_cache_invalidator()
+        events = invalidator.get_invalidation_log(limit)
         
         return {
             "total": len(events),

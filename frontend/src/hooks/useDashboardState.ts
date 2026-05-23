@@ -1,5 +1,5 @@
-import { useCallback, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useCallback, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 export interface DashboardState {
   driverFilter?: string;
@@ -20,35 +20,35 @@ export function encodeDashboardState(state: DashboardState): string {
   const params = new URLSearchParams();
 
   if (state.driverFilter) {
-    params.set("driver", state.driverFilter);
+    params.set('driver', state.driverFilter);
   }
 
   if (state.lapRange) {
-    params.set("laps", `${state.lapRange[0]}-${state.lapRange[1]}`);
+    params.set('laps', `${state.lapRange[0]}-${state.lapRange[1]}`);
   }
 
   if (state.strategyFilters) {
     if (state.strategyFilters.minConfidence !== undefined) {
-      params.set("minConf", String(state.strategyFilters.minConfidence));
+      params.set('minConf', String(state.strategyFilters.minConfidence));
     }
     if (state.strategyFilters.showAlternatives !== undefined) {
-      params.set("showAlt", String(state.strategyFilters.showAlternatives));
+      params.set('showAlt', String(state.strategyFilters.showAlternatives));
     }
     if (state.strategyFilters.compoundFilter?.length) {
-      params.set("compounds", state.strategyFilters.compoundFilter.join(","));
+      params.set('compounds', state.strategyFilters.compoundFilter.join(','));
     }
   }
 
   if (state.selectedMetrics?.length) {
-    params.set("metrics", state.selectedMetrics.join(","));
+    params.set('metrics', state.selectedMetrics.join(','));
   }
 
   if (state.timeFilter) {
-    params.set("time", state.timeFilter);
+    params.set('time', state.timeFilter);
   }
 
   const queryString = params.toString();
-  return queryString ? `?${queryString}` : "";
+  return queryString ? `?${queryString}` : '';
 }
 
 /**
@@ -58,34 +58,34 @@ export function decodeDashboardState(queryString: string): DashboardState {
   const params = new URLSearchParams(queryString);
   const state: DashboardState = {};
 
-  const driver = params.get("driver");
+  const driver = params.get('driver');
   if (driver) state.driverFilter = driver;
 
-  const laps = params.get("laps");
+  const laps = params.get('laps');
   if (laps) {
-    const [start, end] = laps.split("-").map(Number);
+    const [start, end] = laps.split('-').map(Number);
     if (!isNaN(start) && !isNaN(end)) {
       state.lapRange = [start, end];
     }
   }
 
-  const minConf = params.get("minConf");
-  const showAlt = params.get("showAlt");
-  const compounds = params.get("compounds");
+  const minConf = params.get('minConf');
+  const showAlt = params.get('showAlt');
+  const compounds = params.get('compounds');
 
   if (minConf || showAlt || compounds) {
     state.strategyFilters = {};
     if (minConf) state.strategyFilters.minConfidence = Number(minConf);
-    if (showAlt) state.strategyFilters.showAlternatives = showAlt === "true";
-    if (compounds) state.strategyFilters.compoundFilter = compounds.split(",");
+    if (showAlt) state.strategyFilters.showAlternatives = showAlt === 'true';
+    if (compounds) state.strategyFilters.compoundFilter = compounds.split(',');
   }
 
-  const metrics = params.get("metrics");
+  const metrics = params.get('metrics');
   if (metrics) {
-    state.selectedMetrics = metrics.split(",");
+    state.selectedMetrics = metrics.split(',');
   }
 
-  const time = params.get("time");
+  const time = params.get('time');
   if (time) state.timeFilter = time;
 
   return state;
@@ -105,17 +105,14 @@ export function useDashboardState(initialState: DashboardState = {}) {
   });
 
   // Sync state to URL whenever it changes
-  const updateState = useCallback(
-    (newState: DashboardState | ((prev: DashboardState) => DashboardState)) => {
-      setState((prev) => {
-        const updated = typeof newState === "function" ? newState(prev) : newState;
-        const queryString = encodeDashboardState(updated);
-        navigate({ search: queryString }, { replace: true });
-        return updated;
-      });
-    },
-    [navigate],
-  );
+  const updateState = useCallback((newState: DashboardState | ((prev: DashboardState) => DashboardState)) => {
+    setState((prev) => {
+      const updated = typeof newState === 'function' ? newState(prev) : newState;
+      const queryString = encodeDashboardState(updated);
+      navigate({ search: queryString }, { replace: true });
+      return updated;
+    });
+  }, [navigate]);
 
   // Generate shareable URL
   const getShareableUrl = useCallback((): string => {
@@ -130,7 +127,7 @@ export function useDashboardState(initialState: DashboardState = {}) {
       await navigator.clipboard.writeText(getShareableUrl());
       return true;
     } catch (err) {
-      console.error("Failed to copy URL:", err);
+      console.error('Failed to copy URL:', err);
       return false;
     }
   }, [getShareableUrl]);

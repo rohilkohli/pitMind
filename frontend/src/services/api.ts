@@ -24,7 +24,7 @@ import type {
   FanStatusResponse,
   AuditHistoryResponse,
   AuditHistoryParams,
-} from "../types/api";
+} from '../types/api';
 
 // Re-export types for backward compatibility
 export type {
@@ -47,7 +47,7 @@ export type {
   DriverCompareResponse,
   AuditHistoryResponse,
   AuditHistoryParams,
-} from "../types/api";
+} from '../types/api';
 
 const BASE = import.meta.env.VITE_API_BASE_URL?.replace(/\/$/, "") ?? "";
 
@@ -89,7 +89,7 @@ async function handleResponse<T>(response: Response): Promise<T> {
  */
 export async function postRecommend(
   payload: TelemetryPayload,
-  token?: string,
+  token?: string
 ): Promise<StrategyRecommendation> {
   const response = await fetch(`${BASE}/api/v1/strategy/recommend`, {
     method: "POST",
@@ -106,7 +106,10 @@ export async function postRecommend(
  * @param token - Optional authentication token
  * @returns Parsed telemetry payload
  */
-export async function uploadTelemetry(file: File, token?: string): Promise<TelemetryPayload> {
+export async function uploadTelemetry(
+  file: File,
+  token?: string
+): Promise<TelemetryPayload> {
   const formData = new FormData();
   formData.append("file", file);
 
@@ -127,7 +130,7 @@ export async function uploadTelemetry(file: File, token?: string): Promise<Telem
  */
 export async function postLoadFastF1(
   request: FastF1Request,
-  token?: string,
+  token?: string
 ): Promise<TelemetryPayload> {
   const response = await fetch(`${BASE}/api/v1/strategy/fastf1/load`, {
     method: "POST",
@@ -146,7 +149,7 @@ export async function postLoadFastF1(
  */
 export async function postCommitStrategy(
   request: StrategyCommitRequest,
-  token?: string,
+  token?: string
 ): Promise<StrategyCommitResponse> {
   const response = await fetch(`${BASE}/api/v1/strategy/commit`, {
     method: "POST",
@@ -165,7 +168,7 @@ export async function postCommitStrategy(
  */
 export async function postCompareDrivers(
   request: DriverCompareRequest,
-  token?: string,
+  token?: string
 ): Promise<DriverCompareResponse> {
   const response = await fetch(`${BASE}/api/v1/compare/drivers`, {
     method: "POST",
@@ -184,15 +187,15 @@ export async function postCompareDrivers(
  */
 export async function getAuditHistory(
   params: AuditHistoryParams = {},
-  token?: string,
+  token?: string
 ): Promise<AuditHistoryResponse> {
   const queryParams = new URLSearchParams();
-  if (params.session_id) queryParams.append("session_id", params.session_id);
-  if (params.driver) queryParams.append("driver", params.driver);
-  if (params.limit) queryParams.append("limit", params.limit.toString());
-  if (params.offset) queryParams.append("offset", params.offset.toString());
+  if (params.session_id) queryParams.append('session_id', params.session_id);
+  if (params.driver) queryParams.append('driver', params.driver);
+  if (params.limit) queryParams.append('limit', params.limit.toString());
+  if (params.offset) queryParams.append('offset', params.offset.toString());
 
-  const url = `${BASE}/api/v1/strategy/audit/history${queryParams.toString() ? "?" + queryParams.toString() : ""}`;
+  const url = `${BASE}/api/v1/strategy/audit/history${queryParams.toString() ? '?' + queryParams.toString() : ''}`;
   const response = await fetch(url, {
     method: "GET",
     headers: buildHeaders(token, false),
@@ -215,7 +218,7 @@ export async function getAuditHistory(
 export async function postChat(
   messages: ChatMessage[],
   telemetryContext?: Record<string, unknown>,
-  token?: string,
+  token?: string
 ): Promise<ChatResponse> {
   const request: ChatRequest = {
     messages,
@@ -237,7 +240,10 @@ export async function postChat(
  * @param token - Optional authentication token
  * @returns AI-generated debrief report in markdown
  */
-export async function uploadDebrief(file: File, token?: string): Promise<DebriefResponse> {
+export async function uploadDebrief(
+  file: File,
+  token?: string
+): Promise<DebriefResponse> {
   const formData = new FormData();
   formData.append("file", file);
 
@@ -271,7 +277,9 @@ export async function getFanStatus(): Promise<FanStatusResponse> {
  * @param request - Fan prediction parameters
  * @returns Prediction narrative and outcome
  */
-export async function postFanPredict(request: FanPredictRequest): Promise<FanPredictResponse> {
+export async function postFanPredict(
+  request: FanPredictRequest
+): Promise<FanPredictResponse> {
   const response = await fetch(`${BASE}/api/v1/fan/predict`, {
     method: "POST",
     headers: buildHeaders(undefined),

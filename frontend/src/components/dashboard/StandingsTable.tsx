@@ -36,21 +36,21 @@ export function StandingsTable({ standings }: { standings: DriverState[] | undef
 
   const getTyreClass = (compound: string): string => {
     const c = compound.toUpperCase();
-    if (c === "SOFT") return "pm-tyre-s";
-    if (c === "MEDIUM") return "pm-tyre-m";
-    if (c === "HARD") return "pm-tyre-h";
+    if (c === "SOFT")         return "pm-tyre-s";
+    if (c === "MEDIUM")       return "pm-tyre-m";
+    if (c === "HARD")         return "pm-tyre-h";
     if (c === "INTERMEDIATE") return "pm-tyre-i";
-    if (c === "WET") return "pm-tyre-w";
+    if (c === "WET")          return "pm-tyre-w";
     return "pm-tyre-m";
   };
 
   const getTyreAbbr = (compound: string): string => {
     const c = compound.toUpperCase();
-    if (c === "SOFT") return "S";
-    if (c === "MEDIUM") return "M";
-    if (c === "HARD") return "H";
+    if (c === "SOFT")         return "S";
+    if (c === "MEDIUM")       return "M";
+    if (c === "HARD")         return "H";
     if (c === "INTERMEDIATE") return "I";
-    if (c === "WET") return "W";
+    if (c === "WET")          return "W";
     return compound[0] ?? "M";
   };
 
@@ -76,7 +76,7 @@ export function StandingsTable({ standings }: { standings: DriverState[] | undef
             fontSize: "9px",
             letterSpacing: "0.15em",
             textTransform: "uppercase",
-            borderRadius: 0,
+            borderRadius: 0
           }}
         >
           LIVE
@@ -88,7 +88,9 @@ export function StandingsTable({ standings }: { standings: DriverState[] | undef
         {standings.map((driver) => (
           <div key={driver.driver} className="pm-standing-row">
             {/* Position */}
-            <span className={`pm-pos ${driver.position === 1 ? "p1" : ""}`}>{driver.position}</span>
+            <span className={`pm-pos ${driver.position === 1 ? "p1" : ""}`}>
+              {driver.position}
+            </span>
 
             {/* Team color bar */}
             <div
@@ -104,21 +106,16 @@ export function StandingsTable({ standings }: { standings: DriverState[] | undef
             {/* Driver info */}
             <div>
               <div className="pm-driver-abbr">
-                {driver.driver.length > 3
-                  ? driver.driver.slice(0, 3).toUpperCase()
-                  : driver.driver.toUpperCase()}
+                {driver.driver.length > 3 ? driver.driver.slice(0, 3).toUpperCase() : driver.driver.toUpperCase()}
               </div>
-              <div
-                className="pm-driver-team"
-                style={{ textTransform: "uppercase", letterSpacing: "0.15em" }}
-              >
-                {driver.driver}
-              </div>
+              <div className="pm-driver-team" style={{ textTransform: "uppercase", letterSpacing: "0.15em" }}>{driver.driver}</div>
             </div>
 
             {/* Gap */}
             <div className="pm-driver-gap">
-              {driver.position === 1 ? "LEADER" : `+${driver.gap_leader_s?.toFixed(3) ?? "—"}`}
+              {driver.position === 1
+                ? "LEADER"
+                : `+${driver.gap_leader_s?.toFixed(3) ?? "—"}`}
             </div>
 
             {/* Tyre badge */}

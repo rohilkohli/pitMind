@@ -1,33 +1,33 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from 'react';
 
 interface LogEntry {
   id: string;
   timestamp: string;
   module: string;
   message: string;
-  type: "info" | "warn" | "error" | "success";
+  type: 'info' | 'warn' | 'error' | 'success';
 }
 
-const MODULES = ["TELEMETRY", "AUTH", "STRATEGY", "FIREBASE", "GRANITE-AI", "NETWORK"];
+const MODULES = ['TELEMETRY', 'AUTH', 'STRATEGY', 'FIREBASE', 'GRANITE-AI', 'NETWORK'];
 const MESSAGES = [
-  "Packet received: 284 bytes",
-  "WebSocket handshake success",
-  "Firebase stream sync: lap 27",
-  "Granite-AI: Analyzing tyre deg...",
-  "Heartbeat: latency 42ms",
-  "New strategy recommendation generated",
-  "Syncing race state to Firestore",
-  "User role changed: STRATEGIST",
-  "API request: /v1/strategy/recommend",
-  "Cache hit: track_monaco_v2",
+  'Packet received: 284 bytes',
+  'WebSocket handshake success',
+  'Firebase stream sync: lap 27',
+  'Granite-AI: Analyzing tyre deg...',
+  'Heartbeat: latency 42ms',
+  'New strategy recommendation generated',
+  'Syncing race state to Firestore',
+  'User role changed: STRATEGIST',
+  'API request: /v1/strategy/recommend',
+  'Cache hit: track_monaco_v2',
 ];
 
 const getTagClass = (module: string): string => {
   const m = module.toUpperCase();
-  if (m === "NETWORK" || m === "TELEMETRY") return "pm-feed-tag pm-tag-net";
-  if (m === "FIREBASE") return "pm-feed-tag pm-tag-fb";
-  if (m === "AUTH") return "pm-feed-tag pm-tag-auth";
-  return "pm-feed-tag pm-tag-sys"; // STRATEGY, GRANITE-AI, etc.
+  if (m === 'NETWORK' || m === 'TELEMETRY') return 'pm-feed-tag pm-tag-net';
+  if (m === 'FIREBASE')                     return 'pm-feed-tag pm-tag-fb';
+  if (m === 'AUTH')                         return 'pm-feed-tag pm-tag-auth';
+  return 'pm-feed-tag pm-tag-sys'; // STRATEGY, GRANITE-AI, etc.
 };
 
 export const LiveSystemFeed: React.FC = () => {
@@ -40,15 +40,10 @@ export const LiveSystemFeed: React.FC = () => {
       const now = new Date(Date.now() - (5 - i) * 2200);
       return {
         id: `init-${i}`,
-        timestamp: now.toLocaleTimeString([], {
-          hour12: false,
-          hour: "2-digit",
-          minute: "2-digit",
-          second: "2-digit",
-        }),
+        timestamp: now.toLocaleTimeString([], { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' }),
         module,
         message: MESSAGES[Math.floor(Math.random() * MESSAGES.length)],
-        type: "info",
+        type: 'info',
       };
     });
     setLogs(initial);
@@ -57,15 +52,10 @@ export const LiveSystemFeed: React.FC = () => {
       const module = MODULES[Math.floor(Math.random() * MODULES.length)];
       const newLog: LogEntry = {
         id: Math.random().toString(36).substr(2, 9),
-        timestamp: new Date().toLocaleTimeString([], {
-          hour12: false,
-          hour: "2-digit",
-          minute: "2-digit",
-          second: "2-digit",
-        }),
+        timestamp: new Date().toLocaleTimeString([], { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' }),
         module,
         message: MESSAGES[Math.floor(Math.random() * MESSAGES.length)],
-        type: Math.random() > 0.9 ? "warn" : "info",
+        type: Math.random() > 0.9 ? 'warn' : 'info',
       };
 
       setLogs((prev) => [newLog, ...prev].slice(0, 8));
@@ -105,7 +95,7 @@ export const LiveSystemFeed: React.FC = () => {
             fontSize: "9px",
             letterSpacing: "0.15em",
             textTransform: "uppercase",
-            borderRadius: 0,
+            borderRadius: 0
           }}
         >
           STREAMING
@@ -145,7 +135,7 @@ export const LiveSystemFeed: React.FC = () => {
                 fontWeight: 700,
                 fontSize: "9px",
                 letterSpacing: "0.15em",
-                textTransform: "uppercase",
+                textTransform: "uppercase"
               }}
             >
               {log.module.slice(0, 7)}

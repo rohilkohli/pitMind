@@ -10,10 +10,8 @@ const variants = cva(
     variants: {
       variant: {
         primary: "bg-f1-red text-white hover:bg-f1-red-dark active:scale-95",
-        secondary:
-          "bg-transparent border border-f1-red text-f1-red hover:bg-f1-red hover:text-white",
-        ghost:
-          "bg-transparent text-f1-white border border-f1-border hover:border-f1-red hover:text-f1-red",
+        secondary: "bg-transparent border border-f1-red text-f1-red hover:bg-f1-red hover:text-white",
+        ghost: "bg-transparent text-f1-white border border-f1-border hover:border-f1-red hover:text-f1-red",
         danger: "bg-f1-red-dark text-white hover:bg-f1-red",
       },
       size: {
@@ -30,7 +28,8 @@ const variants = cva(
 );
 
 export interface ButtonProps
-  extends React.ButtonHTMLAttributes<HTMLButtonElement>, VariantProps<typeof variants> {
+  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
+    VariantProps<typeof variants> {
   asChild?: boolean;
 }
 

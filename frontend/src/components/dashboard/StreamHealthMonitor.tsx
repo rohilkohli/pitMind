@@ -1,14 +1,8 @@
-import React, { useState, useEffect } from "react";
-import { Wifi, WifiOff, AlertTriangle, RotateCcw } from "lucide-react";
-import { useStream } from "../../contexts/StreamContext";
+import React, { useState, useEffect } from 'react';
+import { Wifi, WifiOff, AlertTriangle, RotateCcw } from 'lucide-react';
+import { useStream } from '../../contexts/StreamContext';
 
-export type ConnectionStatus =
-  | "connected"
-  | "connecting"
-  | "disconnected"
-  | "error"
-  | "reconnecting"
-  | "offline";
+export type ConnectionStatus = 'connected' | 'connecting' | 'disconnected' | 'error' | 'reconnecting' | 'offline';
 
 export interface StreamHealth {
   status: ConnectionStatus;
@@ -25,60 +19,62 @@ interface StreamHealthMonitorProps {
 
 const getStatusColor = (status: ConnectionStatus) => {
   switch (status) {
-    case "connected":
-      return "bg-[var(--neon-green-dim)] border-[var(--neon-green)] text-[var(--neon-green)]";
-    case "connecting":
-      return "bg-[var(--amber-dim)] border-[var(--amber)] text-[var(--amber)] animate-pulse";
-    case "reconnecting":
-      return "bg-[var(--amber-dim)] border-[var(--amber)] text-[var(--amber)] animate-pulse";
-    case "disconnected":
-      return "bg-[var(--f1-red-dim)] border-[var(--f1-red)] text-[var(--f1-red)]";
-    case "error":
-      return "bg-[var(--f1-red-dim)] border-[var(--f1-red)] text-[var(--f1-red)]";
-    case "offline":
-      return "bg-[var(--carbon-mid)] border-[var(--border)] text-[var(--text-secondary)]";
+    case 'connected':
+      return 'bg-[var(--neon-green-dim)] border-[var(--neon-green)] text-[var(--neon-green)]';
+    case 'connecting':
+      return 'bg-[var(--amber-dim)] border-[var(--amber)] text-[var(--amber)] animate-pulse';
+    case 'reconnecting':
+      return 'bg-[var(--amber-dim)] border-[var(--amber)] text-[var(--amber)] animate-pulse';
+    case 'disconnected':
+      return 'bg-[var(--f1-red-dim)] border-[var(--f1-red)] text-[var(--f1-red)]';
+    case 'error':
+      return 'bg-[var(--f1-red-dim)] border-[var(--f1-red)] text-[var(--f1-red)]';
+    case 'offline':
+      return 'bg-[var(--carbon-mid)] border-[var(--border)] text-[var(--text-secondary)]';
     default:
-      return "bg-[var(--carbon-mid)] border-[var(--border)] text-[var(--text-secondary)]";
+      return 'bg-[var(--carbon-mid)] border-[var(--border)] text-[var(--text-secondary)]';
   }
 };
 
 const getStatusLabel = (status: ConnectionStatus) => {
   switch (status) {
-    case "connected":
-      return "Connected";
-    case "connecting":
-      return "Connecting...";
-    case "reconnecting":
-      return "Reconnecting...";
-    case "disconnected":
-      return "Disconnected";
-    case "error":
-      return "Connection Error";
-    case "offline":
-      return "Offline (Max Retries Exceeded)";
+    case 'connected':
+      return 'Connected';
+    case 'connecting':
+      return 'Connecting...';
+    case 'reconnecting':
+      return 'Reconnecting...';
+    case 'disconnected':
+      return 'Disconnected';
+    case 'error':
+      return 'Connection Error';
+    case 'offline':
+      return 'Offline (Max Retries Exceeded)';
     default:
-      return "Unknown";
+      return 'Unknown';
   }
 };
 
 const getStatusIcon = (status: ConnectionStatus) => {
   switch (status) {
-    case "connected":
+    case 'connected':
       return <Wifi className="w-4 h-4" />;
-    case "connecting":
+    case 'connecting':
       return <Wifi className="w-4 h-4 animate-pulse" />;
-    case "reconnecting":
+    case 'reconnecting':
       return <Wifi className="w-4 h-4 animate-pulse" />;
-    case "disconnected":
-    case "error":
-    case "offline":
+    case 'disconnected':
+    case 'error':
+    case 'offline':
       return <WifiOff className="w-4 h-4" />;
     default:
       return null;
   }
 };
 
-export const StreamHealthMonitor: React.FC<StreamHealthMonitorProps> = ({ showMetrics = true }) => {
+export const StreamHealthMonitor: React.FC<StreamHealthMonitorProps> = ({
+  showMetrics = true,
+}) => {
   const { state, reconnect } = useStream();
   const [uptime, setUptime] = useState(0);
 
@@ -97,20 +93,18 @@ export const StreamHealthMonitor: React.FC<StreamHealthMonitorProps> = ({ showMe
   };
 
   return (
-    <div
-      className={`border p-2 ${showMetrics ? "p-4 border-2" : "p-2 border"} ${getStatusColor(state.status)} transition-all duration-300`}
-    >
-      <div className={`flex items-center justify-between ${showMetrics ? "mb-3" : "mb-0"} gap-4`}>
+    <div className={`border p-2 ${showMetrics ? 'p-4 border-2' : 'p-2 border'} ${getStatusColor(state.status)} transition-all duration-300`}>
+      <div className={`flex items-center justify-between ${showMetrics ? 'mb-3' : 'mb-0'} gap-4`}>
         <div className="flex items-center gap-2">
-          <div className={`${showMetrics ? "" : "scale-75"}`}>{getStatusIcon(state.status)}</div>
-          <span
-            className={`font-label uppercase tracking-widest ${showMetrics ? "text-sm" : "text-[10px]"}`}
-          >
+          <div className={`${showMetrics ? '' : 'scale-75'}`}>
+            {getStatusIcon(state.status)}
+          </div>
+          <span className={`font-label uppercase tracking-widest ${showMetrics ? 'text-sm' : 'text-[10px]'}`}>
             {getStatusLabel(state.status)}
           </span>
         </div>
 
-        {(state.status === "disconnected" || state.status === "error") && (
+        {(state.status === 'disconnected' || state.status === 'error') && (
           <button
             onClick={reconnect}
             className="px-2 py-1 bg-[var(--carbon-mid)] hover:bg-[var(--carbon-light)] text-[9px] font-label font-bold uppercase transition flex items-center gap-1 border border-[var(--border)]"
@@ -125,39 +119,27 @@ export const StreamHealthMonitor: React.FC<StreamHealthMonitorProps> = ({ showMe
       {showMetrics && (
         <div className="grid grid-cols-3 gap-2 text-xs mb-3 font-tele">
           <div>
-            <div className="text-[10px] text-[var(--text-secondary)] font-label uppercase tracking-wider">
-              Latency
-            </div>
+            <div className="text-[10px] text-[var(--text-secondary)] font-label uppercase tracking-wider">Latency</div>
             <div className="font-semibold text-[var(--text-primary)]">{state.latency}ms</div>
           </div>
           <div>
-            <div className="text-[10px] text-[var(--text-secondary)] font-label uppercase tracking-wider">
-              Packet Loss
-            </div>
-            <div className="font-semibold text-[var(--text-primary)]">
-              {state.packetLoss.toFixed(2)}%
-            </div>
+            <div className="text-[10px] text-[var(--text-secondary)] font-label uppercase tracking-wider">Packet Loss</div>
+            <div className="font-semibold text-[var(--text-primary)]">{state.packetLoss.toFixed(2)}%</div>
           </div>
           <div>
-            <div className="text-[10px] text-[var(--text-secondary)] font-label uppercase tracking-wider">
-              Uptime
-            </div>
+            <div className="text-[10px] text-[var(--text-secondary)] font-label uppercase tracking-wider">Uptime</div>
             <div className="font-semibold text-[var(--text-primary)]">{formatUptime(uptime)}</div>
           </div>
         </div>
       )}
 
       {/* Health bars */}
-      {state.status === "connected" && (
+      {state.status === 'connected' && (
         <div className="mt-3 space-y-2">
           <div>
             <div className="flex justify-between items-center mb-1 font-tele">
-              <span className="text-[10px] text-[var(--text-secondary)] font-label uppercase tracking-wider">
-                Signal Strength
-              </span>
-              <span className="text-[10px] text-[var(--text-primary)]">
-                {Math.round((1 - state.latency / 500) * 100)}%
-              </span>
+              <span className="text-[10px] text-[var(--text-secondary)] font-label uppercase tracking-wider">Signal Strength</span>
+              <span className="text-[10px] text-[var(--text-primary)]">{Math.round((1 - state.latency / 500) * 100)}%</span>
             </div>
             <div className="h-1 bg-[var(--carbon-mid)] overflow-hidden">
               <div
@@ -169,12 +151,8 @@ export const StreamHealthMonitor: React.FC<StreamHealthMonitorProps> = ({ showMe
 
           <div>
             <div className="flex justify-between items-center mb-1 font-tele">
-              <span className="text-[10px] text-[var(--text-secondary)] font-label uppercase tracking-wider">
-                Link Quality
-              </span>
-              <span className="text-[10px] text-[var(--text-primary)]">
-                {Math.round((1 - state.packetLoss / 5) * 100)}%
-              </span>
+              <span className="text-[10px] text-[var(--text-secondary)] font-label uppercase tracking-wider">Link Quality</span>
+              <span className="text-[10px] text-[var(--text-primary)]">{Math.round((1 - state.packetLoss / 5) * 100)}%</span>
             </div>
             <div className="h-1 bg-[var(--carbon-mid)] overflow-hidden">
               <div
@@ -187,17 +165,15 @@ export const StreamHealthMonitor: React.FC<StreamHealthMonitorProps> = ({ showMe
       )}
 
       {/* Error state */}
-      {(state.status === "disconnected" || state.status === "error") && (
+      {(state.status === 'disconnected' || state.status === 'error') && (
         <div className="mt-3 p-2 bg-[var(--carbon-mid)] border border-[var(--border)] flex items-start gap-2 text-[11px] font-tele text-[var(--text-secondary)]">
           <AlertTriangle className="w-3 h-3 mt-0.5 flex-shrink-0 text-[var(--f1-red)]" />
-          <span>
-            Connection to telemetry stream lost. Data may be stale. Click Reconnect to restore.
-          </span>
+          <span>Connection to telemetry stream lost. Data may be stale. Click Reconnect to restore.</span>
         </div>
       )}
 
       {/* Reconnecting state */}
-      {state.status === "reconnecting" && (
+      {state.status === 'reconnecting' && (
         <div className="mt-3 p-2 bg-[var(--carbon-mid)] border border-[var(--border)] flex items-start gap-2 text-[11px] font-tele text-[var(--text-secondary)]">
           <AlertTriangle className="w-3 h-3 mt-0.5 flex-shrink-0 animate-pulse text-[var(--amber)]" />
           <span>Reconnection attempt {state.reconnectAttempts}. Retrying...</span>

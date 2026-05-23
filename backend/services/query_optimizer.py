@@ -5,7 +5,7 @@ Provides query optimization, batching, and performance monitoring
 for database operations.
 """
 
-from typing import Any, Dict, List, Optional, TypeVar, Generic
+from typing import Any, Dict, List, Optional, TypeVar
 from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload, joinedload
@@ -16,6 +16,7 @@ from services.logger import get_logger
 logger = get_logger(__name__)
 
 T = TypeVar('T')
+
 
 
 class QueryCache:
@@ -71,15 +72,6 @@ class QueryCache:
             "max_size": self.max_size,
             "ttl": self.ttl
         }
-
-
-# Global query cache instance
-_query_cache = QueryCache()
-
-
-def get_query_cache() -> QueryCache:
-    """Get global query cache instance."""
-    return _query_cache
 
 
 # Index recommendations for common query patterns

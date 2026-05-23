@@ -17,14 +17,14 @@ try:
     from ..services import sanitize
     from ..services import fastf1_service
     from ..services.cache_manager import (
-        get_cache_stats,
         invalidate_cache,
         invalidate_driver_cache,
         invalidate_session_cache,
         reset_cache_stats,
         warm_cache_for_scenario,
+        _cache_stats,
     )
-    from ..services.cache_invalidator import get_cache_invalidator
+    from ..services.cache_invalidator import cache_invalidator
 except ImportError:
     from models.race_state import TelemetryPayload
     from models.strategy import FastF1Request, StrategyCommitRequest, StrategyCommitResponse
@@ -35,14 +35,14 @@ except ImportError:
     from services import sanitize
     from services import fastf1_service
     from services.cache_manager import (
-        get_cache_stats,
         invalidate_cache,
         invalidate_driver_cache,
         invalidate_session_cache,
         reset_cache_stats,
         warm_cache_for_scenario,
+        _cache_stats,
     )
-    from services.cache_invalidator import get_cache_invalidator
+    from services.cache_invalidator import cache_invalidator
 
 logger = logging.getLogger(__name__)
 
@@ -292,16 +292,17 @@ async def get_cache_statistics(
     
     Returns cache performance metrics for monitoring.
     """
-    stats = get_cache_stats()
+    total_requests = _cache_stats["hits"] + _cache_stats["misses"]
+    hit_rate = (_cache_stats["hits"] / total_requests * 100) if total_requests > 0 else 0.0
     
     return {
-        "hits": stats.hits,
-        "misses": stats.misses,
-        "sets": stats.sets,
-        "invalidations": stats.invalidations,
-        "errors": stats.errors,
-        "hit_rate": stats.hit_rate,
-        "total_requests": stats.total_requests,
+        "hits": _cache_stats["hits"],
+        "misses": _cache_stats["misses"],
+        "sets": _cache_stats["sets"],
+        "invalidations": _cache_stats["invalidations"],
+        "errors": _cache_stats["errors"],
+        "hit_rate": round(hit_rate, 2),
+        "total_requests": total_requests,
         "timestamp": datetime.now(timezone.utc).isoformat(),
     }
 
@@ -447,8 +448,7 @@ async def handle_race_condition(
                 detail=f"Invalid race condition. Must be one of: {[c.value for c in RaceCondition]}"
             )
         
-        invalidator = get_cache_invalidator()
-        invalidated = await invalidator.on_race_condition(
+        invalidated = await cache_invalidator.on_race_condition(
             race_condition,
             session_id,
             driver,
@@ -493,8 +493,7 @@ async def get_invalidation_log(
     try:
         limit = min(limit, 100)
         
-        invalidator = get_cache_invalidator()
-        events = invalidator.get_invalidation_log(limit)
+        events = cache_invalidator.get_invalidation_log(limit)
         
         return {
             "total": len(events),

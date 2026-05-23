@@ -16,11 +16,11 @@ from backend.services.cache_manager import (
     invalidate_cache,
     invalidate_driver_cache,
     invalidate_session_cache,
-    get_cache_stats,
     reset_cache_stats,
     warm_cache_for_scenario,
     _compute_telemetry_hash,
     _normalize_telemetry_for_hash,
+    _cache_stats,
 )
 
 
@@ -291,15 +291,17 @@ class TestCacheStatistics:
     async def test_cache_stats_initialization(self):
         """Test cache stats are initialized."""
         reset_cache_stats()
-        stats = get_cache_stats()
         
-        assert stats.hits == 0
-        assert stats.misses == 0
-        assert stats.sets == 0
-        assert stats.invalidations == 0
-        assert stats.errors == 0
-        assert stats.hit_rate == 0.0
-        assert stats.total_requests == 0
+        total_requests = _cache_stats["hits"] + _cache_stats["misses"]
+        hit_rate = (_cache_stats["hits"] / total_requests * 100) if total_requests > 0 else 0.0
+
+        assert _cache_stats["hits"] == 0
+        assert _cache_stats["misses"] == 0
+        assert _cache_stats["sets"] == 0
+        assert _cache_stats["invalidations"] == 0
+        assert _cache_stats["errors"] == 0
+        assert round(hit_rate, 2) == 0.0
+        assert total_requests == 0
     
     async def test_cache_stats_tracking(self, sample_telemetry):
         """Test cache statistics are tracked correctly."""
@@ -309,21 +311,21 @@ class TestCacheStatistics:
         
         # Cache miss
         await get_cached_strategy(key)
-        stats = get_cache_stats()
-        assert stats.misses == 1
-        assert stats.total_requests == 1
+        total_requests = _cache_stats["hits"] + _cache_stats["misses"]
+        assert _cache_stats["misses"] == 1
+        assert total_requests == 1
         
         # Cache set
         await set_cached_strategy(key, {"test": 1}, ttl=60)
-        stats = get_cache_stats()
-        assert stats.sets == 1
+        assert _cache_stats["sets"] == 1
         
         # Cache hit
         await get_cached_strategy(key)
-        stats = get_cache_stats()
-        assert stats.hits == 1
-        assert stats.total_requests == 2
-        assert stats.hit_rate == 50.0  # 1 hit out of 2 requests
+        total_requests = _cache_stats["hits"] + _cache_stats["misses"]
+        hit_rate = (_cache_stats["hits"] / total_requests * 100) if total_requests > 0 else 0.0
+        assert _cache_stats["hits"] == 1
+        assert total_requests == 2
+        assert round(hit_rate, 2) == 50.0  # 1 hit out of 2 requests
     
     async def test_hit_rate_calculation(self, sample_telemetry):
         """Test hit rate calculation."""
@@ -338,11 +340,13 @@ class TestCacheStatistics:
         await get_cached_strategy(key)  # hit
         await get_cached_strategy("nonexistent:key")  # miss
         
-        stats = get_cache_stats()
-        assert stats.hits == 3
-        assert stats.misses == 1
-        assert stats.total_requests == 4
-        assert stats.hit_rate == 75.0
+        total_requests = _cache_stats["hits"] + _cache_stats["misses"]
+        hit_rate = (_cache_stats["hits"] / total_requests * 100) if total_requests > 0 else 0.0
+
+        assert _cache_stats["hits"] == 3
+        assert _cache_stats["misses"] == 1
+        assert total_requests == 4
+        assert round(hit_rate, 2) == 75.0
 
 
 @pytest.mark.asyncio
@@ -435,14 +439,13 @@ class TestCacheResilience:
     async def test_cache_stats_on_error(self):
         """Test that errors are tracked in statistics."""
         reset_cache_stats()
-        initial_errors = get_cache_stats().errors
+        initial_errors = _cache_stats["errors"]
         
         # Attempt operation that might fail
         await get_cached_strategy("test:key")
         
-        stats = get_cache_stats()
         # Errors should not increase for normal operations
-        assert stats.errors >= initial_errors
+        assert _cache_stats["errors"] >= initial_errors
 
 
 # Integration test markers

@@ -21,27 +21,21 @@ from slowapi.util import get_remote_address
 try:
     # When executed as a package module (e.g., `uvicorn backend.main:app`)
     from .config import cors_origin_list, get_settings
-
-
-
-
-
     from .services import granite
-
     from .services import redis_client
-    from .services.cache_manager import get_cache_stats
     from .services.logger import get_logger, RequestIDMiddleware
     from .middleware.error_handler import register_exception_handlers, ErrorTrackingMiddleware
     from .models import database as db
+    from .services.cache_manager import _cache_stats
 except ImportError:
     # When executed from the `backend/` directory (e.g., `uvicorn main:app`)
     from config import cors_origin_list, get_settings
     from services import granite
     from services import redis_client
-    from services.cache_manager import get_cache_stats
     from services.logger import get_logger, RequestIDMiddleware
     from middleware.error_handler import register_exception_handlers, ErrorTrackingMiddleware
     from models import database as db
+    from services.cache_manager import _cache_stats
 
 try:
     # Use explicit project ID for local development if credentials aren't set
@@ -170,7 +164,9 @@ async def health() -> dict[str, Any]:
     """Basic health check with Redis, database, and cache status."""
     redis_health = await redis_client.check_redis_health()
     db_health = await db.check_db_health()
-    cache_stats = get_cache_stats()
+
+    total_requests = _cache_stats["hits"] + _cache_stats["misses"]
+    hit_rate = (_cache_stats["hits"] / total_requests * 100) if total_requests > 0 else 0.0
     
     overall_status = "ok"
     if not redis_health.get("connected") or not db_health.get("connected"):
@@ -181,10 +177,10 @@ async def health() -> dict[str, Any]:
         "redis": redis_health,
         "database": db_health,
         "cache": {
-            "hit_rate": cache_stats.hit_rate,
-            "total_requests": cache_stats.total_requests,
-            "hits": cache_stats.hits,
-            "misses": cache_stats.misses,
+            "hit_rate": round(hit_rate, 2),
+            "total_requests": total_requests,
+            "hits": _cache_stats["hits"],
+            "misses": _cache_stats["misses"],
         },
         **granite.get_ai_status()
     }
@@ -195,7 +191,9 @@ async def api_health() -> dict[str, Any]:
     """API health check with Redis, database, and cache status."""
     redis_health = await redis_client.check_redis_health()
     db_health = await db.check_db_health()
-    cache_stats = get_cache_stats()
+
+    total_requests = _cache_stats["hits"] + _cache_stats["misses"]
+    hit_rate = (_cache_stats["hits"] / total_requests * 100) if total_requests > 0 else 0.0
     
     overall_status = "ok"
     if not redis_health.get("connected") or not db_health.get("connected"):
@@ -206,10 +204,10 @@ async def api_health() -> dict[str, Any]:
         "redis": redis_health,
         "database": db_health,
         "cache": {
-            "hit_rate": cache_stats.hit_rate,
-            "total_requests": cache_stats.total_requests,
-            "hits": cache_stats.hits,
-            "misses": cache_stats.misses,
+            "hit_rate": round(hit_rate, 2),
+            "total_requests": total_requests,
+            "hits": _cache_stats["hits"],
+            "misses": _cache_stats["misses"],
         },
         **granite.get_ai_status()
     }
@@ -221,17 +219,19 @@ async def get_health_metrics() -> dict[str, Any]:
     ai_status = granite.get_ai_status()
     redis_health = await redis_client.check_redis_health()
     db_health = await db.check_db_health()
-    cache_stats = get_cache_stats()
+
+    total_requests = _cache_stats["hits"] + _cache_stats["misses"]
+    hit_rate = (_cache_stats["hits"] / total_requests * 100) if total_requests > 0 else 0.0
     
     # Get cached metrics or use defaults
     cached_metrics = await redis_client.get_cached_health_metrics()
     
     # Determine cache health status based on hit rate
     cache_status = "healthy"
-    if cache_stats.total_requests > 10:  # Only evaluate if we have enough data
-        if cache_stats.hit_rate < 30:
+    if total_requests > 10:  # Only evaluate if we have enough data
+        if hit_rate < 30:
             cache_status = "degraded"
-        elif cache_stats.hit_rate < 50:
+        elif hit_rate < 50:
             cache_status = "warning"
     
     return {
@@ -256,14 +256,14 @@ async def get_health_metrics() -> dict[str, Any]:
         "cacheHitRate": {
             "name": "Cache Hit Rate",
             "status": cache_status,
-            "value": cache_stats.hit_rate,
+            "value": round(hit_rate, 2),
             "unit": "%",
             "threshold": 50,
             "lastUpdated": datetime.now().isoformat(),
             "metadata": {
-                "hits": cache_stats.hits,
-                "misses": cache_stats.misses,
-                "total_requests": cache_stats.total_requests,
+                "hits": _cache_stats["hits"],
+                "misses": _cache_stats["misses"],
+                "total_requests": total_requests,
             },
         },
         "latency": {
@@ -352,7 +352,7 @@ class ConnectionManager:
         
         logger.info(f"Client {connection_id} connected to session {session_id}. Active: {len(self.active_connections[session_id])}")
     
-    async def disconnect(self, websocket: WebSocket, session_id: str):
+    def disconnect(self, websocket: WebSocket, session_id: str):
         """Unregister a disconnected WebSocket."""
         # Get connection ID
         connection_id = self.connection_ids.get(websocket, "unknown")
@@ -365,15 +365,14 @@ class ConnectionManager:
                 pass
             if not self.active_connections[session_id]:
                 del self.active_connections[session_id]
-                if session_id in self.message_count:
-                    del self.message_count[session_id]
+                del self.message_count[session_id]
         
         # Remove from connection ID mapping
         if websocket in self.connection_ids:
             del self.connection_ids[websocket]
         
-        # Remove from Redis
-        await redis_client.remove_websocket_connection(session_id, connection_id)
+        # Remove from Redis (fire and forget - don't await)
+        asyncio.create_task(redis_client.remove_websocket_connection(session_id, connection_id))
         
         logger.info(f"Client {connection_id} disconnected from session {session_id}")
     
@@ -388,10 +387,8 @@ class ConnectionManager:
                 except Exception as e:
                     logger.error(f"Error broadcasting telemetry: {e}")
                     stale_connections.append(connection)
-
-            if stale_connections:
-                cleanup_tasks = [self.disconnect(stale, session_id) for stale in stale_connections]
-                await asyncio.gather(*cleanup_tasks)
+            for stale in stale_connections:
+                self.disconnect(stale, session_id)
     
     async def send_to_one(self, websocket: WebSocket, message: dict[str, Any]):
         """Send a message to a single client."""
@@ -495,10 +492,10 @@ async def websocket_telemetry_stream(websocket: WebSocket, session_id: str | Non
         # Run both handlers concurrently
         await asyncio.gather(receive_handler(), broadcast_handler())
     except WebSocketDisconnect:
-        await manager.disconnect(websocket, session_id)
+        manager.disconnect(websocket, session_id)
         logger.info(f"WebSocket closed for session {session_id}")
     except Exception as e:
-        await manager.disconnect(websocket, session_id)
+        manager.disconnect(websocket, session_id)
         logger.error(f"WebSocket error: {e}")
 
 

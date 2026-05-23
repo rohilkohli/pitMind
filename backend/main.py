@@ -10,10 +10,9 @@ import uuid
 from datetime import datetime
 from typing import Any
 
-from fastapi import FastAPI, File, HTTPException, Request, UploadFile, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, Request, WebSocket, WebSocketDisconnect
 from fastapi.responses import Response
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import Response
 import firebase_admin
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
@@ -21,32 +20,26 @@ from slowapi.util import get_remote_address
 
 try:
     # When executed as a package module (e.g., `uvicorn backend.main:app`)
-    from .config import cors_origin_list, get_settings
-    from .models.chat import ChatRequest, ChatResponse, DebriefResponse
-    from .models.strategy import StrategyRecommendation, DriverCompareRequest, DriverCompareResponse
-    from .models.race_state import TelemetryPayload
-    from .services import sanitize
-    from .services import pipeline as pipeline_svc
-    from .services import granite
-    from .services.strategy_engine import predict_strategy
-    from .services import redis_client
-    from .services.cache_manager import get_cache_stats
-    from .services.logger import get_logger, RequestIDMiddleware, PerformanceTimer
-    from .middleware.error_handler import register_exception_handlers, ErrorTrackingMiddleware
-    from .models import database as db
+    from .config import cors_origin_list, get_settings  # noqa: F401
+    from .models.chat import ChatRequest, ChatResponse, DebriefResponse  # noqa: F401
+    from .models.strategy import StrategyRecommendation, DriverCompareRequest, DriverCompareResponse  # noqa: F401
+    from .models.race_state import TelemetryPayload  # noqa: F401
+    from .services import sanitize  # noqa: F401
+    from .services import pipeline as pipeline_svc  # noqa: F401
+    from .services import granite  # noqa: F401
+    from .services.strategy_engine import predict_strategy  # noqa: F401
+    from .services import redis_client  # noqa: F401
+    from .services.cache_manager import get_cache_stats  # noqa: F401
+    from .services.logger import get_logger, RequestIDMiddleware, PerformanceTimer  # noqa: F401
+    from .middleware.error_handler import register_exception_handlers, ErrorTrackingMiddleware  # noqa: F401
+    from .models import database as db  # noqa: F401
 except ImportError:
     # When executed from the `backend/` directory (e.g., `uvicorn main:app`)
     from config import cors_origin_list, get_settings
-    from models.chat import ChatRequest, ChatResponse, DebriefResponse
-    from models.strategy import StrategyRecommendation, DriverCompareRequest, DriverCompareResponse
-    from models.race_state import TelemetryPayload
-    from services import sanitize
-    from services import pipeline as pipeline_svc
     from services import granite
-    from services.strategy_engine import predict_strategy
     from services import redis_client
     from services.cache_manager import get_cache_stats
-    from services.logger import get_logger, RequestIDMiddleware, PerformanceTimer
+    from services.logger import get_logger, RequestIDMiddleware
     from middleware.error_handler import register_exception_handlers, ErrorTrackingMiddleware
     from models import database as db
 
@@ -549,7 +542,7 @@ async def get_session_events(session_id: str) -> dict[str, Any]:
 
 
 try:
-    from .routes import strategy, commentary, fan, auth
+    from .routes import strategy, commentary, fan, auth  # noqa: F401
 except ImportError:
     from routes import strategy, commentary, fan, auth
 

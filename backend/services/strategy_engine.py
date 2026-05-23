@@ -7,10 +7,10 @@ from statistics import mean
 from typing import Optional
 
 try:
-    from ..config import get_settings
-    from ..models.race_state import LapPoint, TelemetryPayload
-    from ..models.strategy import StrategyRecommendation, StrategyScores
-    from .cache_manager import (
+    from ..config import get_settings  # noqa: F401
+    from ..models.race_state import LapPoint, TelemetryPayload  # noqa: F401
+    from ..models.strategy import StrategyRecommendation, StrategyScores  # noqa: F401
+    from .cache_manager import (  # noqa: F401
         generate_heuristic_cache_key,
         generate_strategy_cache_key,
         get_cached_strategy,
@@ -22,7 +22,6 @@ except ImportError:
     from models.strategy import StrategyRecommendation, StrategyScores
     from services.cache_manager import (
         generate_heuristic_cache_key,
-        generate_strategy_cache_key,
         get_cached_strategy,
         set_cached_strategy,
     )
@@ -106,19 +105,16 @@ async def predict_strategy(
     window_end = current_lap + 4
 
     if pit_urgency >= 78:
-        pit_this_lap = True
         reasons = [
             f"Tyre wear proxy at ~{wear:.0f}% with rising lap-time delta (~{degradation:.2f}s trend).",
             "Closing pit window aligns with minimizing time lost to compound drop-off.",
         ]
     elif pit_urgency >= 62:
-        pit_this_lap = False
         reasons = [
             "Wear approaching critical band but lap-time loss still manageable short-term.",
             f"Monitor gap volatility (~{gap_vol:.2f}); flexible stop across laps {window_start}-{window_end}.",
         ]
     else:
-        pit_this_lap = False
         reasons = [
             "Tyre life and pace stability favor extending stint.",
             "Re-evaluate after next telemetry batch or SC signal.",

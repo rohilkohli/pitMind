@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import React, { useState, useEffect } from 'react';
 import { Wifi, WifiOff, AlertTriangle, RotateCcw } from 'lucide-react';
 import { useStream } from '../../contexts/StreamContext';

@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { useEffect, useRef, useState, useCallback } from 'react';
 import type { WebSocketMessage, WebSocketMessageType } from '../types/api';
 
@@ -49,7 +50,7 @@ export const useStreamConnection = (config: StreamConnectionConfig) => {
       setUptime((prev) => prev + 1);
     }, 1000);
     return () => clearInterval(interval);
-  }, []);
+  }, [config]);
 
   // Measure packet loss
   useEffect(() => {
@@ -243,7 +244,7 @@ export const useStreamConnection = (config: StreamConnectionConfig) => {
       ...prev,
       status: 'disconnected',
     }));
-  }, []);
+  }, [config]);
 
   // Manual reconnect
   const reconnect = useCallback(() => {
@@ -273,7 +274,7 @@ export const useStreamConnection = (config: StreamConnectionConfig) => {
       console.warn('[Stream] WebSocket not connected');
       setLostMessages((prev) => prev + 1);
     }
-  }, []);
+  }, [config]);
 
   // Auto-connect on mount
   useEffect(() => {

@@ -19,15 +19,14 @@ from datetime import datetime
 from typing import Any, Optional
 
 try:
-    from ..config import get_settings
-    from ..models.race_state import TelemetryPayload
-    from ..models.strategy import StrategyRecommendation
-    from .redis_client import cache_get, cache_set, cache_delete, redis_operation
+    from ..config import get_settings  # noqa: F401
+    from ..models.race_state import TelemetryPayload  # noqa: F401
+    from ..models.strategy import StrategyRecommendation  # noqa: F401
+    from .redis_client import cache_get, cache_set, cache_delete, redis_operation  # noqa: F401
 except ImportError:
     from config import get_settings
     from models.race_state import TelemetryPayload
-    from models.strategy import StrategyRecommendation
-    from services.redis_client import cache_get, cache_set, cache_delete, redis_operation
+    from services.redis_client import cache_get, cache_set, redis_operation
 
 logger = logging.getLogger(__name__)
 

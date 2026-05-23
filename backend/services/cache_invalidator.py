@@ -304,15 +304,7 @@ class CacheInvalidator:
 
 
 # Global invalidator instance
-_invalidator: Optional[CacheInvalidator] = None
-
-
-def get_cache_invalidator() -> CacheInvalidator:
-    """Get or create the global cache invalidator instance."""
-    global _invalidator
-    if _invalidator is None:
-        _invalidator = CacheInvalidator()
-    return _invalidator
+cache_invalidator = CacheInvalidator()
 
 
 # Made with Bob

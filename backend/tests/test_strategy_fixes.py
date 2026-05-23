@@ -1,8 +1,7 @@
 """Tests for strategy engine and granite integration fixes."""
 
 import pytest
-import asyncio
-from unittest.mock import patch, AsyncMock
+from unittest.mock import patch
 
 from backend.models.race_state import TelemetryPayload, LapPoint
 from backend.services.strategy_engine import build_recommendation, predict_strategy

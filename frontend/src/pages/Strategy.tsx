@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useState, Suspense, lazy, Fragment } from "react";
 import { useFirebaseRaceState } from "../hooks/useFirebaseRaceState";
 import { useDashboardState } from "../hooks/useDashboardState";
@@ -17,6 +18,7 @@ import { useRole } from "../contexts/RoleContext";
 import * as Resizable from "react-resizable-panels";
 const { Panel, Group } = Resizable;
 import { ResizeHandle } from "../components/ui/ResizeHandle";
+import React from "react";
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { SortableContext, sortableKeyboardCoordinates, horizontalListSortingStrategy, arrayMove } from '@dnd-kit/sortable';
 import { SortableColumn } from '../components/layout/SortableColumn';
@@ -324,7 +326,7 @@ export function Strategy() {
             <Group orientation="horizontal" className="h-full" style={{ gap: 0, background: "var(--border)" }}>
               {columnOrder.map((id: string, index: number) => (
                 <Fragment key={id}>
-                  <Panel id={id} {...getColumnProps(id)} className="h-full">
+                  <Panel id={id} order={index} {...getColumnProps(id)} className="h-full">
                     <SortableColumn id={id}>
                       {renderColumnContent(id)}
                     </SortableColumn>

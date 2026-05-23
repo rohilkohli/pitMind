@@ -16,7 +16,7 @@ from datetime import datetime
 from fastapi import WebSocket
 from fastapi.testclient import TestClient
 
-from backend.main import app, ConnectionManager
+from main import app, ConnectionManager
 
 
 @pytest.fixture
@@ -40,7 +40,7 @@ def connection_manager():
 @pytest.fixture
 def mock_redis_client():
     """Mock Redis client for WebSocket tests."""
-    with patch('backend.main.redis_client') as mock:
+    with patch('main.redis_client') as mock:
         mock.add_websocket_connection = AsyncMock(return_value=True)
         mock.remove_websocket_connection = AsyncMock(return_value=True)
         mock.get_websocket_connections = AsyncMock(return_value=set())
@@ -342,7 +342,7 @@ class TestWebSocketRedisIntegration:
     @pytest.mark.asyncio
     async def test_connection_works_without_redis(self, connection_manager, mock_websocket):
         """Test that connections work even when Redis is unavailable."""
-        with patch('backend.main.redis_client') as mock_redis:
+        with patch('main.redis_client') as mock_redis:
             mock_redis.add_websocket_connection = AsyncMock(return_value=False)
             
             session_id = "test-session"

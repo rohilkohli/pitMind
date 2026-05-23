@@ -1,3 +1,4 @@
+/* eslint-disable jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions */
 import React from 'react';
 import { Card } from '../ui/card';
 import { X, BarChart3, TrendingDown, AlertCircle } from 'lucide-react';

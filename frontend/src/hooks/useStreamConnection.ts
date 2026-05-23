@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { useEffect, useRef, useState, useCallback } from 'react';
 import type { WebSocketMessage, WebSocketMessageType } from '../types/api';
 

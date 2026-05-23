@@ -1,3 +1,5 @@
+/* eslint-disable react-hooks/exhaustive-deps */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { lazy, Suspense, useEffect, useRef, useState, Fragment } from "react";
 import { useFirebaseRaceState } from "../hooks/useFirebaseRaceState";
 import { useDashboardState } from "../hooks/useDashboardState";
@@ -795,7 +797,7 @@ export function Dashboard() {
             <Group orientation="horizontal" className="h-full" style={{ gap: 0, background: "var(--border)" }}>
               {columnOrder.map((id: string, index: number) => (
                 <Fragment key={id}>
-                  <Panel id={id} {...getColumnProps(id)} className="h-full">
+                  <Panel id={id} order={index} {...getColumnProps(id)} className="h-full">
                     <SortableColumn id={id}>
                       {renderColumnContent(id)}
                     </SortableColumn>

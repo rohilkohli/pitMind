@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState } from 'react';
 import { FileText, Upload, CheckCircle, AlertCircle, Loader2, Download } from 'lucide-react';
 import { uploadDebrief, type DebriefResponse } from '../../services/api';

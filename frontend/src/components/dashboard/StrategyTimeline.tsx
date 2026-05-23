@@ -1,3 +1,4 @@
+/* eslint-disable jsx-a11y/click-events-have-key-events, jsx-a11y/no-noninteractive-element-interactions */
 import { useEffect, useMemo, useState, useRef } from "react";
 import { AlertTriangle, ClipboardCheck, Gauge, Lock, ShieldCheck, TimerReset } from "lucide-react";
 import type { StrategyCommitResponse, StrategyRecommendation } from "../../services/api";

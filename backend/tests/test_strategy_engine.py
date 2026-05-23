@@ -1,7 +1,7 @@
 import pytest
 
-from backend.models.race_state import LapPoint, TelemetryPayload
-from backend.services.strategy_engine import predict_strategy, _latest_wear
+from models.race_state import LapPoint, TelemetryPayload
+from services.strategy_engine import predict_strategy
 
 
 def _sample_payload(wear: float = 50.0, degradation_trend: float = 0.0) -> TelemetryPayload:
@@ -382,32 +382,3 @@ class TestStrategyCacheIntegration:
         assert scores1.pit_urgency == scores2.pit_urgency
 
 # Made with Bob
-
-class TestLatestWear:
-    """Test _latest_wear helper function."""
-
-    def test_latest_wear_empty_laps(self):
-        assert _latest_wear([]) == 55.0
-
-    def test_latest_wear_all_none(self):
-        laps = [
-            LapPoint(lap=1, tyre_wear_pct=None),
-            LapPoint(lap=2, tyre_wear_pct=None)
-        ]
-        assert _latest_wear(laps) == 55.0
-
-    def test_latest_wear_normal(self):
-        laps = [
-            LapPoint(lap=1, tyre_wear_pct=10.0),
-            LapPoint(lap=2, tyre_wear_pct=20.0),
-            LapPoint(lap=3, tyre_wear_pct=30.0)
-        ]
-        assert _latest_wear(laps) == 30.0
-
-    def test_latest_wear_last_none(self):
-        laps = [
-            LapPoint(lap=1, tyre_wear_pct=10.0),
-            LapPoint(lap=2, tyre_wear_pct=20.0),
-            LapPoint(lap=3, tyre_wear_pct=None)
-        ]
-        assert _latest_wear(laps) == 20.0

@@ -12,8 +12,7 @@ try:
     from ..models.strategy import StrategyRecommendation, StrategyScores
     from .cache_manager import (
         generate_heuristic_cache_key,
-        generate_strategy_cache_key,
-        get_cached_strategy,
+                get_cached_strategy,
         set_cached_strategy,
     )
 except ImportError:

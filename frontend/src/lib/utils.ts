@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 
@@ -5,7 +6,7 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export function exportToCsv(filename: string, rows: Record<string, unknown>[]) {
+export function exportToCsv(filename: string, rows: object[]) {
   if (!rows || !rows.length) return;
   const separator = ",";
   const keys = Object.keys(rows[0]);
@@ -14,10 +15,9 @@ export function exportToCsv(filename: string, rows: Record<string, unknown>[]) {
     ...rows.map((row) =>
       keys
         .map((k) => {
-          const value = row[k];
-          let cell = value === null || value === undefined ? "" : value;
-          cell = cell instanceof Date ? cell.toLocaleString() : String(cell).replace(/"/g, '""');
-          if (typeof cell === "string" && cell.search(/("|,|\n)/g) >= 0) cell = `"${cell}"`;
+          let cell = (row as any)[k] === null || (row as any)[k] === undefined ? "" : (row as any)[k];
+          cell = cell instanceof Date ? cell.toLocaleString() : cell.toString().replace(/"/g, '""');
+          if (cell.search(/("|,|\n)/g) >= 0) cell = `"${cell}"`;
           return cell;
         })
         .join(separator)

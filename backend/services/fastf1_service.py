@@ -1,3 +1,4 @@
+import fastf1
 import logging
 import os
 import pandas as pd
@@ -11,7 +12,6 @@ logger = logging.getLogger(__name__)
 def is_fastf1_available() -> bool:
     """Check if the FastF1 library is installed and available."""
     try:
-        import fastf1
         return True
     except ImportError:
         return False
@@ -24,7 +24,6 @@ async def fetch_session_telemetry(year: int, event: str, session_type: str, driv
     if not is_fastf1_available():
         raise RuntimeError("FastF1 is not installed. Please uncomment it in requirements.txt and install it.")
 
-    import fastf1
     
     # Enable caching to speed up repeated requests
     cache_dir = os.path.join(os.getcwd(), "data", "fastf1_cache")
@@ -32,6 +31,7 @@ async def fetch_session_telemetry(year: int, event: str, session_type: str, driv
     try:
         fastf1.Cache.enable_cache(cache_dir)
     except Exception as e:
+        import fastf1
         logger.warning(f"Could not enable FastF1 cache at {cache_dir}: {e}")
 
     logger.info(f"Fetching FastF1 data for {year} {event} {session_type} - {driver_code}")
@@ -82,5 +82,6 @@ async def fetch_session_telemetry(year: int, event: str, session_type: str, driv
             laps=lap_points
         )
     except Exception as e:
+        import fastf1
         logger.error(f"FastF1 error: {e}")
         raise RuntimeError(f"Failed to fetch FastF1 data: {str(e)}")

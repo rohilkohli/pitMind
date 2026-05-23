@@ -343,8 +343,6 @@ async def _replicate_run(system: str, user: str, max_tokens: int) -> str | None:
 
             import asyncio
 
-            poll_interval = 0.5
-            max_interval = 5.0
             for _ in range(45):
                 pr = await client.get(get_url, headers={"Authorization": f"Token {settings.replicate_api_token}"})
                 pr.raise_for_status()
@@ -358,8 +356,7 @@ async def _replicate_run(system: str, user: str, max_tokens: int) -> str | None:
                     return json.dumps(out)
                 if body.get("status") in {"failed", "canceled"}:
                     return None
-                await asyncio.sleep(poll_interval)
-                poll_interval = min(poll_interval * 1.5, max_interval)
+                await asyncio.sleep(2)
     except Exception as exc:  # noqa: BLE001
         logger.warning("Replicate generation failed", exc_info=exc)
     return None

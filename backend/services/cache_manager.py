@@ -18,13 +18,10 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Any, Optional
 
-import asyncio
-
 try:
     from ..config import get_settings
     from ..models.race_state import TelemetryPayload
-    from ..models.strategy import StrategyRecommendation
-    from .redis_client import cache_get, cache_set, cache_delete, redis_operation
+    from .redis_client import cache_get, cache_set, redis_operation
 except ImportError:
     from config import get_settings
     from models.race_state import TelemetryPayload
@@ -431,25 +428,19 @@ async def warm_cache_for_scenario(
     """
     warmed = 0
     
-    async def check_and_prepare(strategy_type: str) -> bool:
+    for strategy_type in strategy_types:
         cache_key = generate_strategy_cache_key(payload, strategy_type, session_id)
         
         # Check if already cached
         existing = await get_cached_strategy(cache_key)
         if existing is not None:
             logger.debug(f"Cache already warm for {cache_key}")
-            return False
+            continue
 
         # Note: Actual strategy computation would happen here
         # For now, we just generate the key structure
         logger.debug(f"Cache warming prepared for {cache_key}")
-        return True
-
-    results = await asyncio.gather(
-        *(check_and_prepare(strategy_type) for strategy_type in strategy_types)
-    )
-
-    warmed = sum(1 for result in results if result)
+        warmed += 1
     
     return warmed
 

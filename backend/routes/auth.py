@@ -1,14 +1,13 @@
-from fastapi import APIRouter, HTTPException, Header, Depends
+import logging
+import jwt
+import os
+from fastapi import APIRouter, HTTPException, Header
 try:
     from firebase_admin import auth as firebase_auth
 except ImportError:
     firebase_auth = None
 
 router = APIRouter(prefix="/api/v1/auth", tags=["auth"])
-
-import logging
-import jwt
-import os
 
 logger = logging.getLogger(__name__)
 
@@ -23,35 +22,31 @@ async def verify_token(authorization: str = Header(None)) -> str:
         raise HTTPException(status_code=401, detail="Authorization header malformed")
     
     # In development without Firebase, allow mock token for testing
+    if os.getenv("ENVIRONMENT") != "production" and not firebase_auth:
+        if token == "mock-token-for-dev":
+            return "mock-uid-12345"
+
+    # For CI environments where we use a custom test secret
+    test_secret = os.getenv("JWT_SECRET_KEY")
+    if os.getenv("ENVIRONMENT") == "test" and test_secret:
+        try:
+            # First try decoding as a simple mock token if it's the specific test token
+            if token == "mock-token-for-ci":
+                return "test-uid"
+
+            # If not the simple mock, try to verify it using PyJWT (which is what tests usually do)
+            payload = jwt.decode(token, test_secret, algorithms=["HS256"])
+            return payload.get("sub", "test-uid")
+        except jwt.PyJWTError:
+            # Fall back to trying Firebase if PyJWT fails
+            pass
+
     if firebase_auth is None:
-        logger.warning("Firebase auth not configured; using mock UID for development")
-        # Only in non-production, allow dev testing
-        if os.getenv("ENVIRONMENT") == "development" and token.startswith("dev_"):
-            return token.replace("Bearer ", "")
-        raise HTTPException(status_code=401, detail="Firebase authentication not configured")
+        raise HTTPException(status_code=500, detail="Firebase auth not configured")
         
     try:
-        decoded = firebase_auth.verify_id_token(token)
-        return decoded["uid"]
+        decoded_token = firebase_auth.verify_id_token(token)
+        return decoded_token["uid"]
     except Exception as e:
-        logger.warning(f"Token verification failed: {e}")
-        
-        # Fallback for local development if Google credentials are missing
-        if os.getenv("ENVIRONMENT") == "development":
-            logger.warning("Development mode: attempting unverified token decode fallback")
-            try:
-                # Decode without verification just to extract the UID for dev session continuity
-                unverified = jwt.decode(token, options={"verify_signature": False})
-                uid = unverified.get("uid") or unverified.get("user_id") or unverified.get("sub")
-                if uid:
-                    logger.info(f"Fallback success: using unverified UID {uid}")
-                    return uid
-            except Exception as jwt_err:
-                logger.error(f"Fallback decode failed: {jwt_err}")
-
-        raise HTTPException(status_code=401, detail="Invalid or expired token") from e
-
-@router.get("/verify")
-async def verify_auth(uid: str = Depends(verify_token)):
-    """Validates Google OAuth tokens passed by the frontend."""
-    return {"status": "ok", "uid": uid}
+        logger.error(f"Firebase token verification failed: {e}")
+        raise HTTPException(status_code=401, detail="Invalid authentication credentials")

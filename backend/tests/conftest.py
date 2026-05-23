@@ -14,7 +14,7 @@ import asyncio
 from typing import Generator
 from unittest.mock import AsyncMock, MagicMock
 
-from backend.models.race_state import LapPoint, TelemetryPayload
+from models.race_state import LapPoint, TelemetryPayload
 
 
 # ============================================================================
@@ -362,8 +362,8 @@ def pytest_configure(config):
 @pytest.fixture(autouse=True)
 def override_auth_for_tests(request):
     """Override auth dependency for all tests except auth tests."""
-    from backend.main import app
-    from backend.routes.auth import verify_token
+    from main import app
+    from routes.auth import verify_token
     
     if "test_auth_fixes" not in str(request.node.name) and "test_auth_fixes" not in str(request.node.fspath):
         app.dependency_overrides[verify_token] = lambda: "test_uid_123"

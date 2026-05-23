@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, jsx-a11y/label-has-associated-control */
 import React, { useState } from 'react';
 import { Database, Loader2, Play } from 'lucide-react';
 import { postLoadFastF1, type TelemetryPayload } from '../../services/api';

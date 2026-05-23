@@ -20,19 +20,13 @@ from slowapi.util import get_remote_address
 
 try:
     # When executed as a package module (e.g., `uvicorn backend.main:app`)
-    from .config import cors_origin_list, get_settings  # noqa: F401
-    from .models.chat import ChatRequest, ChatResponse, DebriefResponse  # noqa: F401
-    from .models.strategy import StrategyRecommendation, DriverCompareRequest, DriverCompareResponse  # noqa: F401
-    from .models.race_state import TelemetryPayload  # noqa: F401
-    from .services import sanitize  # noqa: F401
-    from .services import pipeline as pipeline_svc  # noqa: F401
-    from .services import granite  # noqa: F401
-    from .services.strategy_engine import predict_strategy  # noqa: F401
-    from .services import redis_client  # noqa: F401
-    from .services.cache_manager import get_cache_stats  # noqa: F401
-    from .services.logger import get_logger, RequestIDMiddleware, PerformanceTimer  # noqa: F401
-    from .middleware.error_handler import register_exception_handlers, ErrorTrackingMiddleware  # noqa: F401
-    from .models import database as db  # noqa: F401
+    from .config import cors_origin_list, get_settings
+    from .services import granite
+    from .services import redis_client
+    from .services.cache_manager import get_cache_stats
+    from .services.logger import get_logger, RequestIDMiddleware
+    from .middleware.error_handler import register_exception_handlers, ErrorTrackingMiddleware
+    from .models import database as db
 except ImportError:
     # When executed from the `backend/` directory (e.g., `uvicorn main:app`)
     from config import cors_origin_list, get_settings
@@ -542,7 +536,7 @@ async def get_session_events(session_id: str) -> dict[str, Any]:
 
 
 try:
-    from .routes import strategy, commentary, fan, auth  # noqa: F401
+    from .routes import strategy, commentary, fan, auth
 except ImportError:
     from routes import strategy, commentary, fan, auth
 

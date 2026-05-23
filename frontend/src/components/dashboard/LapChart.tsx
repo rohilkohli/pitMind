@@ -4,7 +4,9 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import type { TooltipProps } from "recharts";
 import type { ValueType, NameType } from "recharts/types/component/DefaultTooltipContent";
 
-export function LapChart({ data, minimal = false }: { data?: any[], minimal?: boolean }) {
+export type LapData = { lap: number } & Record<string, string | number | null | undefined>;
+
+export function LapChart({ data, minimal = false }: { data?: LapData[], minimal?: boolean }) {
   const [selectedDrivers, setSelectedDrivers] = useState<string[]>(["VER", "LEC", "NOR"]);
   
   const isEmpty = !data || data.length === 0;

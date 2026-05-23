@@ -1,14 +1,13 @@
-/* eslint-disable jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions */
-import React from 'react';
-import { Card } from '../ui/card';
-import { X, BarChart3, TrendingDown, AlertCircle } from 'lucide-react';
+import React from "react";
+import { Card } from "../ui/card";
+import { X, BarChart3, TrendingDown, AlertCircle } from "lucide-react";
 
 export interface EvidenceDrilldown {
   evidence: string;
   metric: string;
   lapRange: [number, number];
   dataPoints: { lap: number; value: number }[];
-  trend: 'improving' | 'degrading' | 'stable';
+  trend: "improving" | "degrading" | "stable";
   confidence: number;
 }
 
@@ -27,39 +26,40 @@ export const EvidenceDrilldownModal: React.FC<EvidenceDrilldownModalProps> = ({
 
   const getTrendColor = (trend: string) => {
     switch (trend) {
-      case 'improving':
-        return 'text-emerald-600';
-      case 'degrading':
-        return 'text-red-600';
-      case 'stable':
-        return 'text-slate-600';
+      case "improving":
+        return "text-emerald-600";
+      case "degrading":
+        return "text-red-600";
+      case "stable":
+        return "text-slate-600";
       default:
-        return 'text-slate-600';
+        return "text-slate-600";
     }
   };
 
   const getTrendLabel = (trend: string) => {
     switch (trend) {
-      case 'improving':
-        return '↓ Improving';
-      case 'degrading':
-        return '↑ Degrading';
-      case 'stable':
-        return '→ Stable';
+      case "improving":
+        return "↓ Improving";
+      case "degrading":
+        return "↑ Degrading";
+      case "stable":
+        return "→ Stable";
       default:
-        return 'Unknown';
+        return "Unknown";
     }
   };
 
   const minValue = Math.min(...evidence.dataPoints.map((p) => p.value));
   const maxValue = Math.max(...evidence.dataPoints.map((p) => p.value));
   const range = maxValue - minValue || 1;
-  const avgValue = evidence.dataPoints.reduce((sum, p) => sum + p.value, 0) / evidence.dataPoints.length;
+  const avgValue =
+    evidence.dataPoints.reduce((sum, p) => sum + p.value, 0) / evidence.dataPoints.length;
 
   return (
     <div
       className={`fixed inset-0 z-50 flex items-center justify-center transition-opacity ${
-        isOpen ? 'opacity-100' : 'pointer-events-none opacity-0'
+        isOpen ? "opacity-100" : "pointer-events-none opacity-0"
       }`}
       onClick={onClose}
     >
@@ -82,8 +82,12 @@ export const EvidenceDrilldownModal: React.FC<EvidenceDrilldownModalProps> = ({
         {/* Header */}
         <div className="mb-6 border-l-4 border-f1-red pl-4">
           <div className="flex items-start justify-between mb-3">
-            <h2 className="text-2xl font-display font-black uppercase text-f1-white">{evidence.metric}</h2>
-            <div className={`px-3 py-1 text-sm font-bold uppercase tracking-widest ${getTrendColor(evidence.trend)} bg-f1-dark border border-f1-border`}>
+            <h2 className="text-2xl font-display font-black uppercase text-f1-white">
+              {evidence.metric}
+            </h2>
+            <div
+              className={`px-3 py-1 text-sm font-bold uppercase tracking-widest ${getTrendColor(evidence.trend)} bg-f1-dark border border-f1-border`}
+            >
               {getTrendLabel(evidence.trend)}
             </div>
           </div>
@@ -100,15 +104,21 @@ export const EvidenceDrilldownModal: React.FC<EvidenceDrilldownModalProps> = ({
           </div>
           <div className="p-3 bg-f1-dark border border-f1-border">
             <div className="text-xs text-f1-muted mb-1 uppercase tracking-widest">Data Points</div>
-            <div className="text-lg font-display font-black text-f1-white">{evidence.dataPoints.length}</div>
+            <div className="text-lg font-display font-black text-f1-white">
+              {evidence.dataPoints.length}
+            </div>
           </div>
           <div className="p-3 bg-f1-dark border border-f1-border">
             <div className="text-xs text-f1-muted mb-1 uppercase tracking-widest">Avg Value</div>
-            <div className="text-lg font-display font-black text-f1-white">{avgValue.toFixed(1)}</div>
+            <div className="text-lg font-display font-black text-f1-white">
+              {avgValue.toFixed(1)}
+            </div>
           </div>
           <div className="p-3 bg-f1-dark border border-f1-border">
             <div className="text-xs text-f1-muted mb-1 uppercase tracking-widest">Confidence</div>
-            <div className="text-lg font-display font-black text-f1-white">{(evidence.confidence * 100).toFixed(0)}%</div>
+            <div className="text-lg font-display font-black text-f1-white">
+              {(evidence.confidence * 100).toFixed(0)}%
+            </div>
           </div>
         </div>
 
@@ -134,17 +144,14 @@ export const EvidenceDrilldownModal: React.FC<EvidenceDrilldownModalProps> = ({
                 const heightPercent = normalizedValue * 100;
 
                 return (
-                  <div
-                    key={idx}
-                    className="flex-1 flex flex-col items-center gap-1 group"
-                  >
+                  <div key={idx} className="flex-1 flex flex-col items-center gap-1 group">
                     <div
                       className={`w-full transition-all ${
-                        evidence.trend === 'improving'
-                          ? 'bg-inter'
-                          : evidence.trend === 'degrading'
-                          ? 'bg-f1-red'
-                          : 'bg-f1-muted'
+                        evidence.trend === "improving"
+                          ? "bg-inter"
+                          : evidence.trend === "degrading"
+                            ? "bg-f1-red"
+                            : "bg-f1-muted"
                       } hover:opacity-80 cursor-help`}
                       style={{ height: `${Math.max(heightPercent, 5)}%` }}
                       title={`Lap ${point.lap}: ${point.value.toFixed(1)}`}
@@ -166,8 +173,12 @@ export const EvidenceDrilldownModal: React.FC<EvidenceDrilldownModalProps> = ({
             <div className="flex items-start gap-2 mb-2">
               <TrendingDown className="w-4 h-4 text-inter mt-0.5" />
               <div>
-                <div className="text-sm font-bold text-f1-white uppercase tracking-widest">Best Value</div>
-                <div className="text-2xl font-display font-black text-inter">{minValue.toFixed(1)}</div>
+                <div className="text-sm font-bold text-f1-white uppercase tracking-widest">
+                  Best Value
+                </div>
+                <div className="text-2xl font-display font-black text-inter">
+                  {minValue.toFixed(1)}
+                </div>
               </div>
             </div>
             <p className="text-xs text-f1-muted">Lowest recorded metric value in range</p>
@@ -177,8 +188,12 @@ export const EvidenceDrilldownModal: React.FC<EvidenceDrilldownModalProps> = ({
             <div className="flex items-start gap-2 mb-2">
               <AlertCircle className="w-4 h-4 text-f1-red mt-0.5" />
               <div>
-                <div className="text-sm font-bold text-f1-white uppercase tracking-widest">Worst Value</div>
-                <div className="text-2xl font-display font-black text-f1-red">{maxValue.toFixed(1)}</div>
+                <div className="text-sm font-bold text-f1-white uppercase tracking-widest">
+                  Worst Value
+                </div>
+                <div className="text-2xl font-display font-black text-f1-red">
+                  {maxValue.toFixed(1)}
+                </div>
               </div>
             </div>
             <p className="text-xs text-f1-muted">Highest recorded metric value in range</p>
@@ -187,13 +202,15 @@ export const EvidenceDrilldownModal: React.FC<EvidenceDrilldownModalProps> = ({
 
         {/* Interpretation */}
         <div className="p-4 bg-f1-dark border border-f1-border mb-6">
-          <h3 className="text-sm font-bold text-f1-white mb-2 uppercase tracking-widest">Interpretation</h3>
+          <h3 className="text-sm font-bold text-f1-white mb-2 uppercase tracking-widest">
+            Interpretation
+          </h3>
           <p className="text-sm text-f1-secondary">
-            {evidence.trend === 'improving'
-              ? 'This metric is showing improvement across the analyzed laps, indicating positive performance trajectory.'
-              : evidence.trend === 'degrading'
-              ? 'This metric is degrading over time, suggesting wear, fuel load, or grip loss. Consider immediate strategic action.'
-              : 'This metric is stable, indicating consistent performance without significant changes.'}
+            {evidence.trend === "improving"
+              ? "This metric is showing improvement across the analyzed laps, indicating positive performance trajectory."
+              : evidence.trend === "degrading"
+                ? "This metric is degrading over time, suggesting wear, fuel load, or grip loss. Consider immediate strategic action."
+                : "This metric is stable, indicating consistent performance without significant changes."}
           </p>
         </div>
 

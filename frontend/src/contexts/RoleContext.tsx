@@ -1,7 +1,6 @@
-/* eslint-disable react-refresh/only-export-components */
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState } from "react";
 
-export type UserRole = 'engineer' | 'strategist' | 'commentator';
+export type UserRole = "engineer" | "strategist" | "commentator";
 
 interface RoleContextType {
   currentRole: UserRole;
@@ -11,19 +10,15 @@ interface RoleContextType {
 const RoleContext = createContext<RoleContextType | undefined>(undefined);
 
 export const RoleProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [currentRole, setRole] = useState<UserRole>('engineer');
+  const [currentRole, setRole] = useState<UserRole>("engineer");
 
-  return (
-    <RoleContext.Provider value={{ currentRole, setRole }}>
-      {children}
-    </RoleContext.Provider>
-  );
+  return <RoleContext.Provider value={{ currentRole, setRole }}>{children}</RoleContext.Provider>;
 };
 
 export const useRole = () => {
   const context = useContext(RoleContext);
   if (!context) {
-    throw new Error('useRole must be used within RoleProvider');
+    throw new Error("useRole must be used within RoleProvider");
   }
   return context;
 };

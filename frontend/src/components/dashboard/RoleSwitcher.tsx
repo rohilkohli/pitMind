@@ -1,8 +1,7 @@
-/* eslint-disable jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions */
-import React, { useState } from 'react';
-import { Zap, Navigation, Mic2 } from 'lucide-react';
+import React, { useState } from "react";
+import { Zap, Navigation, Mic2 } from "lucide-react";
 
-export type UserRole = 'engineer' | 'strategist' | 'commentator';
+export type UserRole = "engineer" | "strategist" | "commentator";
 
 export interface RoleConfig {
   id: UserRole;
@@ -20,28 +19,28 @@ interface RoleSwitcherProps {
 
 const ROLES: Record<UserRole, RoleConfig> = {
   engineer: {
-    id: 'engineer',
-    label: 'Engineer',
-    description: 'Pit wall strategy & telemetry',
+    id: "engineer",
+    label: "Engineer",
+    description: "Pit wall strategy & telemetry",
     icon: <Zap className="w-5 h-5" />,
-    accent: 'text-[var(--f1-red)]',
-    focus: ['Real-time telemetry', 'Strategy calls', 'Pit decisions', 'Tyre management'],
+    accent: "text-[var(--f1-red)]",
+    focus: ["Real-time telemetry", "Strategy calls", "Pit decisions", "Tyre management"],
   },
   strategist: {
-    id: 'strategist',
-    label: 'Strategist',
-    description: 'Long-term race planning',
+    id: "strategist",
+    label: "Strategist",
+    description: "Long-term race planning",
     icon: <Navigation className="w-5 h-5" />,
-    accent: 'text-[var(--neon-green)]',
-    focus: ['Pit windows', 'Compound strategy', 'Undercut/overcut', 'Weather & SC'],
+    accent: "text-[var(--neon-green)]",
+    focus: ["Pit windows", "Compound strategy", "Undercut/overcut", "Weather & SC"],
   },
   commentator: {
-    id: 'commentator',
-    label: 'Commentator',
-    description: 'Race narrative & drama',
+    id: "commentator",
+    label: "Commentator",
+    description: "Race narrative & drama",
     icon: <Mic2 className="w-5 h-5" />,
-    accent: 'text-[var(--amber)]',
-    focus: ['Position battles', 'Driver narratives', 'Fan engagement', 'Highlights'],
+    accent: "text-[var(--amber)]",
+    focus: ["Position battles", "Driver narratives", "Fan engagement", "Highlights"],
   },
 };
 
@@ -77,15 +76,21 @@ export const RoleSwitcher: React.FC<RoleSwitcherProps> = ({ currentRole, onRoleC
                 }}
                 className={`w-full p-4 border transition-colors text-left pm-panel ${
                   currentRole === role.id
-                    ? 'border-[var(--f1-red)] bg-[var(--f1-red-dim)]'
-                    : 'border-[var(--border)] bg-[var(--carbon-light)] hover:border-[var(--f1-red)]'
+                    ? "border-[var(--f1-red)] bg-[var(--f1-red-dim)]"
+                    : "border-[var(--border)] bg-[var(--carbon-light)] hover:border-[var(--f1-red)]"
                 }`}
               >
                 <div className="flex items-start gap-3">
-                  <div className={`mt-1 transition-colors duration-200 ${role.accent}`}>{role.icon}</div>
+                  <div className={`mt-1 transition-colors duration-200 ${role.accent}`}>
+                    {role.icon}
+                  </div>
                   <div className="flex-1">
-                    <h3 className="font-label text-lg font-bold text-[var(--text-primary)] uppercase tracking-wide">{role.label}</h3>
-                    <p className="font-tele text-[10px] text-[var(--text-secondary)] mt-1">{role.description}</p>
+                    <h3 className="font-label text-lg font-bold text-[var(--text-primary)] uppercase tracking-wide">
+                      {role.label}
+                    </h3>
+                    <p className="font-tele text-[10px] text-[var(--text-secondary)] mt-1">
+                      {role.description}
+                    </p>
                     <div className="mt-3 flex flex-wrap gap-2">
                       {role.focus.map((item, idx) => (
                         <span
@@ -106,11 +111,7 @@ export const RoleSwitcher: React.FC<RoleSwitcherProps> = ({ currentRole, onRoleC
 
       {/* Click outside to close */}
       {isOpen && (
-        <div 
-          className="fixed inset-0 z-40" 
-          onClick={() => setIsOpen(false)}
-          aria-hidden="true"
-        />
+        <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} aria-hidden="true" />
       )}
     </div>
   );

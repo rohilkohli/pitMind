@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
-import { FileText, Upload, CheckCircle, AlertCircle, Loader2, Download } from 'lucide-react';
-import { uploadDebrief, type DebriefResponse } from '../../services/api';
-import { auth } from '../../lib/firebase';
+import React, { useState } from "react";
+import { FileText, Upload, CheckCircle, AlertCircle, Loader2, Download } from "lucide-react";
+import { uploadDebrief, type DebriefResponse } from "../../services/api";
+import { auth } from "../../lib/firebase";
 
 export const PostRaceDebrief: React.FC = () => {
   const [file, setFile] = useState<File | null>(null);
@@ -27,7 +27,7 @@ export const PostRaceDebrief: React.FC = () => {
       setDebrief(res);
     } catch (err: any) {
       console.error(err);
-      setError(err.message || 'Failed to upload and process debrief');
+      setError(err.message || "Failed to upload and process debrief");
     } finally {
       setLoading(false);
     }
@@ -35,11 +35,11 @@ export const PostRaceDebrief: React.FC = () => {
 
   const downloadDebrief = () => {
     if (!debrief) return;
-    const blob = new Blob([debrief.report_markdown], { type: 'text/markdown' });
+    const blob = new Blob([debrief.report_markdown], { type: "text/markdown" });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
+    const a = document.createElement("a");
     a.href = url;
-    a.download = `pitmind_debrief_${new Date().toISOString().split('T')[0]}.md`;
+    a.download = `pitmind_debrief_${new Date().toISOString().split("T")[0]}.md`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -75,9 +75,11 @@ export const PostRaceDebrief: React.FC = () => {
               </div>
               <div className="text-center">
                 <p className="font-label text-[var(--text-primary)] font-bold uppercase tracking-wider text-lg">
-                  {file ? file.name : 'Upload race data or PDF'}
+                  {file ? file.name : "Upload race data or PDF"}
                 </p>
-                <p className="font-tele text-[10px] text-[var(--text-secondary)] mt-1 uppercase">Supports .PDF, .CSV, .JSON, .TXT (Max 5MB)</p>
+                <p className="font-tele text-[10px] text-[var(--text-secondary)] mt-1 uppercase">
+                  Supports .PDF, .CSV, .JSON, .TXT (Max 5MB)
+                </p>
               </div>
               {file && (
                 <button
@@ -88,7 +90,7 @@ export const PostRaceDebrief: React.FC = () => {
                   disabled={loading}
                   className="pm-btn-primary mt-4 flex items-center gap-2"
                 >
-                  {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Process with Granite'}
+                  {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Process with Granite"}
                 </button>
               )}
             </div>
@@ -99,8 +101,12 @@ export const PostRaceDebrief: React.FC = () => {
               <div className="flex items-center gap-3">
                 <CheckCircle className="w-5 h-5 text-[var(--neon-green)]" />
                 <div>
-                  <p className="font-label text-sm font-bold text-[var(--text-primary)] uppercase tracking-wider">Analysis Complete</p>
-                  <p className="font-tele text-[10px] text-[var(--neon-green)] uppercase">{debrief.source_note}</p>
+                  <p className="font-label text-sm font-bold text-[var(--text-primary)] uppercase tracking-wider">
+                    Analysis Complete
+                  </p>
+                  <p className="font-tele text-[10px] text-[var(--neon-green)] uppercase">
+                    {debrief.source_note}
+                  </p>
                 </div>
               </div>
               <div className="flex gap-2">
@@ -122,13 +128,47 @@ export const PostRaceDebrief: React.FC = () => {
 
             <div className="pm-panel p-6 flex-1 overflow-y-auto max-h-[500px]">
               <div className="font-tele text-sm leading-relaxed text-[var(--text-secondary)] max-w-none">
-                {debrief.report_markdown.split('\n').map((line, i) => {
-                  if (line.startsWith('# ')) return <h1 key={i} className="font-label text-2xl font-black text-[var(--text-primary)] mt-6 mb-4 uppercase tracking-tighter border-b border-[var(--f1-red-glow)] pb-2">{line.replace('# ', '')}</h1>;
-                  if (line.startsWith('## ')) return <h2 key={i} className="font-label text-xl font-bold text-[var(--text-primary)] mt-5 mb-3 uppercase tracking-tighter">{line.replace('## ', '')}</h2>;
-                  if (line.startsWith('### ')) return <h3 key={i} className="font-label text-lg font-bold text-[var(--f1-red)] mt-4 mb-2 uppercase">{line.replace('### ', '')}</h3>;
-                  if (line.startsWith('- ')) return <div key={i} className="flex gap-2 mb-1"><span className="text-[var(--f1-red)]">•</span><span>{line.replace('- ', '')}</span></div>;
-                  if (line.trim() === '') return <div key={i} className="h-4" />;
-                  return <p key={i} className="mb-4">{line}</p>;
+                {debrief.report_markdown.split("\n").map((line, i) => {
+                  if (line.startsWith("# "))
+                    return (
+                      <h1
+                        key={i}
+                        className="font-label text-2xl font-black text-[var(--text-primary)] mt-6 mb-4 uppercase tracking-tighter border-b border-[var(--f1-red-glow)] pb-2"
+                      >
+                        {line.replace("# ", "")}
+                      </h1>
+                    );
+                  if (line.startsWith("## "))
+                    return (
+                      <h2
+                        key={i}
+                        className="font-label text-xl font-bold text-[var(--text-primary)] mt-5 mb-3 uppercase tracking-tighter"
+                      >
+                        {line.replace("## ", "")}
+                      </h2>
+                    );
+                  if (line.startsWith("### "))
+                    return (
+                      <h3
+                        key={i}
+                        className="font-label text-lg font-bold text-[var(--f1-red)] mt-4 mb-2 uppercase"
+                      >
+                        {line.replace("### ", "")}
+                      </h3>
+                    );
+                  if (line.startsWith("- "))
+                    return (
+                      <div key={i} className="flex gap-2 mb-1">
+                        <span className="text-[var(--f1-red)]">•</span>
+                        <span>{line.replace("- ", "")}</span>
+                      </div>
+                    );
+                  if (line.trim() === "") return <div key={i} className="h-4" />;
+                  return (
+                    <p key={i} className="mb-4">
+                      {line}
+                    </p>
+                  );
                 })}
               </div>
             </div>
@@ -139,7 +179,9 @@ export const PostRaceDebrief: React.FC = () => {
           <div className="mt-4 p-4 border border-[var(--f1-red)] bg-[var(--f1-red-dim)] flex items-start gap-3">
             <AlertCircle className="w-5 h-5 text-[var(--f1-red)] shrink-0" />
             <div>
-              <p className="font-label text-sm font-bold text-[var(--text-primary)] uppercase">Upload Failed</p>
+              <p className="font-label text-sm font-bold text-[var(--text-primary)] uppercase">
+                Upload Failed
+              </p>
               <p className="font-tele text-xs text-[var(--f1-red)] mt-1">{error}</p>
             </div>
           </div>

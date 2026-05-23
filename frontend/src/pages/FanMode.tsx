@@ -31,7 +31,7 @@ function buildDemoRaceState(): RaceState {
 }
 
 const TABS = ["LIVE", "INTERACTIVE", "TELEMETRY"] as const;
-type Tab = typeof TABS[number];
+type Tab = (typeof TABS)[number];
 
 export function FanMode() {
   const { raceState, loading } = useFirebaseRaceState("current_race");
@@ -77,7 +77,9 @@ export function FanMode() {
               marginBottom: 20,
             }}
           >
-            <span style={{ width: 20, height: 1, background: "var(--f1-red)", display: "inline-block" }} />
+            <span
+              style={{ width: 20, height: 1, background: "var(--f1-red)", display: "inline-block" }}
+            />
             MONACO · RACE LIVE · 2024 MONACO GP
           </div>
 
@@ -93,8 +95,10 @@ export function FanMode() {
               marginBottom: 8,
             }}
           >
-            MONACO<br />
-            <span style={{ color: "var(--f1-red)" }}>GRAND</span><br />
+            MONACO
+            <br />
+            <span style={{ color: "var(--f1-red)" }}>GRAND</span>
+            <br />
             PRIX
           </h1>
 
@@ -179,9 +183,9 @@ export function FanMode() {
             WebkitMaskImage: "linear-gradient(to right, transparent 0%, black 40%)",
           }}
         >
-          <img 
-            src="/f1_car_hero.png" 
-            alt="F1 Car" 
+          <img
+            src="/f1_car_hero.png"
+            alt="F1 Car"
             style={{
               width: "100%",
               height: "100%",

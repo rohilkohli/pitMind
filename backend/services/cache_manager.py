@@ -18,16 +18,17 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Any, Optional
 
+import asyncio
+
 try:
-    from ..config import get_settings
-    from ..models.race_state import TelemetryPayload
-    from ..models.strategy import StrategyRecommendation
-    from .redis_client import cache_get, cache_set, cache_delete, redis_operation
+    from ..config import get_settings  # noqa: F401
+    from ..models.race_state import TelemetryPayload  # noqa: F401
+    from ..models.strategy import StrategyRecommendation  # noqa: F401
+    from .redis_client import cache_get, cache_set, cache_delete, redis_operation  # noqa: F401
 except ImportError:
     from config import get_settings
     from models.race_state import TelemetryPayload
-    from models.strategy import StrategyRecommendation
-    from services.redis_client import cache_get, cache_set, cache_delete, redis_operation
+    from services.redis_client import cache_get, cache_set, redis_operation
 
 logger = logging.getLogger(__name__)
 
@@ -396,19 +397,25 @@ async def warm_cache_for_scenario(
     """
     warmed = 0
     
-    for strategy_type in strategy_types:
+    async def check_and_prepare(strategy_type: str) -> bool:
         cache_key = generate_strategy_cache_key(payload, strategy_type, session_id)
         
         # Check if already cached
         existing = await get_cached_strategy(cache_key)
         if existing is not None:
             logger.debug(f"Cache already warm for {cache_key}")
-            continue
-        
+            return False
+
         # Note: Actual strategy computation would happen here
         # For now, we just generate the key structure
         logger.debug(f"Cache warming prepared for {cache_key}")
-        warmed += 1
+        return True
+
+    results = await asyncio.gather(
+        *(check_and_prepare(strategy_type) for strategy_type in strategy_types)
+    )
+
+    warmed = sum(1 for result in results if result)
     
     return warmed
 

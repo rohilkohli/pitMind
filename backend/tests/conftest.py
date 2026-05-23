@@ -11,7 +11,7 @@ This module provides reusable fixtures for:
 
 import pytest
 import asyncio
-from typing import AsyncGenerator, Generator
+from typing import Generator
 from unittest.mock import AsyncMock, MagicMock
 
 from backend.models.race_state import LapPoint, TelemetryPayload

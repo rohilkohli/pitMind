@@ -6,12 +6,24 @@ import { StreamProvider } from "./contexts/StreamContext";
 import { PageShell } from "./components/layout/PageShell";
 import { Skeleton } from "./components/ui/skeleton";
 
-const Dashboard = React.lazy(() => import("./pages/Dashboard").then((module) => ({ default: module.Dashboard })));
-const FanMode = React.lazy(() => import("./pages/FanMode").then((module) => ({ default: module.FanMode })));
-const Login = React.lazy(() => import("./pages/Login").then((module) => ({ default: module.Login })));
-const Strategy = React.lazy(() => import("./pages/Strategy").then((module) => ({ default: module.Strategy })));
-const Telemetry = React.lazy(() => import("./pages/Telemetry").then((module) => ({ default: module.Telemetry })));
-const Landing = React.lazy(() => import("./pages/Landing").then((module) => ({ default: module.Landing })));
+const Dashboard = React.lazy(() =>
+  import("./pages/Dashboard").then((module) => ({ default: module.Dashboard })),
+);
+const FanMode = React.lazy(() =>
+  import("./pages/FanMode").then((module) => ({ default: module.FanMode })),
+);
+const Login = React.lazy(() =>
+  import("./pages/Login").then((module) => ({ default: module.Login })),
+);
+const Strategy = React.lazy(() =>
+  import("./pages/Strategy").then((module) => ({ default: module.Strategy })),
+);
+const Telemetry = React.lazy(() =>
+  import("./pages/Telemetry").then((module) => ({ default: module.Telemetry })),
+);
+const Landing = React.lazy(() =>
+  import("./pages/Landing").then((module) => ({ default: module.Landing })),
+);
 
 function PageLoader({ label }: { label: string }) {
   return (
@@ -40,7 +52,11 @@ function RequireAuth({ children }: { children: React.ReactElement }) {
     return (
       <div
         className="flex h-screen items-center justify-center"
-        style={{ background: "var(--carbon)", color: "var(--text-secondary)", fontFamily: "'IBM Plex Mono', monospace" }}
+        style={{
+          background: "var(--carbon)",
+          color: "var(--text-secondary)",
+          fontFamily: "'IBM Plex Mono', monospace",
+        }}
       >
         Checking authentication...
       </div>
@@ -48,8 +64,8 @@ function RequireAuth({ children }: { children: React.ReactElement }) {
   }
 
   // Only bypass authentication in development when explicitly enabled
-  const bypassAuth = import.meta.env.VITE_BYPASS_AUTH === 'true' && import.meta.env.DEV;
-  
+  const bypassAuth = import.meta.env.VITE_BYPASS_AUTH === "true" && import.meta.env.DEV;
+
   if (!user && !bypassAuth) {
     return <Navigate to="/login" replace />;
   }
@@ -157,7 +173,9 @@ function CustomCursor() {
       }
     };
 
-    const interactables = document.querySelectorAll("button, a, [role='button'], .pm-chip, .pm-nav-item, .pm-standing-row, .pm-strategy-card, .pm-tl-item, input");
+    const interactables = document.querySelectorAll(
+      "button, a, [role='button'], .pm-chip, .pm-nav-item, .pm-standing-row, .pm-strategy-card, .pm-tl-item, input",
+    );
     interactables.forEach((el) => {
       el.addEventListener("mouseenter", onEnter);
       el.addEventListener("mouseleave", onLeave);
@@ -194,8 +212,11 @@ function CustomCursor() {
 }
 
 export default function App() {
-  const defaultWsUrl = import.meta.env.VITE_WS_URL || 
-    ((window.location.protocol === 'https:' ? 'wss://' : 'ws://') + window.location.host + '/api/v1/stream/telemetry');
+  const defaultWsUrl =
+    import.meta.env.VITE_WS_URL ||
+    (window.location.protocol === "https:" ? "wss://" : "ws://") +
+      window.location.host +
+      "/api/v1/stream/telemetry";
 
   return (
     <BrowserRouter>
@@ -214,7 +235,7 @@ export default function App() {
               </Suspense>
             }
           />
-          
+
           {/* Fan Mode is unauthenticated */}
           <Route
             path="/fan"
@@ -226,7 +247,7 @@ export default function App() {
               </PageShell>
             }
           />
-          
+
           {/* Dashboard is restricted to authenticated engineers */}
           <Route
             path="/dashboard"
@@ -278,7 +299,7 @@ export default function App() {
               </RequireAuth>
             }
           />
-          
+
           {/* Copilot is an alias for the Dashboard view in this version */}
           <Route
             path="/copilot"
@@ -296,17 +317,17 @@ export default function App() {
               </RequireAuth>
             }
           />
-          
+
           {/* Default route */}
-          <Route 
-            path="/" 
+          <Route
+            path="/"
             element={
               <PageShell>
                 <Suspense fallback={<PageLoader label="Loading PitMind..." />}>
                   <Landing />
                 </Suspense>
               </PageShell>
-            } 
+            }
           />
         </Routes>
       </div>

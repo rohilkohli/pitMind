@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Download, CheckCircle } from 'lucide-react';
+import React, { useState } from "react";
+import { Download, CheckCircle } from "lucide-react";
 
 export interface StrategyDecision {
   id: string;
@@ -26,47 +26,47 @@ interface DecisionLogProps {
 
 const MOCK_DECISIONS: StrategyDecision[] = [
   {
-    id: '1',
+    id: "1",
     lap: 12,
-    timestamp: '00:28:45',
-    action: 'Pit For Fresh Softs',
+    timestamp: "00:28:45",
+    action: "Pit For Fresh Softs",
     confidence: 0.91,
-    reasoning: 'Tyre wear accelerating. Pit window optimal. Leader not yet committed.',
-    annotation: 'Clean pit execution, 2.1s stop',
+    reasoning: "Tyre wear accelerating. Pit window optimal. Leader not yet committed.",
+    annotation: "Clean pit execution, 2.1s stop",
     approved: true,
-    approvedBy: 'Engineer Lead',
-    outcome: { resultPosition: 2, resultGap: 1.2, notes: 'Undercut attempt, competitor matched' },
+    approvedBy: "Engineer Lead",
+    outcome: { resultPosition: 2, resultGap: 1.2, notes: "Undercut attempt, competitor matched" },
   },
   {
-    id: '2',
+    id: "2",
     lap: 23,
-    timestamp: '00:54:12',
-    action: 'Hold Position',
+    timestamp: "00:54:12",
+    action: "Hold Position",
     confidence: 0.72,
-    reasoning: 'P2 tyre gap narrowing. Wait for their pit signal before committing.',
-    annotation: 'Good call - P2 pit 2 laps later',
+    reasoning: "P2 tyre gap narrowing. Wait for their pit signal before committing.",
+    annotation: "Good call - P2 pit 2 laps later",
     approved: true,
-    approvedBy: 'Strategist',
-    outcome: { resultPosition: 1, resultGap: -0.8, notes: 'Gained 2 positions through patience' },
+    approvedBy: "Strategist",
+    outcome: { resultPosition: 1, resultGap: -0.8, notes: "Gained 2 positions through patience" },
   },
   {
-    id: '3',
+    id: "3",
     lap: 35,
-    timestamp: '01:22:33',
-    action: 'Switch To Conservative',
+    timestamp: "01:22:33",
+    action: "Switch To Conservative",
     confidence: 0.65,
-    reasoning: 'Tyre management critical. Low confidence in final stint durability.',
-    annotation: 'Borderline call - could have pushed more',
+    reasoning: "Tyre management critical. Low confidence in final stint durability.",
+    annotation: "Borderline call - could have pushed more",
     approved: true,
-    approvedBy: 'Engineer Lead',
+    approvedBy: "Engineer Lead",
   },
   {
-    id: '4',
+    id: "4",
     lap: 41,
-    timestamp: '01:45:18',
-    action: 'Final Push — Soft',
+    timestamp: "01:45:18",
+    action: "Final Push — Soft",
     confidence: 0.79,
-    reasoning: 'SC deployed lap 38. Fresh softs now optimal for DRS battles.',
+    reasoning: "SC deployed lap 38. Fresh softs now optimal for DRS battles.",
     approved: false,
   },
 ];
@@ -80,28 +80,29 @@ export const DecisionLog: React.FC<DecisionLogProps> = ({
 
   const getConfClass = (conf: number): string => {
     const pct = conf * 100;
-    if (pct >= 80) return 'pm-conf-high';
-    if (pct >= 60) return 'pm-conf-mid';
-    return 'pm-conf-low';
+    if (pct >= 80) return "pm-conf-high";
+    if (pct >= 60) return "pm-conf-mid";
+    return "pm-conf-low";
   };
 
   const getCallLabel = (conf: number): string => {
     const pct = conf * 100;
-    if (pct >= 80) return 'OPTIMAL CALL';
-    if (pct >= 60) return 'BORDERLINE CALL';
-    return 'RISKY CALL';
+    if (pct >= 80) return "OPTIMAL CALL";
+    if (pct >= 60) return "BORDERLINE CALL";
+    return "RISKY CALL";
   };
 
   const getCardClass = (conf: number): string => {
     const pct = conf * 100;
-    if (pct >= 80) return 'pm-strategy-card optimal';
-    if (pct >= 60) return 'pm-strategy-card borderline';
-    return 'pm-strategy-card';
+    if (pct >= 80) return "pm-strategy-card optimal";
+    if (pct >= 60) return "pm-strategy-card borderline";
+    return "pm-strategy-card";
   };
 
-  const avgConfidence = decisions.length > 0
-    ? (decisions.reduce((sum, d) => sum + d.confidence, 0) / decisions.length) * 100
-    : 0;
+  const avgConfidence =
+    decisions.length > 0
+      ? (decisions.reduce((sum, d) => sum + d.confidence, 0) / decisions.length) * 100
+      : 0;
 
   return (
     <div
@@ -186,7 +187,10 @@ export const DecisionLog: React.FC<DecisionLogProps> = ({
               }}
             >
               <div className="pm-strategy-action">{decision.action}</div>
-              <div className={`pm-confidence-badge ${getConfClass(decision.confidence)}`} style={{ borderRadius: 0 }}>
+              <div
+                className={`pm-confidence-badge ${getConfClass(decision.confidence)}`}
+                style={{ borderRadius: 0 }}
+              >
                 {(decision.confidence * 100).toFixed(0)}%
               </div>
             </div>
@@ -211,8 +215,8 @@ export const DecisionLog: React.FC<DecisionLogProps> = ({
                     decision.confidence >= 0.8
                       ? "var(--neon-green)"
                       : decision.confidence >= 0.6
-                      ? "var(--amber)"
-                      : "var(--f1-red)",
+                        ? "var(--amber)"
+                        : "var(--f1-red)",
                 }}
               >
                 {getCallLabel(decision.confidence)}
@@ -276,7 +280,9 @@ export const DecisionLog: React.FC<DecisionLogProps> = ({
                   Outcome
                 </div>
                 <div className="pm-strategy-text">
-                  P{decision.outcome.resultPosition} · Gap: {decision.outcome.resultGap > 0 ? "+" : ""}{decision.outcome.resultGap}s<br />
+                  P{decision.outcome.resultPosition} · Gap:{" "}
+                  {decision.outcome.resultGap > 0 ? "+" : ""}
+                  {decision.outcome.resultGap}s<br />
                   {decision.outcome.notes}
                 </div>
                 {decision.annotation && (
@@ -309,9 +315,17 @@ export const DecisionLog: React.FC<DecisionLogProps> = ({
           }}
         >
           {[
-            { val: decisions.length,                                    label: "Total Calls",    color: "var(--text-primary)" },
-            { val: decisions.filter((d) => d.approved).length,         label: "Approved",       color: "var(--neon-green)" },
-            { val: `${avgConfidence.toFixed(0)}%`,                     label: "Avg Confidence", color: "var(--text-primary)" },
+            { val: decisions.length, label: "Total Calls", color: "var(--text-primary)" },
+            {
+              val: decisions.filter((d) => d.approved).length,
+              label: "Approved",
+              color: "var(--neon-green)",
+            },
+            {
+              val: `${avgConfidence.toFixed(0)}%`,
+              label: "Avg Confidence",
+              color: "var(--text-primary)",
+            },
           ].map((stat) => (
             <div key={stat.label} style={{ textAlign: "center", padding: "0 8px" }}>
               <div

@@ -11,7 +11,7 @@ This module tests:
 
 import pytest
 import json
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, patch
 from redis.exceptions import RedisError, ConnectionError, TimeoutError
 
 from backend.services import redis_client
@@ -45,6 +45,18 @@ async def mock_connection_pool():
 class TestRedisInitialization:
     """Test Redis initialization and connection."""
     
+    def test_get_redis_client_available(self, mock_redis, monkeypatch):
+        """Test getting the Redis client when available."""
+        monkeypatch.setattr(redis_client, "_redis_client", mock_redis)
+        result = redis_client.get_redis_client()
+        assert result is mock_redis
+
+    def test_get_redis_client_unavailable(self, monkeypatch):
+        """Test getting the Redis client when unavailable."""
+        monkeypatch.setattr(redis_client, "_redis_client", None)
+        result = redis_client.get_redis_client()
+        assert result is None
+
     @pytest.mark.asyncio
     async def test_init_redis_success(self, mock_redis, mock_connection_pool):
         """Test successful Redis initialization."""

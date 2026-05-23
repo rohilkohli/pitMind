@@ -17,7 +17,7 @@ interface StreamHealthMonitorProps {
   showMetrics?: boolean;
 }
 
-const getStatusColor = (status: ConnectionStatus) => {
+export const getStatusColor = (status: ConnectionStatus) => {
   switch (status) {
     case 'connected':
       return 'bg-[var(--neon-green-dim)] border-[var(--neon-green)] text-[var(--neon-green)]';

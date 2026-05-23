@@ -1,6 +1,5 @@
 import logging
 import os
-from typing import Any
 import pandas as pd
 try:
     from ..models.race_state import TelemetryPayload, LapPoint

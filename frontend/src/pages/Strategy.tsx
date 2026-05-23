@@ -18,18 +18,36 @@ import * as Resizable from "react-resizable-panels";
 const { Panel, Group } = Resizable;
 import { ResizeHandle } from "../components/ui/ResizeHandle";
 import React from "react";
-import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
-import { SortableContext, sortableKeyboardCoordinates, horizontalListSortingStrategy, arrayMove } from '@dnd-kit/sortable';
-import { SortableColumn } from '../components/layout/SortableColumn';
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  sortableKeyboardCoordinates,
+  horizontalListSortingStrategy,
+  arrayMove,
+} from "@dnd-kit/sortable";
+import { SortableColumn } from "../components/layout/SortableColumn";
 
-const LapChart = lazy(() => import("../components/dashboard/LapChart").then(m => ({ default: m.LapChart })));
-const PostRaceDebrief = lazy(() => import("../components/dashboard/PostRaceDebrief").then(m => ({ default: m.PostRaceDebrief })));
-const DecisionLog = lazy(() => import("../components/dashboard/DecisionLog").then(m => ({ default: m.DecisionLog })));
+const LapChart = lazy(() =>
+  import("../components/dashboard/LapChart").then((m) => ({ default: m.LapChart })),
+);
+const PostRaceDebrief = lazy(() =>
+  import("../components/dashboard/PostRaceDebrief").then((m) => ({ default: m.PostRaceDebrief })),
+);
+const DecisionLog = lazy(() =>
+  import("../components/dashboard/DecisionLog").then((m) => ({ default: m.DecisionLog })),
+);
 
 export function Strategy() {
   const { raceState } = useFirebaseRaceState("current_race");
   const { currentRole, setRole } = useRole();
-  const { getShareableUrl, copyShareableUrl } = useDashboardState({ timeFilter: 'live' });
+  const { getShareableUrl, copyShareableUrl } = useDashboardState({ timeFilter: "live" });
   const { payload: localPayload } = useTelemetry(demoDriverA);
 
   const [reco, setReco] = useState<StrategyRecommendation | null>(null);
@@ -49,7 +67,8 @@ export function Strategy() {
           setReco({
             action: "PIT FOR FRESH SOFTS",
             confidence: 84,
-            explanation: "Tyre wear at 73%. Lap time degradation trend\nexceeds threshold. Pit window optimal at current lap.",
+            explanation:
+              "Tyre wear at 73%. Lap time degradation trend\nexceeds threshold. Pit window optimal at current lap.",
             evidence: ["Tyre wear: 73%", "Lap delta: +0.31s", "Gap to P2: 1.8s"],
             urgency_score: 84,
             assumptions: ["No safety car in next 3 laps"],
@@ -60,25 +79,25 @@ export function Strategy() {
               pit_urgency: 84,
               sc_probability_next_3_laps: 15,
               overtake_risk: 30,
-              recommended_window_laps: [18, 25]
+              recommended_window_laps: [18, 25],
             },
             structured_reasons: [
               "Tyre wear at 73% exceeds critical threshold",
               "Lap time degradation trend exceeds normal limits",
-              "Pit window optimal at current lap"
+              "Pit window optimal at current lap",
             ],
             pipeline_steps: [
               "FastF1 Data Load Completed",
               "Tyre Wear Assessment Completed",
               "Race Simulation Completed",
-              "Granite Strategy Suggestion Generated"
+              "Granite Strategy Suggestion Generated",
             ],
             confidence_decomposition: {
               data_quality: 92,
               model_certainty: 84,
               stability: 78,
-              regret_bound: 0.16
-            }
+              regret_bound: 0.16,
+            },
           });
         }
       }
@@ -89,7 +108,7 @@ export function Strategy() {
     };
   }, [localPayload]);
 
-  const mockChartData = localPayload.laps.map(lap => ({
+  const mockChartData = localPayload.laps.map((lap) => ({
     lap: lap.lap,
     VER: lap.lap_time_s || 0,
     LEC: (lap.lap_time_s || 0) + 0.3,
@@ -98,15 +117,15 @@ export function Strategy() {
   }));
 
   const [columnOrder, setColumnOrder] = useState(() => {
-    const saved = localStorage.getItem('pitmind_strategy_layout');
-    return saved ? JSON.parse(saved) : ['left', 'center', 'right'];
+    const saved = localStorage.getItem("pitmind_strategy_layout");
+    return saved ? JSON.parse(saved) : ["left", "center", "right"];
   });
 
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
-    })
+    }),
   );
 
   function handleDragEnd(event: any) {
@@ -116,14 +135,24 @@ export function Strategy() {
         const oldIndex = items.indexOf(active.id);
         const newIndex = items.indexOf(over.id);
         const newOrder = arrayMove(items, oldIndex, newIndex);
-        localStorage.setItem('pitmind_strategy_layout', JSON.stringify(newOrder));
+        localStorage.setItem("pitmind_strategy_layout", JSON.stringify(newOrder));
         return newOrder;
       });
     }
   }
 
   const renderLeftColumn = () => (
-    <div style={{ display: "flex", flexDirection: "column", gap: 1, background: "var(--border)", height: "100%", overflowY: "auto", paddingBottom: 80 }}>
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        gap: 1,
+        background: "var(--border)",
+        height: "100%",
+        overflowY: "auto",
+        paddingBottom: 80,
+      }}
+    >
       <div className="pm-panel" style={{ flex: "1 1 auto", minHeight: 300 }}>
         <div className="pm-panel-header">
           <div className="pm-panel-title">Strategy Timeline</div>
@@ -133,7 +162,9 @@ export function Strategy() {
           reco={reco}
           strategyChecklistKey={`pitmind.strategy.checklist.${localPayload.circuit}.${localPayload.session_label}.${localPayload.driver}`}
           onInjectBriefToChat={() => {}}
-          onCommitStrategy={async () => { return {} as any; }}
+          onCommitStrategy={async () => {
+            return {} as any;
+          }}
         />
       </div>
       <div className="pm-panel" style={{ flex: "1 1 auto", minHeight: 300 }}>
@@ -147,7 +178,17 @@ export function Strategy() {
   );
 
   const renderCenterColumn = () => (
-    <div style={{ display: "flex", flexDirection: "column", gap: 1, background: "var(--border)", height: "100%", overflowY: "auto", paddingBottom: 80 }}>
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        gap: 1,
+        background: "var(--border)",
+        height: "100%",
+        overflowY: "auto",
+        paddingBottom: 80,
+      }}
+    >
       <div className="pm-panel" style={{ flex: "1 1 auto", minHeight: 400 }}>
         <div className="pm-panel-header">
           <div className="pm-panel-title">Telemetry Lap Chart</div>
@@ -165,7 +206,17 @@ export function Strategy() {
   );
 
   const renderRightColumn = () => (
-    <div style={{ display: "flex", flexDirection: "column", gap: 1, background: "var(--border)", height: "100%", overflowY: "auto", paddingBottom: 80 }}>
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        gap: 1,
+        background: "var(--border)",
+        height: "100%",
+        overflowY: "auto",
+        paddingBottom: 80,
+      }}
+    >
       <div className="pm-panel" style={{ flex: "0 0 auto" }}>
         <ConfidenceDecompositionCard
           decomposition={reco?.confidence_decomposition}
@@ -182,19 +233,27 @@ export function Strategy() {
 
   const getColumnProps = (id: string) => {
     switch (id) {
-      case 'left': return { defaultSize: 25, minSize: 18 };
-      case 'center': return { defaultSize: 50, minSize: 30 };
-      case 'right': return { defaultSize: 25, minSize: 18 };
-      default: return { defaultSize: 33, minSize: 20 };
+      case "left":
+        return { defaultSize: 25, minSize: 18 };
+      case "center":
+        return { defaultSize: 50, minSize: 30 };
+      case "right":
+        return { defaultSize: 25, minSize: 18 };
+      default:
+        return { defaultSize: 33, minSize: 20 };
     }
   };
 
   const renderColumnContent = (id: string) => {
     switch (id) {
-      case 'left': return renderLeftColumn();
-      case 'center': return renderCenterColumn();
-      case 'right': return renderRightColumn();
-      default: return null;
+      case "left":
+        return renderLeftColumn();
+      case "center":
+        return renderCenterColumn();
+      case "right":
+        return renderRightColumn();
+      default:
+        return null;
     }
   };
 
@@ -249,7 +308,10 @@ export function Strategy() {
                 letterSpacing: "0.05em",
               }}
             >
-              Strategy Workspace <span style={{ color: "var(--text-secondary)", fontSize: 10, fontWeight: 400 }}>v1.2.5</span>
+              Strategy Workspace{" "}
+              <span style={{ color: "var(--text-secondary)", fontSize: 10, fontWeight: 400 }}>
+                v1.2.5
+              </span>
             </div>
           </div>
           <div style={{ width: 1, height: 36, background: "var(--border)" }} />
@@ -261,7 +323,14 @@ export function Strategy() {
         </div>
 
         <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
-          <div style={{ display: "flex", gap: 20, paddingRight: 20, borderRight: "1px solid var(--border)" }}>
+          <div
+            style={{
+              display: "flex",
+              gap: 20,
+              paddingRight: 20,
+              borderRight: "1px solid var(--border)",
+            }}
+          >
             <div style={{ textAlign: "right" }}>
               <div
                 style={{
@@ -322,13 +391,15 @@ export function Strategy() {
       <div style={{ maxWidth: 1920, margin: "0 auto", padding: 0, height: "calc(100vh - 104px)" }}>
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
           <SortableContext items={columnOrder} strategy={horizontalListSortingStrategy}>
-            <Group orientation="horizontal" className="h-full" style={{ gap: 0, background: "var(--border)" }}>
+            <Group
+              orientation="horizontal"
+              className="h-full"
+              style={{ gap: 0, background: "var(--border)" }}
+            >
               {columnOrder.map((id: string, index: number) => (
                 <Fragment key={id}>
                   <Panel id={id} order={index} {...getColumnProps(id)} className="h-full">
-                    <SortableColumn id={id}>
-                      {renderColumnContent(id)}
-                    </SortableColumn>
+                    <SortableColumn id={id}>{renderColumnContent(id)}</SortableColumn>
                   </Panel>
                   {index < columnOrder.length - 1 && <ResizeHandle />}
                 </Fragment>

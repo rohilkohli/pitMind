@@ -12,25 +12,60 @@ import { RoleSwitcher } from "../components/dashboard/RoleSwitcher";
 import { StreamHealthMonitor } from "../components/dashboard/StreamHealthMonitor";
 import { useTelemetry } from "../hooks/useTelemetry";
 import { demoDriverA } from "../data/demoTelemetry";
-import { postRecommend, postChat, postCommitStrategy, uploadTelemetry, type StrategyRecommendation, type TelemetryPayload } from "../services/api";
+import {
+  postRecommend,
+  postChat,
+  postCommitStrategy,
+  uploadTelemetry,
+  type StrategyRecommendation,
+  type TelemetryPayload,
+} from "../services/api";
 import { auth } from "../lib/firebase";
 import { Loader2, Download, Upload, Zap } from "lucide-react";
 import * as Resizable from "react-resizable-panels";
 const { Panel, Group } = Resizable;
 import { ResizeHandle } from "../components/ui/ResizeHandle";
 
-import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
-import { SortableContext, sortableKeyboardCoordinates, horizontalListSortingStrategy, arrayMove } from '@dnd-kit/sortable';
-import { SortableColumn } from '../components/layout/SortableColumn';
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  sortableKeyboardCoordinates,
+  horizontalListSortingStrategy,
+  arrayMove,
+} from "@dnd-kit/sortable";
+import { SortableColumn } from "../components/layout/SortableColumn";
 
 import { exportToCsv, exportToJson } from "../lib/utils";
 
 // Lazy load heavy components
-const LapChart = lazy(() => import("../components/dashboard/LapChart").then((module) => ({ default: module.LapChart })));
-const DecisionLog = lazy(() => import("../components/dashboard/DecisionLog").then((module) => ({ default: module.DecisionLog })));
-const HealthConsole = lazy(() => import("../components/dashboard/HealthConsole").then((module) => ({ default: module.HealthConsole })));
-const FastF1Loader = lazy(() => import("../components/dashboard/FastF1Loader").then((module) => ({ default: module.FastF1Loader })));
-const LiveSystemFeed = lazy(() => import("../components/dashboard/LiveSystemFeed").then((module) => ({ default: module.LiveSystemFeed })));
+const LapChart = lazy(() =>
+  import("../components/dashboard/LapChart").then((module) => ({ default: module.LapChart })),
+);
+const DecisionLog = lazy(() =>
+  import("../components/dashboard/DecisionLog").then((module) => ({ default: module.DecisionLog })),
+);
+const HealthConsole = lazy(() =>
+  import("../components/dashboard/HealthConsole").then((module) => ({
+    default: module.HealthConsole,
+  })),
+);
+const FastF1Loader = lazy(() =>
+  import("../components/dashboard/FastF1Loader").then((module) => ({
+    default: module.FastF1Loader,
+  })),
+);
+const LiveSystemFeed = lazy(() =>
+  import("../components/dashboard/LiveSystemFeed").then((module) => ({
+    default: module.LiveSystemFeed,
+  })),
+);
 
 type ChatMessage = {
   id: string;
@@ -43,12 +78,12 @@ export function Dashboard() {
   const { raceState } = useFirebaseRaceState("current_race");
   const { currentRole, setRole } = useRole();
   const { getShareableUrl, copyShareableUrl } = useDashboardState({
-    timeFilter: 'live',
+    timeFilter: "live",
   });
-  
+
   // Local telemetry state (for demo / upload purposes as built in step 1)
   const { payload: initialPayload } = useTelemetry(demoDriverA);
-  
+
   const [reco, setReco] = useState<StrategyRecommendation | null>(null);
   const [recoError, setRecoError] = useState<string | null>(null);
   const [recoLoading, setRecoLoading] = useState(false);
@@ -69,7 +104,8 @@ export function Dashboard() {
           setReco({
             action: "PIT FOR FRESH SOFTS",
             confidence: 84,
-            explanation: "Tyre wear at 73%. Lap time degradation trend\nexceeds threshold. Pit window optimal at current lap.",
+            explanation:
+              "Tyre wear at 73%. Lap time degradation trend\nexceeds threshold. Pit window optimal at current lap.",
             evidence: ["Tyre wear: 73%", "Lap delta: +0.31s", "Gap to P2: 1.8s"],
             urgency_score: 84,
             assumptions: ["No safety car in next 3 laps"],
@@ -80,25 +116,25 @@ export function Dashboard() {
               pit_urgency: 84,
               sc_probability_next_3_laps: 15,
               overtake_risk: 30,
-              recommended_window_laps: [18, 25]
+              recommended_window_laps: [18, 25],
             },
             structured_reasons: [
               "Tyre wear at 73% exceeds critical threshold",
               "Lap time degradation trend exceeds normal limits",
-              "Pit window optimal at current lap"
+              "Pit window optimal at current lap",
             ],
             pipeline_steps: [
               "FastF1 Data Load Completed",
               "Tyre Wear Assessment Completed",
               "Race Simulation Completed",
-              "Granite Strategy Suggestion Generated"
+              "Granite Strategy Suggestion Generated",
             ],
             confidence_decomposition: {
               data_quality: 92,
               model_certainty: 84,
               stability: 78,
-              regret_bound: 0.16
-            }
+              regret_bound: 0.16,
+            },
           });
         }
       } finally {
@@ -115,7 +151,11 @@ export function Dashboard() {
 
   const [draft, setDraft] = useState("");
   const [chat, setChat] = useState<ChatMessage[]>([
-    { id: "assistant-welcome", role: "assistant", content: "PitMind Copilot initialized. How can I help analyze the strategy?" },
+    {
+      id: "assistant-welcome",
+      role: "assistant",
+      content: "PitMind Copilot initialized. How can I help analyze the strategy?",
+    },
   ]);
   const [isChatThinking, setIsChatThinking] = useState(false);
   const streamTimerRef = useRef<number | null>(null);
@@ -200,11 +240,17 @@ export function Dashboard() {
     const assistantMessageId = `assistant-${Date.now()}`;
     const next = [...chat, userMessage];
     setDraft("");
-    setChat([...next, { id: assistantMessageId, role: "assistant", content: "Thinking...", streaming: true }]);
+    setChat([
+      ...next,
+      { id: assistantMessageId, role: "assistant", content: "Thinking...", streaming: true },
+    ]);
     setIsChatThinking(true);
     try {
       const token = await auth?.currentUser?.getIdToken(true);
-      const ctx = { recommendation: reco, telemetry: { laps: localPayload.laps.length, circuit: localPayload.circuit } };
+      const ctx = {
+        recommendation: reco,
+        telemetry: { laps: localPayload.laps.length, circuit: localPayload.circuit },
+      };
       const { reply } = await postChat(next, ctx, token);
       await streamAssistantReply(assistantMessageId, reply);
     } catch (e) {
@@ -233,16 +279,16 @@ export function Dashboard() {
     }
   }
 
-  function handleExportTelemetry(format: 'csv' | 'json') {
-    const filename = `pitmind_telemetry_${localPayload.driver}_${localPayload.circuit}_${new Date().toISOString().split('T')[0]}`;
-    if (format === 'csv') {
+  function handleExportTelemetry(format: "csv" | "json") {
+    const filename = `pitmind_telemetry_${localPayload.driver}_${localPayload.circuit}_${new Date().toISOString().split("T")[0]}`;
+    if (format === "csv") {
       exportToCsv(`${filename}.csv`, localPayload.laps);
     } else {
       exportToJson(`${filename}.json`, localPayload);
     }
   }
 
-  function handleExportDecisions(format: 'csv' | 'json') {
+  function handleExportDecisions(format: "csv" | "json") {
     // MOCK_DECISIONS from DecisionLog.tsx is not exported, but we can assume the component would handle it or we pass it.
     // However, the DecisionLog component has MOCK_DECISIONS inside it.
     // For now, let's just toast or log that we are exporting.
@@ -283,15 +329,15 @@ export function Dashboard() {
   }
 
   const [columnOrder, setColumnOrder] = useState(() => {
-    const saved = localStorage.getItem('pitmind_dashboard_layout');
-    return saved ? JSON.parse(saved) : ['left', 'center', 'right'];
+    const saved = localStorage.getItem("pitmind_dashboard_layout");
+    return saved ? JSON.parse(saved) : ["left", "center", "right"];
   });
 
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
-    })
+    }),
   );
 
   function handleDragEnd(event: any) {
@@ -301,7 +347,7 @@ export function Dashboard() {
         const oldIndex = items.indexOf(active.id);
         const newIndex = items.indexOf(over.id);
         const newOrder = arrayMove(items, oldIndex, newIndex);
-        localStorage.setItem('pitmind_dashboard_layout', JSON.stringify(newOrder));
+        localStorage.setItem("pitmind_dashboard_layout", JSON.stringify(newOrder));
         return newOrder;
       });
     }
@@ -355,7 +401,13 @@ export function Dashboard() {
               <input
                 type="file"
                 onChange={handleUploadTelemetry}
-                style={{ position: "absolute", inset: 0, opacity: 0, cursor: "pointer", zIndex: 10 }}
+                style={{
+                  position: "absolute",
+                  inset: 0,
+                  opacity: 0,
+                  cursor: "pointer",
+                  zIndex: 10,
+                }}
                 accept=".csv,.json"
               />
               <button
@@ -377,7 +429,11 @@ export function Dashboard() {
                   clipPath: "polygon(4px 0, 100% 0, calc(100% - 4px) 100%, 0 100%)",
                 }}
               >
-                {isUploading ? <Loader2 style={{ width: 10, height: 10 }} className="animate-spin" /> : <Upload style={{ width: 10, height: 10 }} />}
+                {isUploading ? (
+                  <Loader2 style={{ width: 10, height: 10 }} className="animate-spin" />
+                ) : (
+                  <Upload style={{ width: 10, height: 10 }} />
+                )}
                 {isUploading ? "Ingesting..." : "Ingest Data"}
               </button>
             </div>
@@ -407,15 +463,37 @@ export function Dashboard() {
               LAPS: {localPayload.laps.length}
             </span>
             <button
-              onClick={() => handleExportTelemetry('csv')}
-              style={{ color: "var(--text-secondary)", background: "none", border: "none", cursor: "pointer", padding: 4 }}
+              onClick={() => handleExportTelemetry("csv")}
+              style={{
+                color: "var(--text-secondary)",
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+                padding: 4,
+              }}
               title="Export CSV"
             >
               <Download style={{ width: 14, height: 14 }} />
             </button>
           </div>
         </div>
-        <Suspense fallback={<div style={{ height: 300, display: "flex", alignItems: "center", justifyContent: "center" }}><Loader2 className="animate-spin" style={{ color: "var(--f1-red)", width: 24, height: 24 }} /></div>}>
+        <Suspense
+          fallback={
+            <div
+              style={{
+                height: 300,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <Loader2
+                className="animate-spin"
+                style={{ color: "var(--f1-red)", width: 24, height: 24 }}
+              />
+            </div>
+          }
+        >
           <LapChart data={localPayload.laps} />
         </Suspense>
       </div>
@@ -445,25 +523,84 @@ export function Dashboard() {
           <span className="pm-panel-badge pm-badge-ai">GRANITE · ONLINE</span>
         </div>
 
-        <div className="pm-throttle-bar" style={{ marginBottom: 12, position: "relative", zIndex: 1 }}>
+        <div
+          className="pm-throttle-bar"
+          style={{ marginBottom: 12, position: "relative", zIndex: 1 }}
+        >
           <div className="pm-throttle-fill" />
         </div>
 
         <div style={{ position: "relative", zIndex: 1 }}>
-          <p style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 11, color: "var(--text-secondary)", lineHeight: 1.6, marginBottom: 16, fontStyle: "italic" }}>
+          <p
+            style={{
+              fontFamily: "'IBM Plex Mono', monospace",
+              fontSize: 11,
+              color: "var(--text-secondary)",
+              lineHeight: 1.6,
+              marginBottom: 16,
+              fontStyle: "italic",
+            }}
+          >
             Predictive model analyzing tyre degradation, fuel delta, and safety car probability.
           </p>
 
           {recoError && (
-            <div style={{ padding: "8px 12px", border: "1px solid var(--border-active)", background: "var(--f1-red-dim)", marginBottom: 12 }}>
-              <span style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 10, color: "var(--f1-red)" }}>{recoError}</span>
+            <div
+              style={{
+                padding: "8px 12px",
+                border: "1px solid var(--border-active)",
+                background: "var(--f1-red-dim)",
+                marginBottom: 12,
+              }}
+            >
+              <span
+                style={{
+                  fontFamily: "'IBM Plex Mono', monospace",
+                  fontSize: 10,
+                  color: "var(--f1-red)",
+                }}
+              >
+                {recoError}
+              </span>
             </div>
           )}
 
           {reco && (
-            <div style={{ padding: "14px", background: "var(--f1-red-dim)", border: "1px solid var(--border-active)", marginBottom: 16, borderLeft: "3px solid var(--f1-red)" }}>
-              <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: 9, fontWeight: 700, letterSpacing: "0.25em", textTransform: "uppercase", color: "var(--text-secondary)", marginBottom: 6 }}>Generated Directive</div>
-              <div style={{ fontFamily: "'Orbitron', sans-serif", fontSize: 22, fontWeight: 900, color: "var(--text-primary)", textTransform: "uppercase", letterSpacing: "-0.02em", lineHeight: 1 }}>{reco.action}</div>
+            <div
+              style={{
+                padding: "14px",
+                background: "var(--f1-red-dim)",
+                border: "1px solid var(--border-active)",
+                marginBottom: 16,
+                borderLeft: "3px solid var(--f1-red)",
+              }}
+            >
+              <div
+                style={{
+                  fontFamily: "'Barlow Condensed', sans-serif",
+                  fontSize: 9,
+                  fontWeight: 700,
+                  letterSpacing: "0.25em",
+                  textTransform: "uppercase",
+                  color: "var(--text-secondary)",
+                  marginBottom: 6,
+                }}
+              >
+                Generated Directive
+              </div>
+              <div
+                style={{
+                  fontFamily: "'Orbitron', sans-serif",
+                  fontSize: 22,
+                  fontWeight: 900,
+                  color: "var(--text-primary)",
+                  textTransform: "uppercase",
+                  letterSpacing: "-0.02em",
+                  lineHeight: 1,
+                }}
+              >
+                {reco.action}
+              </div>
             </div>
           )}
 
@@ -475,13 +612,29 @@ export function Dashboard() {
           >
             {recoLoading ? "Processing Inference..." : "Execute Command"}
           </button>
-          <div style={{ textAlign: "center", fontFamily: "'IBM Plex Mono', monospace", fontSize: 9, color: "var(--text-secondary)", letterSpacing: "0.15em", textTransform: "uppercase" }}>
+          <div
+            style={{
+              textAlign: "center",
+              fontFamily: "'IBM Plex Mono', monospace",
+              fontSize: 9,
+              color: "var(--text-secondary)",
+              letterSpacing: "0.15em",
+              textTransform: "uppercase",
+            }}
+          >
             AI READY — GRANITE v1.3 — IBM WATSONX
           </div>
         </div>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 1, background: "var(--border)" }}>
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "1fr 1fr",
+          gap: 1,
+          background: "var(--border)",
+        }}
+      >
         <div className="pm-panel" style={{ minHeight: 320 }}>
           <Suspense fallback={<div className="skeleton-row" style={{ height: 320 }} />}>
             <FastF1Loader onDataLoaded={(data) => setLocalPayload(data)} />
@@ -519,7 +672,10 @@ export function Dashboard() {
         />
       </div>
 
-      <div className="pm-panel" style={{ flex: "0 0 auto", minHeight: 200, overflowY: "auto", maxHeight: 350 }}>
+      <div
+        className="pm-panel"
+        style={{ flex: "0 0 auto", minHeight: 200, overflowY: "auto", maxHeight: 350 }}
+      >
         <div className="pm-panel-header">
           <div className="pm-panel-title">Reasoning Trace</div>
           <span className="pm-panel-badge pm-badge-ok">LIVE</span>
@@ -534,11 +690,14 @@ export function Dashboard() {
 
       <div className="pm-panel" style={{ flex: "0 0 auto" }}>
         <Suspense fallback={<div className="skeleton-row" style={{ height: 120 }} />}>
-          <DecisionLog onExportSession={() => handleExportDecisions('csv')} />
+          <DecisionLog onExportSession={() => handleExportDecisions("csv")} />
         </Suspense>
       </div>
 
-      <div className="pm-panel" style={{ flex: "1 1 auto", display: "flex", flexDirection: "column", minHeight: 420 }}>
+      <div
+        className="pm-panel"
+        style={{ flex: "1 1 auto", display: "flex", flexDirection: "column", minHeight: 420 }}
+      >
         <div className="pm-panel-header" style={{ flexShrink: 0 }}>
           <div className="pm-panel-title">PitMind Assistant</div>
           <span className="pm-panel-badge pm-badge-ai">GRANITE · ONLINE</span>
@@ -546,12 +705,8 @@ export function Dashboard() {
 
         <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 12, flexShrink: 0 }}>
           {promptChips.map((chip) => (
-            <button
-              key={chip}
-              onClick={() => setDraft(chip)}
-              className="pm-chip"
-            >
-              {chip.replace(/[.?]/g, '').toUpperCase().slice(0, 20)}
+            <button key={chip} onClick={() => setDraft(chip)} className="pm-chip">
+              {chip.replace(/[.?]/g, "").toUpperCase().slice(0, 20)}
             </button>
           ))}
         </div>
@@ -567,17 +722,22 @@ export function Dashboard() {
           }}
         >
           {chat.map((m, idx) => (
-            <div
-              key={idx}
-              className={`pm-chat-msg ${m.role === "user" ? "user" : "ai"}`}
-            >
+            <div key={idx} className={`pm-chat-msg ${m.role === "user" ? "user" : "ai"}`}>
               <div className="pm-msg-label">
                 {m.role === "user" ? "ENGINEER" : "◆ GRANITE · SYSTEM ORACLE"}
               </div>
               <div className="pm-msg-bubble">
                 {m.content}
                 {m.streaming && (
-                  <span style={{ marginLeft: 2, color: "var(--f1-red)", animation: "flicker 0.8s infinite" }}>▍</span>
+                  <span
+                    style={{
+                      marginLeft: 2,
+                      color: "var(--f1-red)",
+                      animation: "flicker 0.8s infinite",
+                    }}
+                  >
+                    ▍
+                  </span>
                 )}
               </div>
             </div>
@@ -601,39 +761,42 @@ export function Dashboard() {
           <input
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && onSendChat()}
+            onKeyDown={(e) => e.key === "Enter" && onSendChat()}
             placeholder="ENTER STRATEGY QUERY..."
             className="pm-chat-input"
             disabled={isChatThinking}
           />
-          <button
-            onClick={onSendChat}
-            disabled={isChatThinking}
-            className="pm-chat-send"
-          >
+          <button onClick={onSendChat} disabled={isChatThinking} className="pm-chat-send">
             ▶
           </button>
         </div>
       </div>
-
     </div>
   );
 
   const getColumnProps = (id: string) => {
     switch (id) {
-      case 'left': return { defaultSize: 25, minSize: 18 };
-      case 'center': return { defaultSize: 50, minSize: 30 };
-      case 'right': return { defaultSize: 25, minSize: 18 };
-      default: return { defaultSize: 33, minSize: 20 };
+      case "left":
+        return { defaultSize: 25, minSize: 18 };
+      case "center":
+        return { defaultSize: 50, minSize: 30 };
+      case "right":
+        return { defaultSize: 25, minSize: 18 };
+      default:
+        return { defaultSize: 33, minSize: 20 };
     }
   };
 
   const renderColumnContent = (id: string) => {
     switch (id) {
-      case 'left': return renderLeftColumn();
-      case 'center': return renderCenterColumn();
-      case 'right': return renderRightColumn();
-      default: return null;
+      case "left":
+        return renderLeftColumn();
+      case "center":
+        return renderCenterColumn();
+      case "right":
+        return renderRightColumn();
+      default:
+        return null;
     }
   };
 
@@ -690,7 +853,9 @@ export function Dashboard() {
               }}
             >
               Strategy Console{" "}
-              <span style={{ color: "var(--text-secondary)", fontSize: 10, fontWeight: 400 }}>v1.2.5</span>
+              <span style={{ color: "var(--text-secondary)", fontSize: 10, fontWeight: 400 }}>
+                v1.2.5
+              </span>
             </div>
           </div>
 
@@ -706,32 +871,150 @@ export function Dashboard() {
         </div>
 
         {/* Track Conditions */}
-        <div style={{ display: "flex", gap: 40, alignItems: "center", justifyContent: "center", flex: 1, borderLeft: "1px solid var(--border)", borderRight: "1px solid var(--border)", margin: "0 20px" }}>
+        <div
+          style={{
+            display: "flex",
+            gap: 40,
+            alignItems: "center",
+            justifyContent: "center",
+            flex: 1,
+            borderLeft: "1px solid var(--border)",
+            borderRight: "1px solid var(--border)",
+            margin: "0 20px",
+          }}
+        >
           <div style={{ textAlign: "center" }}>
-            <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: 9, color: "var(--text-secondary)", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: 2 }}>TRACK TEMP</div>
-            <div style={{ fontFamily: "'Orbitron', sans-serif", fontSize: 13, color: "var(--amber)", fontWeight: 700 }}>42°C</div>
+            <div
+              style={{
+                fontFamily: "'Barlow Condensed', sans-serif",
+                fontSize: 9,
+                color: "var(--text-secondary)",
+                letterSpacing: "0.15em",
+                textTransform: "uppercase",
+                marginBottom: 2,
+              }}
+            >
+              TRACK TEMP
+            </div>
+            <div
+              style={{
+                fontFamily: "'Orbitron', sans-serif",
+                fontSize: 13,
+                color: "var(--amber)",
+                fontWeight: 700,
+              }}
+            >
+              42°C
+            </div>
           </div>
           <div style={{ textAlign: "center" }}>
-            <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: 9, color: "var(--text-secondary)", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: 2 }}>AIR TEMP</div>
-            <div style={{ fontFamily: "'Orbitron', sans-serif", fontSize: 13, color: "var(--text-primary)", fontWeight: 700 }}>28°C</div>
+            <div
+              style={{
+                fontFamily: "'Barlow Condensed', sans-serif",
+                fontSize: 9,
+                color: "var(--text-secondary)",
+                letterSpacing: "0.15em",
+                textTransform: "uppercase",
+                marginBottom: 2,
+              }}
+            >
+              AIR TEMP
+            </div>
+            <div
+              style={{
+                fontFamily: "'Orbitron', sans-serif",
+                fontSize: 13,
+                color: "var(--text-primary)",
+                fontWeight: 700,
+              }}
+            >
+              28°C
+            </div>
           </div>
           <div style={{ textAlign: "center" }}>
-            <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: 9, color: "var(--text-secondary)", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: 2 }}>WIND</div>
-            <div style={{ fontFamily: "'Orbitron', sans-serif", fontSize: 13, color: "var(--text-primary)", fontWeight: 700 }}>12 <span style={{fontSize: 9, color: "var(--text-secondary)"}}>KM/H NW</span></div>
+            <div
+              style={{
+                fontFamily: "'Barlow Condensed', sans-serif",
+                fontSize: 9,
+                color: "var(--text-secondary)",
+                letterSpacing: "0.15em",
+                textTransform: "uppercase",
+                marginBottom: 2,
+              }}
+            >
+              WIND
+            </div>
+            <div
+              style={{
+                fontFamily: "'Orbitron', sans-serif",
+                fontSize: 13,
+                color: "var(--text-primary)",
+                fontWeight: 700,
+              }}
+            >
+              12 <span style={{ fontSize: 9, color: "var(--text-secondary)" }}>KM/H NW</span>
+            </div>
           </div>
           <div style={{ textAlign: "center" }}>
-            <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: 9, color: "var(--text-secondary)", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: 2 }}>WEATHER</div>
-            <div style={{ fontFamily: "'Orbitron', sans-serif", fontSize: 13, color: "var(--text-primary)", fontWeight: 700 }}>DRY</div>
+            <div
+              style={{
+                fontFamily: "'Barlow Condensed', sans-serif",
+                fontSize: 9,
+                color: "var(--text-secondary)",
+                letterSpacing: "0.15em",
+                textTransform: "uppercase",
+                marginBottom: 2,
+              }}
+            >
+              WEATHER
+            </div>
+            <div
+              style={{
+                fontFamily: "'Orbitron', sans-serif",
+                fontSize: 13,
+                color: "var(--text-primary)",
+                fontWeight: 700,
+              }}
+            >
+              DRY
+            </div>
           </div>
           <div style={{ textAlign: "center" }}>
-            <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: 9, color: "var(--text-secondary)", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: 2 }}>DRS STATUS</div>
-            <div style={{ fontFamily: "'Orbitron', sans-serif", fontSize: 13, color: "var(--neon-green)", fontWeight: 700 }}>ENABLED</div>
+            <div
+              style={{
+                fontFamily: "'Barlow Condensed', sans-serif",
+                fontSize: 9,
+                color: "var(--text-secondary)",
+                letterSpacing: "0.15em",
+                textTransform: "uppercase",
+                marginBottom: 2,
+              }}
+            >
+              DRS STATUS
+            </div>
+            <div
+              style={{
+                fontFamily: "'Orbitron', sans-serif",
+                fontSize: 13,
+                color: "var(--neon-green)",
+                fontWeight: 700,
+              }}
+            >
+              ENABLED
+            </div>
           </div>
         </div>
 
         <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
           {/* Circuit + Session */}
-          <div style={{ display: "flex", gap: 20, paddingRight: 20, borderRight: "1px solid var(--border)" }}>
+          <div
+            style={{
+              display: "flex",
+              gap: 20,
+              paddingRight: 20,
+              borderRight: "1px solid var(--border)",
+            }}
+          >
             <div style={{ textAlign: "right" }}>
               <div
                 style={{
@@ -792,13 +1075,15 @@ export function Dashboard() {
       <div style={{ maxWidth: 1920, margin: "0 auto", padding: 0, height: "calc(100vh - 104px)" }}>
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
           <SortableContext items={columnOrder} strategy={horizontalListSortingStrategy}>
-            <Group orientation="horizontal" className="h-full" style={{ gap: 0, background: "var(--border)" }}>
+            <Group
+              orientation="horizontal"
+              className="h-full"
+              style={{ gap: 0, background: "var(--border)" }}
+            >
               {columnOrder.map((id: string, index: number) => (
                 <Fragment key={id}>
                   <Panel id={id} order={index} {...getColumnProps(id)} className="h-full">
-                    <SortableColumn id={id}>
-                      {renderColumnContent(id)}
-                    </SortableColumn>
+                    <SortableColumn id={id}>{renderColumnContent(id)}</SortableColumn>
                   </Panel>
                   {index < columnOrder.length - 1 && <ResizeHandle />}
                 </Fragment>
@@ -809,7 +1094,7 @@ export function Dashboard() {
       </div>
 
       {/* Persistent Role Identity */}
-      {currentRole !== 'engineer' && (
+      {currentRole !== "engineer" && (
         <div
           style={{
             position: "fixed",
@@ -869,7 +1154,7 @@ export function Dashboard() {
                 fontStyle: "italic",
               }}
             >
-              {currentRole === 'strategist'
+              {currentRole === "strategist"
                 ? "Strategic Overwatch: Prioritize lap delta and tyre degradation cycles."
                 : "Broadcast Feed: Focus on narrative arc and head-to-head performance battles."}
             </div>

@@ -14,12 +14,13 @@ export function exportToCsv(filename: string, rows: object[]) {
     ...rows.map((row) =>
       keys
         .map((k) => {
-          let cell = (row as any)[k] === null || (row as any)[k] === undefined ? "" : (row as any)[k];
+          let cell =
+            (row as any)[k] === null || (row as any)[k] === undefined ? "" : (row as any)[k];
           cell = cell instanceof Date ? cell.toLocaleString() : cell.toString().replace(/"/g, '""');
           if (cell.search(/("|,|\n)/g) >= 0) cell = `"${cell}"`;
           return cell;
         })
-        .join(separator)
+        .join(separator),
     ),
   ].join("\n");
 
@@ -37,7 +38,9 @@ export function exportToCsv(filename: string, rows: object[]) {
 }
 
 export function exportToJson(filename: string, data: object) {
-  const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json;charset=utf-8;" });
+  const blob = new Blob([JSON.stringify(data, null, 2)], {
+    type: "application/json;charset=utf-8;",
+  });
   const link = document.createElement("a");
   if (link.download !== undefined) {
     const url = URL.createObjectURL(blob);

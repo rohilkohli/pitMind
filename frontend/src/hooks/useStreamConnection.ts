@@ -1,7 +1,13 @@
-import { useEffect, useRef, useState, useCallback } from 'react';
-import type { WebSocketMessage, WebSocketMessageType } from '../types/api';
+import { useEffect, useRef, useState, useCallback } from "react";
+import type { WebSocketMessage, WebSocketMessageType } from "../types/api";
 
-export type WebSocketStatus = 'connecting' | 'connected' | 'disconnected' | 'reconnecting' | 'error' | 'offline';
+export type WebSocketStatus =
+  | "connecting"
+  | "connected"
+  | "disconnected"
+  | "reconnecting"
+  | "error"
+  | "offline";
 
 export interface StreamConnectionConfig {
   url: string;
@@ -28,9 +34,9 @@ export const useStreamConnection = (config: StreamConnectionConfig) => {
   const heartbeatIntervalRef = useRef<NodeJS.Timeout | undefined>(undefined);
   const reconnectAttemptsRef = useRef(0);
   const isComponentMounted = useRef(true);
-  
+
   const [state, setState] = useState<StreamConnectionState>({
-    status: 'connecting',
+    status: "connecting",
     latency: 0,
     packetLoss: 0,
     reconnectAttempts: 0,
@@ -54,14 +60,10 @@ export const useStreamConnection = (config: StreamConnectionConfig) => {
   // Measure packet loss
   useEffect(() => {
     const packetLoss =
-      totalMessages > 0
-        ? parseFloat(((lostMessages / totalMessages) * 100).toFixed(2))
-        : 0;
+      totalMessages > 0 ? parseFloat(((lostMessages / totalMessages) * 100).toFixed(2)) : 0;
     const avgLatency =
       latencyMeasurements.length > 0
-        ? Math.round(
-            latencyMeasurements.reduce((a, b) => a + b, 0) / latencyMeasurements.length
-          )
+        ? Math.round(latencyMeasurements.reduce((a, b) => a + b, 0) / latencyMeasurements.length)
         : 0;
 
     setState((prev) => ({
@@ -75,7 +77,11 @@ export const useStreamConnection = (config: StreamConnectionConfig) => {
   // Connect to WebSocket
   const connect = useCallback(() => {
     // Prevent multiple simultaneous connection attempts
-    if (wsRef.current && (wsRef.current.readyState === WebSocket.OPEN || wsRef.current.readyState === WebSocket.CONNECTING)) {
+    if (
+      wsRef.current &&
+      (wsRef.current.readyState === WebSocket.OPEN ||
+        wsRef.current.readyState === WebSocket.CONNECTING)
+    ) {
       return;
     }
 
@@ -85,7 +91,7 @@ export const useStreamConnection = (config: StreamConnectionConfig) => {
       reconnectTimeoutRef.current = undefined;
     }
 
-    setState((prev) => ({ ...prev, status: 'connecting' }));
+    setState((prev) => ({ ...prev, status: "connecting" }));
 
     try {
       const ws = new WebSocket(config.url);
@@ -95,11 +101,11 @@ export const useStreamConnection = (config: StreamConnectionConfig) => {
           ws.close();
           return;
         }
-        console.log('[Stream] Connected');
+        console.log("[Stream] Connected");
         reconnectAttemptsRef.current = 0;
         setState((prev) => ({
           ...prev,
-          status: 'connected',
+          status: "connected",
           reconnectAttempts: 0,
           lastConnected: new Date().toISOString(),
         }));
@@ -109,7 +115,7 @@ export const useStreamConnection = (config: StreamConnectionConfig) => {
         heartbeatIntervalRef.current = setInterval(() => {
           if (ws.readyState === WebSocket.OPEN) {
             const timestamp = Date.now();
-            ws.send(JSON.stringify({ type: 'ping', timestamp }));
+            ws.send(JSON.stringify({ type: "ping", timestamp }));
             setTotalMessages((prev) => prev + 1);
           }
         }, config.heartbeatIntervalMs || 30000);
@@ -119,9 +125,9 @@ export const useStreamConnection = (config: StreamConnectionConfig) => {
         if (!isComponentMounted.current) return;
         try {
           const message = JSON.parse(event.data) as WebSocketMessage;
-          
+
           // Handle pong response for latency measurement
-          if (message.type === 'pong' && message.timestamp) {
+          if (message.type === "pong" && message.timestamp) {
             const latency = Date.now() - new Date(message.timestamp).getTime();
             setLatencyMeasurements((prev) => {
               const updated = [...prev, latency];
@@ -129,13 +135,13 @@ export const useStreamConnection = (config: StreamConnectionConfig) => {
               return updated.slice(-10);
             });
           }
-          
+
           // Call user-provided message handler
           if (config.onMessage) {
             config.onMessage(message);
           }
         } catch (e) {
-          console.error('[Stream] Failed to parse message:', e);
+          console.error("[Stream] Failed to parse message:", e);
         }
       };
 
@@ -148,12 +154,12 @@ export const useStreamConnection = (config: StreamConnectionConfig) => {
         // Only log errors if not at max retries and we didn't just unmount
         const maxRetries = config.maxRetries || 5;
         if (reconnectAttemptsRef.current < maxRetries && isComponentMounted.current) {
-          console.error('[Stream] WebSocket error:', event);
+          console.error("[Stream] WebSocket error:", event);
         }
         setState((prev) => ({
           ...prev,
-          status: 'error',
-          error: new Error('WebSocket error'),
+          status: "error",
+          error: new Error("WebSocket error"),
         }));
         setLostMessages((prev) => prev + 1);
       };
@@ -163,41 +169,44 @@ export const useStreamConnection = (config: StreamConnectionConfig) => {
           clearInterval(heartbeatIntervalRef.current);
           heartbeatIntervalRef.current = undefined;
         }
-        
+
         if (!isComponentMounted.current) return;
 
         const maxRetries = config.maxRetries || 5;
-        
+
         // Check if we've exceeded max retries
         if (reconnectAttemptsRef.current >= maxRetries) {
           setState((prev) => ({
             ...prev,
-            status: 'offline',
+            status: "offline",
           }));
           return;
         }
-        
+
         setState((prev) => ({
           ...prev,
-          status: 'disconnected',
+          status: "disconnected",
         }));
-        
+
         // Increment attempts
         reconnectAttemptsRef.current += 1;
-        
+
         // Schedule reconnection with exponential backoff
         setState((prev) => ({
           ...prev,
-          status: 'reconnecting',
+          status: "reconnecting",
           reconnectAttempts: reconnectAttemptsRef.current,
         }));
 
         // Exponential backoff: 1s, 2s, 4s, 8s, 16s
         const backoffSequence = [1000, 2000, 4000, 8000, 16000];
-        const nextBackoffMs = backoffSequence[Math.min(reconnectAttemptsRef.current - 1, backoffSequence.length - 1)];
-        
-        console.log(`[Stream] Reconnecting in ${nextBackoffMs}ms (attempt ${reconnectAttemptsRef.current}/${maxRetries})`);
-        
+        const nextBackoffMs =
+          backoffSequence[Math.min(reconnectAttemptsRef.current - 1, backoffSequence.length - 1)];
+
+        console.log(
+          `[Stream] Reconnecting in ${nextBackoffMs}ms (attempt ${reconnectAttemptsRef.current}/${maxRetries})`,
+        );
+
         reconnectTimeoutRef.current = setTimeout(() => {
           connect();
         }, nextBackoffMs);
@@ -208,12 +217,12 @@ export const useStreamConnection = (config: StreamConnectionConfig) => {
       if (!isComponentMounted.current) return;
       const maxRetries = config.maxRetries || 5;
       if (reconnectAttemptsRef.current < maxRetries) {
-        console.error('[Stream] Connection failed:', error);
+        console.error("[Stream] Connection failed:", error);
       }
       setState((prev) => ({
         ...prev,
-        status: 'error',
-        error: error instanceof Error ? error : new Error('Unknown error'),
+        status: "error",
+        error: error instanceof Error ? error : new Error("Unknown error"),
       }));
     }
   }, [config.url, config.maxRetries, config.heartbeatIntervalMs]);
@@ -222,7 +231,7 @@ export const useStreamConnection = (config: StreamConnectionConfig) => {
   const disconnect = useCallback(() => {
     clearTimeout(reconnectTimeoutRef.current);
     clearInterval(heartbeatIntervalRef.current);
-    
+
     if (wsRef.current) {
       // Avoid closing while CONNECTING to prevent browser-level
       // "closed before the connection is established" warnings.
@@ -238,10 +247,10 @@ export const useStreamConnection = (config: StreamConnectionConfig) => {
         wsRef.current = null;
       }
     }
-    
+
     setState((prev) => ({
       ...prev,
-      status: 'disconnected',
+      status: "disconnected",
     }));
   }, []);
 
@@ -270,7 +279,7 @@ export const useStreamConnection = (config: StreamConnectionConfig) => {
       wsRef.current.send(JSON.stringify(message));
       setTotalMessages((prev) => prev + 1);
     } else {
-      console.warn('[Stream] WebSocket not connected');
+      console.warn("[Stream] WebSocket not connected");
       setLostMessages((prev) => prev + 1);
     }
   }, []);
@@ -279,7 +288,7 @@ export const useStreamConnection = (config: StreamConnectionConfig) => {
   useEffect(() => {
     isComponentMounted.current = true;
     connect();
-    
+
     return () => {
       isComponentMounted.current = false;
       disconnect();
@@ -291,6 +300,6 @@ export const useStreamConnection = (config: StreamConnectionConfig) => {
     send,
     reconnect,
     disconnect,
-    isConnected: state.status === 'connected',
+    isConnected: state.status === "connected",
   };
 };

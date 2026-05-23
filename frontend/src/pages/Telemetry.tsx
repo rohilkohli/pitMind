@@ -11,14 +11,20 @@ import { RoleSwitcher } from "../components/dashboard/RoleSwitcher";
 import { useRole } from "../contexts/RoleContext";
 import { EventTimeline } from "../components/dashboard/EventTimeline";
 
-const LapChart = lazy(() => import("../components/dashboard/LapChart").then(m => ({ default: m.LapChart })));
-const FastF1Loader = lazy(() => import("../components/dashboard/FastF1Loader").then(m => ({ default: m.FastF1Loader })));
-const LiveSystemFeed = lazy(() => import("../components/dashboard/LiveSystemFeed").then(m => ({ default: m.LiveSystemFeed })));
+const LapChart = lazy(() =>
+  import("../components/dashboard/LapChart").then((m) => ({ default: m.LapChart })),
+);
+const FastF1Loader = lazy(() =>
+  import("../components/dashboard/FastF1Loader").then((m) => ({ default: m.FastF1Loader })),
+);
+const LiveSystemFeed = lazy(() =>
+  import("../components/dashboard/LiveSystemFeed").then((m) => ({ default: m.LiveSystemFeed })),
+);
 
 export function Telemetry() {
   const { raceState } = useFirebaseRaceState("current_race");
   const { currentRole, setRole } = useRole();
-  const { getShareableUrl, copyShareableUrl } = useDashboardState({ timeFilter: 'live' });
+  const { getShareableUrl, copyShareableUrl } = useDashboardState({ timeFilter: "live" });
   const { payload: localPayload } = useTelemetry(demoDriverA);
 
   const mockLapData = Array.from({ length: 57 }, (_, i) => ({
@@ -81,7 +87,10 @@ export function Telemetry() {
                 letterSpacing: "0.05em",
               }}
             >
-              Telemetry & Data <span style={{ color: "var(--text-secondary)", fontSize: 10, fontWeight: 400 }}>v1.2.5</span>
+              Telemetry & Data{" "}
+              <span style={{ color: "var(--text-secondary)", fontSize: 10, fontWeight: 400 }}>
+                v1.2.5
+              </span>
             </div>
           </div>
           <div style={{ width: 1, height: 36, background: "var(--border)" }} />
@@ -93,7 +102,14 @@ export function Telemetry() {
         </div>
 
         <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
-          <div style={{ display: "flex", gap: 20, paddingRight: 20, borderRight: "1px solid var(--border)" }}>
+          <div
+            style={{
+              display: "flex",
+              gap: 20,
+              paddingRight: 20,
+              borderRight: "1px solid var(--border)",
+            }}
+          >
             <div style={{ textAlign: "right" }}>
               <div
                 style={{
@@ -151,7 +167,15 @@ export function Telemetry() {
       </div>
 
       {/* Grid Layout: 2 columns — 1fr | 320px */}
-      <div style={{ maxWidth: 1920, margin: "0 auto", padding: "68px 0 40px", height: "calc(100vh - 104px)", overflow: "hidden" }}>
+      <div
+        style={{
+          maxWidth: 1920,
+          margin: "0 auto",
+          padding: "68px 0 40px",
+          height: "calc(100vh - 104px)",
+          overflow: "hidden",
+        }}
+      >
         <div
           style={{
             display: "grid",
@@ -162,7 +186,17 @@ export function Telemetry() {
           }}
         >
           {/* Left Column (1fr) */}
-          <div style={{ display: "flex", flexDirection: "column", gap: 1, background: "var(--border)", height: "100%", overflowY: "auto", minWidth: 0 }}>
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: 1,
+              background: "var(--border)",
+              height: "100%",
+              overflowY: "auto",
+              minWidth: 0,
+            }}
+          >
             <div className="pm-panel" style={{ flex: "0 0 auto", minHeight: 100 }}>
               <KpiStrip raceState={raceState} />
             </div>
@@ -177,13 +211,22 @@ export function Telemetry() {
           </div>
 
           {/* Right Column (320px) */}
-          <div style={{ display: "flex", flexDirection: "column", gap: 1, background: "var(--border)", height: "100%", overflowY: "auto" }}>
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: 1,
+              background: "var(--border)",
+              height: "100%",
+              overflowY: "auto",
+            }}
+          >
             <div className="pm-panel" style={{ flex: "0 0 auto", minHeight: 180 }}>
               <Suspense fallback={<div className="skeleton-row" style={{ height: 180 }} />}>
                 <FastF1Loader onDataLoaded={() => {}} />
               </Suspense>
             </div>
-            
+
             <div className="pm-panel" style={{ flex: "1 1 auto", minHeight: 280 }}>
               <div className="pm-panel-header">
                 <div className="pm-panel-title">Live Race Timeline</div>
@@ -193,7 +236,10 @@ export function Telemetry() {
               </div>
             </div>
 
-            <div className="pm-panel" style={{ flex: "1 1 auto", minHeight: 250, overflow: "hidden" }}>
+            <div
+              className="pm-panel"
+              style={{ flex: "1 1 auto", minHeight: 250, overflow: "hidden" }}
+            >
               <Suspense fallback={<div className="skeleton-row" style={{ height: 250 }} />}>
                 <LiveSystemFeed />
               </Suspense>

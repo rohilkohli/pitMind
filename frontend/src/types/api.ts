@@ -1,10 +1,10 @@
 /**
  * API Response Types for PitMind Frontend
- * 
+ *
  * This file contains TypeScript interfaces that match the backend Pydantic models
  * to ensure type safety across the application. All types are derived from the
  * backend API contract.
- * 
+ *
  * @module types/api
  */
 
@@ -92,7 +92,7 @@ export interface WeatherCondition {
 /**
  * Track status flags
  */
-export type TrackStatusFlag = 'green' | 'yellow' | 'red' | 'safety_car' | 'virtual_safety_car';
+export type TrackStatusFlag = "green" | "yellow" | "red" | "safety_car" | "virtual_safety_car";
 
 /**
  * Track status information
@@ -224,7 +224,7 @@ export interface DriverCompareResponse {
 /**
  * Chat message role
  */
-export type ChatRole = 'user' | 'assistant';
+export type ChatRole = "user" | "assistant";
 
 /**
  * Single chat message
@@ -315,7 +315,7 @@ export interface FanBattle {
   driver_b: string;
   votes_a: number;
   votes_b: number;
-  status: 'active' | 'completed';
+  status: "active" | "completed";
   winner?: string;
   created_at: string;
 }
@@ -335,7 +335,7 @@ export interface WhatIfScenario {
   predicted_outcome: {
     final_position: number;
     time_delta_s: number;
-    risk_level: 'low' | 'medium' | 'high';
+    risk_level: "low" | "medium" | "high";
     narrative: string;
   };
   confidence: number;
@@ -357,7 +357,7 @@ export interface FanStatusResponse {
 /**
  * FastF1 session type
  */
-export type FastF1SessionType = 'R' | 'Q' | 'S' | 'FP1' | 'FP2' | 'FP3';
+export type FastF1SessionType = "R" | "Q" | "S" | "FP1" | "FP2" | "FP3";
 
 /**
  * FastF1 data request
@@ -418,14 +418,14 @@ export interface AuditHistoryParams {
 /**
  * WebSocket message types
  */
-export type WebSocketMessageType = 
-  | 'telemetry_update'
-  | 'strategy_update'
-  | 'race_state_update'
-  | 'commentary'
-  | 'error'
-  | 'ping'
-  | 'pong';
+export type WebSocketMessageType =
+  | "telemetry_update"
+  | "strategy_update"
+  | "race_state_update"
+  | "commentary"
+  | "error"
+  | "ping"
+  | "pong";
 
 /**
  * WebSocket message structure
@@ -457,10 +457,10 @@ export interface StreamHealthStatus {
  */
 export function isApiError(value: unknown): value is ApiError {
   return (
-    typeof value === 'object' &&
+    typeof value === "object" &&
     value !== null &&
-    'detail' in value &&
-    typeof (value as ApiError).detail === 'string'
+    "detail" in value &&
+    typeof (value as ApiError).detail === "string"
   );
 }
 
@@ -469,13 +469,13 @@ export function isApiError(value: unknown): value is ApiError {
  */
 export function isStrategyRecommendation(value: unknown): value is StrategyRecommendation {
   return (
-    typeof value === 'object' &&
+    typeof value === "object" &&
     value !== null &&
-    'action' in value &&
-    'pit_this_lap' in value &&
-    'suggested_compound' in value &&
-    'scores' in value &&
-    'confidence' in value
+    "action" in value &&
+    "pit_this_lap" in value &&
+    "suggested_compound" in value &&
+    "scores" in value &&
+    "confidence" in value
   );
 }
 
@@ -484,10 +484,10 @@ export function isStrategyRecommendation(value: unknown): value is StrategyRecom
  */
 export function isChatResponse(value: unknown): value is ChatResponse {
   return (
-    typeof value === 'object' &&
+    typeof value === "object" &&
     value !== null &&
-    'reply' in value &&
-    typeof (value as ChatResponse).reply === 'string'
+    "reply" in value &&
+    typeof (value as ChatResponse).reply === "string"
   );
 }
 
@@ -496,11 +496,11 @@ export function isChatResponse(value: unknown): value is ChatResponse {
  */
 export function isRaceState(value: unknown): value is RaceState {
   return (
-    typeof value === 'object' &&
+    typeof value === "object" &&
     value !== null &&
-    'session_id' in value &&
-    'current_lap' in value &&
-    'positions' in value &&
+    "session_id" in value &&
+    "current_lap" in value &&
+    "positions" in value &&
     Array.isArray((value as RaceState).positions)
   );
 }

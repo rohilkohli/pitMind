@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { encodeDashboardState, DashboardState } from './useDashboardState';
+import { encodeDashboardState } from './useDashboardState';
+import type { DashboardState } from './useDashboardState';
 
 describe('encodeDashboardState', () => {
   it('returns empty string for empty state', () => {

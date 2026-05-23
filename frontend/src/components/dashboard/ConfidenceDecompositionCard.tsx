@@ -25,9 +25,9 @@ export const ConfidenceDecompositionCard: React.FC<ConfidenceDecompositionCardPr
         </div>
         <div
           style={{
-            background: "rgba(255,255,255,0.02)",
-            border: "1px dashed var(--border)",
-            padding: "24px",
+            background: "var(--carbon-light)",
+            border: "1px solid var(--border)",
+            padding: "16px",
             textAlign: "center",
           }}
         >
@@ -36,6 +36,7 @@ export const ConfidenceDecompositionCard: React.FC<ConfidenceDecompositionCardPr
               fontFamily: "'IBM Plex Mono', monospace",
               fontSize: 11,
               color: "var(--text-secondary)",
+              margin: 0,
             }}
           >
             Run strategy analysis to see confidence breakdown

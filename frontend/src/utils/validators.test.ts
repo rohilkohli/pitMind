@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { safeParseStrategyRecommendation, isAuditLogEntry } from "./validators";
-import type { StrategyRecommendation, AuditLogEntry } from "../types/api";
+import type { AuditLogEntry } from "../types/api";
 
 describe("safeParseStrategyRecommendation", () => {
   const validScores = {

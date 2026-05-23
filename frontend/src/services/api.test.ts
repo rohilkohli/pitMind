@@ -14,7 +14,12 @@ describe('postRecommend', () => {
     action: 'Pit',
     pit_this_lap: true,
     suggested_compound: 'HARD',
-    scores: { 'Pit': 80, 'Stay Out': 20 },
+    scores: {
+      pit_urgency: 80,
+      sc_probability_next_3_laps: 20,
+      overtake_risk: 50,
+      recommended_window_laps: [20, 25]
+    },
     structured_reasons: ['Tire wear is high'],
     explanation: 'Pit now for hard tires',
     evidence: ['Lap time dropping'],

@@ -5,7 +5,6 @@ Tests cache key generation, cache operations, invalidation, and statistics.
 """
 
 import pytest
-from datetime import datetime
 
 from backend.models.race_state import LapPoint, TelemetryPayload
 from backend.services.cache_manager import (

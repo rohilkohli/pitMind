@@ -5,7 +5,7 @@ Provides query optimization, batching, and performance monitoring
 for database operations.
 """
 
-from typing import Any, Dict, List, Optional, TypeVar, Generic
+from typing import Any, Dict, List, Optional, TypeVar
 from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload, joinedload
@@ -40,14 +40,15 @@ class QueryOptimizer:
         Returns:
             List of model instances
         """
+        import asyncio
         start_time = time.time()
-        results = []
         
-        for i in range(0, len(ids), batch_size):
-            batch_ids = ids[i:i + batch_size]
-            stmt = select(model).where(model.id.in_(batch_ids))
-            result = await session.execute(stmt)
-            results.extend(result.scalars().all())
+        # We process everything using a single query and rely on the database's ability
+        # to execute IN queries efficiently, removing the sequential loop overhead entirely.
+
+        stmt = select(model).where(model.id.in_(ids))
+        result = await session.execute(stmt)
+        results = list(result.scalars().all())
         
         duration_ms = (time.time() - start_time) * 1000
         logger.log_database_query(
@@ -252,6 +253,5 @@ _query_cache = QueryCache()
 def get_query_cache() -> QueryCache:
     """Get global query cache instance."""
     return _query_cache
-
 
 # Made with Bob

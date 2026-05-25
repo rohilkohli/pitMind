@@ -150,6 +150,7 @@ export function Strategy() {
         id="strategy__ai-reasoning-trace"
         defaultCollapsed={false}
         persist={false}
+        showToggle={false}
         header={
           <>
             <div className="pm-panel-title">AI REASONING TRACE</div>
@@ -157,7 +158,7 @@ export function Strategy() {
           </>
         }
         headerStyle={{ padding: '10px 16px', borderBottom: '1px solid var(--border)' }}
-        bodyStyle={{ flex: 1, overflow: 'hidden' }}
+        bodyStyle={{ height: '100%', minHeight: 0, overflow: 'hidden' }}
         style={{ flex: 1, minHeight: 0 }}
         className="pm-panel"
       >
@@ -176,28 +177,11 @@ export function Strategy() {
     <div style={{ display: "flex", flexDirection: "column", gap: 1, background: "var(--border)", height: "100%", minHeight: 0, overflow: "hidden", minWidth: 0 }}>
       <div style={{ flex: 1, minHeight: 0, overflowY: "auto", display: "flex", flexDirection: "column", gap: 1, paddingBottom: 0, scrollbarGutter: "stable" }}>
         <MinimizablePanel
-          id="strategy__lap-time-trace"
-          defaultCollapsed={false}
-          persist={false}
-          header={
-            <div className="pm-panel-title">LAP TIME TRACE</div>
-          }
-          headerStyle={{ padding: '10px 16px', borderBottom: '1px solid var(--border)' }}
-          bodyStyle={{ height: 292, overflow: 'hidden' }}
-          style={{ flex: "0 0 340px", minHeight: 48 }}
-          className="pm-panel"
-        >
-          <Suspense fallback={<div className="skeleton-row" style={{ height: 300 }} />}>
-            <LapChart data={mockChartData} fillHeight showTitle={false} />
-          </Suspense>
-        </MinimizablePanel>
-
-        <MinimizablePanel
           id="strategy__branching-simulator"
           header={
             <>
               <div className="pm-panel-title">BRANCHING SIMULATOR</div>
-              <span className="pm-panel-badge pm-badge-ai">GRANITE</span>
+              <span className="pm-panel-badge pm-badge-granite">GRANITE</span>
             </>
           }
           headerStyle={{ padding: '10px 16px', borderBottom: '1px solid var(--border)' }}
@@ -213,7 +197,6 @@ export function Strategy() {
           header={
             <>
               <div className="pm-panel-title">POST-RACE DEBRIEF</div>
-              <span className="pm-badge-ai">AI Analysis</span>
               <span className="pm-chip">DOCLING ENABLED</span>
             </>
           }
@@ -223,6 +206,23 @@ export function Strategy() {
         >
           <Suspense fallback={<div className="skeleton-row" style={{ height: 300 }} />}>
             <PostRaceDebrief showHeader={false} />
+          </Suspense>
+        </MinimizablePanel>
+
+        <MinimizablePanel
+          id="strategy__lap-time-trace"
+          defaultCollapsed={false}
+          persist={false}
+          header={
+            <div className="pm-panel-title">LAP TIME TRACE</div>
+          }
+          headerStyle={{ padding: '10px 16px', borderBottom: '1px solid var(--border)' }}
+          bodyStyle={{ height: 312, overflow: 'hidden' }}
+          style={{ flex: "0 0 360px", minHeight: 48 }}
+          className="pm-panel"
+        >
+          <Suspense fallback={<div className="skeleton-row" style={{ height: 320 }} />}>
+            <LapChart data={mockChartData} fillHeight showTitle={false} />
           </Suspense>
         </MinimizablePanel>
       </div>
@@ -238,7 +238,7 @@ export function Strategy() {
             <div className="pm-panel-title">DECISION LOG</div>
           }
           headerStyle={{ padding: '10px 16px', borderBottom: '1px solid var(--border)' }}
-          bodyStyle={{ flex: 1, overflowY: 'auto' }}
+          bodyStyle={{ height: '100%', minHeight: 0, overflowY: 'auto' }}
           style={{ flex: "1 1 auto", minHeight: 48 }}
           className="pm-panel"
         >
@@ -253,7 +253,7 @@ export function Strategy() {
             <div className="pm-panel-title">CONFIDENCE BREAKDOWN</div>
           }
           headerStyle={{ padding: '10px 16px', borderBottom: '1px solid var(--border)' }}
-          bodyStyle={{ minHeight: 120 }}
+          bodyStyle={{ minHeight: 160, overflowY: 'auto' }}
           style={{ flex: "0 0 auto", minHeight: 48 }}
           className="pm-panel"
         >

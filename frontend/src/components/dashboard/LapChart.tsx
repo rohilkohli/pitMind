@@ -1,9 +1,16 @@
-import { useState } from "react";
+import { useId, useMemo, useState } from "react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import type { TooltipProps } from "recharts";
 import type { ValueType, NameType } from "recharts/types/component/DefaultTooltipContent";
 
 export type LapData = { lap: number } & Record<string, string | number | null | undefined>;
+
+const DRIVER_DEFS = [
+  { id: "VER", color: "#3671C6", name: "Verstappen" },
+  { id: "LEC", color: "#E8002D", name: "Leclerc" },
+  { id: "NOR", color: "#FF8000", name: "Norris" },
+  { id: "HAM", color: "#27F4D2", name: "Hamilton" },
+] as const;
 
 export function LapChart({
   data,
@@ -16,6 +23,7 @@ export function LapChart({
   fillHeight?: boolean;
   showTitle?: boolean;
 }) {
+  const chartUid = useId();
   const [selectedDrivers, setSelectedDrivers] = useState<string[]>(["VER", "LEC", "NOR"]);
   
   const isEmpty = !data || data.length === 0;
@@ -26,12 +34,12 @@ export function LapChart({
     ghost3: 88 + Math.sin(i / 4) * 3,
   }));
 
-  const drivers = [
-    { id: "VER", color: "#3671C6", name: "Verstappen" },
-    { id: "LEC", color: "#E8002D", name: "Leclerc" },
-    { id: "NOR", color: "#FF8000", name: "Norris" },
-    { id: "HAM", color: "#27F4D2", name: "Hamilton" },
-  ];
+  const drivers = DRIVER_DEFS;
+
+  const activeDrivers = useMemo(() => {
+    if (minimal) return drivers;
+    return drivers.filter((d) => selectedDrivers.includes(d.id));
+  }, [minimal, selectedDrivers]);
 
   const CustomTooltip = ({ active, payload, label }: TooltipProps<ValueType, NameType>) => {
     if (active && payload && payload.length && !isEmpty) {
@@ -97,7 +105,39 @@ export function LapChart({
               data={chartData}
               margin={{ top: fillHeight ? 8 : 10, right: 24, left: 12, bottom: fillHeight ? 8 : 16 }}
             >
-              <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} opacity={0.3} />
+              <defs>
+                {drivers.map((d) => (
+                  <linearGradient key={d.id} id={`${chartUid}-stroke-${d.id}`} x1="0" y1="0" x2="1" y2="0">
+                    <stop offset="0%" stopColor={d.color} stopOpacity={0.60} />
+                    <stop offset="45%" stopColor={d.color} stopOpacity={1} />
+                    <stop offset="100%" stopColor={d.color} stopOpacity={0.65} />
+                  </linearGradient>
+                ))}
+                <filter id={`${chartUid}-glow`} x="-30%" y="-30%" width="160%" height="160%">
+                  <feGaussianBlur stdDeviation="2.5" result="blur" />
+                  <feColorMatrix
+                    in="blur"
+                    type="matrix"
+                    values="
+                      1 0 0 0 0
+                      0 1 0 0 0
+                      0 0 1 0 0
+                      0 0 0 0.55 0
+                    "
+                    result="glow"
+                  />
+                  <feMerge>
+                    <feMergeNode in="glow" />
+                    <feMergeNode in="SourceGraphic" />
+                  </feMerge>
+                </filter>
+              </defs>
+
+              <CartesianGrid
+                strokeDasharray="2 10"
+                stroke="rgba(255,255,255,0.10)"
+                vertical={false}
+              />
               <XAxis 
                 dataKey="lap" 
                 stroke="var(--text-secondary)" 
@@ -118,7 +158,7 @@ export function LapChart({
                 tickMargin={8}
               />
               {!isEmpty && <Tooltip content={<CustomTooltip />} />}
-              
+               
               {isEmpty ? (
                 <>
                   <Line type="monotone" dataKey="ghost1" stroke="var(--border)" strokeWidth={1} dot={false} opacity={0.2} />
@@ -126,15 +166,18 @@ export function LapChart({
                   <Line type="monotone" dataKey="ghost3" stroke="var(--border)" strokeWidth={1} dot={false} opacity={0.2} />
                 </>
               ) : (
-                drivers.filter(d => minimal || selectedDrivers.includes(d.id)).map(d => (
+                activeDrivers.map(d => (
                   <Line 
                     key={d.id}
                     type="monotone" 
                     dataKey={d.id} 
-                    stroke={d.color} 
-                    strokeWidth={2} 
+                    stroke={`url(#${chartUid}-stroke-${d.id})`}
+                    strokeWidth={2.35}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
                     dot={false} 
-                    activeDot={{ r: 6 }} 
+                    filter={`url(#${chartUid}-glow)`}
+                    activeDot={{ r: 5, strokeWidth: 0, fill: d.color }} 
                   />
                 ))
               )}

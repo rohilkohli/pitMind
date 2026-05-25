@@ -59,7 +59,6 @@ export const PostRaceDebrief: React.FC<PostRaceDebriefProps> = ({ showHeader = t
               Post-Race Debrief
             </div>
             <div className="flex items-center gap-2">
-              <span className="pm-badge-ai">AI Analysis</span>
               <span className="pm-chip">Docling Enabled</span>
             </div>
           </div>

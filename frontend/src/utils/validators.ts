@@ -91,6 +91,25 @@ export function isStrategyRecommendation(value: unknown): value is StrategyRecom
   );
 }
 
+/**
+ * Type guard for AuditLogEntry
+ */
+export function isAuditLogEntry(value: unknown): value is AuditLogEntry {
+  if (typeof value !== "object" || value === null) return false;
+  const obj = value as Record<string, unknown>;
+
+  return (
+    typeof obj.id === "string" &&
+    typeof obj.timestamp === "string" &&
+    typeof obj.session_id === "string" &&
+    typeof obj.driver === "string" &&
+    typeof obj.lap === "number" &&
+    typeof obj.strategy_type === "string" &&
+    typeof obj.confidence === "number" &&
+    typeof obj.reasoning === "string"
+  );
+}
+
 
 // ============================================================================
 // Validation Functions with Error Handling

@@ -1,4 +1,4 @@
-import { Suspense, lazy } from "react";
+import { Suspense, lazy, useRef, useCallback, useEffect, useState } from "react";
 import { useFirebaseRaceState } from "../hooks/useFirebaseRaceState";
 import { useDashboardState } from "../hooks/useDashboardState";
 import { useTelemetry } from "../hooks/useTelemetry";
@@ -17,9 +17,11 @@ const LapChart = lazy(() =>
 const FastF1Loader = lazy(() =>
   import("../components/dashboard/FastF1Loader").then((m) => ({ default: m.FastF1Loader })),
 );
-const LiveSystemFeed = lazy(() =>
-  import("../components/dashboard/LiveSystemFeed").then((m) => ({ default: m.LiveSystemFeed })),
-);
+
+const SIDEBAR_MIN = 240;
+const SIDEBAR_MAX = 560;
+const SIDEBAR_DEFAULT = 340;
+const SIDEBAR_LS_KEY = "pm-telemetry-sidebar-w";
 
 export function Telemetry() {
   const { raceState } = useFirebaseRaceState("current_race");
@@ -35,31 +37,102 @@ export function Telemetry() {
     HAM: 82.2 + Math.sin(i / 7) * 0.3 + (Math.random() - 0.5) * 0.2,
   }));
 
+  // ── Sidebar resize ───────────────────────────────────────────────────────
+  const [sidebarW, setSidebarW] = useState<number>(() => {
+    try {
+      const stored = localStorage.getItem(SIDEBAR_LS_KEY);
+      if (stored) {
+        const n = parseInt(stored, 10);
+        if (n >= SIDEBAR_MIN && n <= SIDEBAR_MAX) return n;
+      }
+    } catch {
+      // Ignore invalid persisted sidebar width.
+    }
+    return SIDEBAR_DEFAULT;
+  });
+
+  const dragging = useRef(false);
+  const startX = useRef(0);
+  const startW = useRef(0);
+  const missionRef = useRef<HTMLDivElement>(null);
+  const [missionH, setMissionH] = useState(0);
+
+  const onSeparatorMouseDown = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    dragging.current = true;
+    startX.current = e.clientX;
+    startW.current = sidebarW;
+    document.body.style.cursor = "col-resize";
+    document.body.style.userSelect = "none";
+  }, [sidebarW]);
+
+  useEffect(() => {
+    const onMouseMove = (e: MouseEvent) => {
+      if (!dragging.current) return;
+      // Dragging left = sidebar grows (separator is on the left of sidebar)
+      const delta = startX.current - e.clientX;
+      const next = Math.min(SIDEBAR_MAX, Math.max(SIDEBAR_MIN, startW.current + delta));
+      setSidebarW(next);
+    };
+    const onMouseUp = () => {
+      if (!dragging.current) return;
+      dragging.current = false;
+      document.body.style.cursor = "";
+      document.body.style.userSelect = "";
+      setSidebarW(prev => {
+        try {
+          localStorage.setItem(SIDEBAR_LS_KEY, String(prev));
+        } catch {
+          // Ignore storage write failures.
+        }
+        return prev;
+      });
+    };
+    window.addEventListener("mousemove", onMouseMove);
+    window.addEventListener("mouseup", onMouseUp);
+    return () => {
+      window.removeEventListener("mousemove", onMouseMove);
+      window.removeEventListener("mouseup", onMouseUp);
+    };
+  }, []);
+  // Keep the console body locked to the viewport below the top bars.
+  useEffect(() => {
+    if (!missionRef.current) return;
+
+    const updateMissionHeight = () => {
+      setMissionH(missionRef.current?.offsetHeight ?? 0);
+    };
+
+    updateMissionHeight();
+    const obs = new ResizeObserver(updateMissionHeight);
+    obs.observe(missionRef.current);
+    return () => obs.disconnect();
+  }, []);
+
   return (
     <div
       style={{
         position: "relative",
-        minHeight: "100vh",
         width: "100%",
         background: "var(--carbon)",
         color: "var(--text-primary)",
         overflowX: "hidden",
-        paddingBottom: 80,
+        overflowY: "hidden",
+        minHeight: "calc(100vh - var(--topbar-height, 52px))",
+        height: "calc(100vh - var(--topbar-height, 52px))",
+        paddingBottom: 0,
       }}
     >
-      {/* Sub-header bar */}
+      {/* ── Sub-header / Mission Control bar ─────────────────────────── */}
       <div
+        ref={missionRef}
+        className="pm-mission-bar"
         style={{
-          borderBottom: "1px solid var(--border)",
-          background: "rgba(10,10,10,0.9)",
-          padding: "10px 24px",
+          padding: "12px 24px",
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
-          position: "sticky",
-          top: 52,
-          zIndex: 100,
-          backdropFilter: "blur(12px)",
+          borderBottom: "1px solid var(--border)",
         }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
@@ -67,7 +140,7 @@ export function Telemetry() {
             <div
               style={{
                 fontFamily: "'Barlow Condensed', sans-serif",
-                fontSize: 9,
+                fontSize: 10,
                 fontWeight: 700,
                 letterSpacing: "0.3em",
                 textTransform: "uppercase",
@@ -87,7 +160,7 @@ export function Telemetry() {
                 letterSpacing: "0.05em",
               }}
             >
-              Telemetry & Data{" "}
+              Telemetry &amp; Data{" "}
               <span style={{ color: "var(--text-secondary)", fontSize: 10, fontWeight: 400 }}>
                 v1.2.5
               </span>
@@ -114,7 +187,7 @@ export function Telemetry() {
               <div
                 style={{
                   fontFamily: "'Barlow Condensed', sans-serif",
-                  fontSize: 9,
+                  fontSize: 10,
                   fontWeight: 600,
                   letterSpacing: "0.15em",
                   textTransform: "uppercase",
@@ -139,7 +212,7 @@ export function Telemetry() {
               <div
                 style={{
                   fontFamily: "'Barlow Condensed', sans-serif",
-                  fontSize: 9,
+                  fontSize: 10,
                   fontWeight: 600,
                   letterSpacing: "0.15em",
                   textTransform: "uppercase",
@@ -166,84 +239,101 @@ export function Telemetry() {
         </div>
       </div>
 
-      {/* Grid Layout: 2 columns — 1fr | 320px */}
+      {/* ── Main layout: [left 1fr] [separator 5px] [sidebar Npx] ────── */}
       <div
         style={{
+          display: "flex",
+          alignItems: "stretch",
           maxWidth: 1920,
           margin: "0 auto",
-          padding: "68px 0 40px",
-          height: "calc(100vh - 104px)",
+          paddingTop: 8,
+          height: missionH
+            ? `calc(100vh - var(--topbar-height, 52px) - ${missionH}px)`
+            : "calc(100vh - var(--topbar-height, 52px) - 56px)",
+          minHeight: 0,
           overflow: "hidden",
         }}
       >
+        {/* Left column — content-sized, no forced height */}
         <div
           style={{
-            display: "grid",
-            gridTemplateColumns: "1fr 320px",
+            flex: "1 1 0",
+            minWidth: 0,
+            minHeight: 0,
+            height: "100%",
+            display: "flex",
+            flexDirection: "column",
+            gap: 1,
+            background: "var(--border)",
+            overflow: "hidden",
+          }}
+        >
+          {/* KPI strip */}
+          <div className="pm-panel" style={{ flexShrink: 0 }}>
+            <KpiStrip raceState={raceState} />
+          </div>
+
+          {/* Lap chart — grows to exactly fill gap left by sidebar */}
+          <div
+            className="pm-panel"
+            style={{
+              flex: "1 1 0",
+              display: "flex",
+              flexDirection: "column",
+              minHeight: 0,
+              overflow: "hidden",
+            }}
+          >
+            <Suspense fallback={<div className="skeleton-row" style={{ height: "100%" }} />}>
+              <LapChart data={mockLapData} fillHeight />
+            </Suspense>
+          </div>
+        </div>
+
+        {/* ── Drag separator ─────────────────────────────────────────── */}
+        <div
+          onMouseDown={onSeparatorMouseDown}
+          title="Drag to resize sidebar"
+          style={{
+            width: 5,
+            alignSelf: "stretch",
+            cursor: "col-resize",
+            background: "var(--border)",
+            flexShrink: 0,
+            position: "relative",
+            transition: "background 0.15s",
+          }}
+          onMouseEnter={e => (e.currentTarget.style.background = "var(--f1-red)")}
+          onMouseLeave={e => (e.currentTarget.style.background = "var(--border)")}
+        />
+
+        {/* Right sidebar — sticky, width controlled by drag */}
+        <div
+          style={{
+            width: sidebarW,
+            flexShrink: 0,
+            display: "flex",
+            flexDirection: "column",
             gap: 1,
             background: "var(--border)",
             height: "100%",
+            minHeight: 0,
+            overflow: "hidden",
           }}
         >
-          {/* Left Column (1fr) */}
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              gap: 1,
-              background: "var(--border)",
-              height: "100%",
-              overflowY: "auto",
-              minWidth: 0,
-            }}
-          >
-            <div className="pm-panel" style={{ flex: "0 0 auto", minHeight: 100 }}>
-              <KpiStrip raceState={raceState} />
-            </div>
-            <div className="pm-panel" style={{ flex: "1 1 auto", minHeight: 400 }}>
-              <div className="pm-panel-header">
-                <div className="pm-panel-title">Full Telemetry View</div>
-              </div>
-              <Suspense fallback={<div className="skeleton-row" style={{ height: 400 }} />}>
-                <LapChart data={mockLapData} />
-              </Suspense>
-            </div>
+          {/* FastF1 Loader */}
+          <div className="pm-panel" style={{ flex: "0 0 auto", padding: "20px 24px 18px" }}>
+            <Suspense fallback={<div className="skeleton-row" style={{ height: 240 }} />}>
+              <FastF1Loader onDataLoaded={() => {}} />
+            </Suspense>
           </div>
 
-          {/* Right Column (320px) */}
+          {/* Live Race Timeline — EventTimeline owns its own header & scroll */}
           <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              gap: 1,
-              background: "var(--border)",
-              height: "100%",
-              overflowY: "auto",
-            }}
+            className="pm-panel"
+            style={{ flex: "1 1 0", minHeight: 0, overflow: "hidden", padding: 0 }}
           >
-            <div className="pm-panel" style={{ flex: "0 0 auto", minHeight: 180 }}>
-              <Suspense fallback={<div className="skeleton-row" style={{ height: 180 }} />}>
-                <FastF1Loader onDataLoaded={() => {}} />
-              </Suspense>
-            </div>
-
-            <div className="pm-panel" style={{ flex: "1 1 auto", minHeight: 280 }}>
-              <div className="pm-panel-header">
-                <div className="pm-panel-title">Live Race Timeline</div>
-              </div>
-              <div style={{ overflowY: "auto", maxHeight: 250 }}>
-                <EventTimeline />
-              </div>
-            </div>
-
-            <div
-              className="pm-panel"
-              style={{ flex: "1 1 auto", minHeight: 250, overflow: "hidden" }}
-            >
-              <Suspense fallback={<div className="skeleton-row" style={{ height: 250 }} />}>
-                <LiveSystemFeed />
-              </Suspense>
-            </div>
+            <EventTimeline fillHeight />
           </div>
         </div>
       </div>

@@ -85,7 +85,7 @@ export const ShareButton: React.FC<ShareButtonProps> = ({ onCopyUrl, getShareUrl
               <div
                 style={{
                   fontFamily: "'Barlow Condensed', sans-serif",
-                  fontSize: "9px",
+                  fontSize: "10px",
                   fontWeight: 600,
                   letterSpacing: "0.15em",
                   textTransform: "uppercase",
@@ -163,7 +163,7 @@ export const ShareButton: React.FC<ShareButtonProps> = ({ onCopyUrl, getShareUrl
               style={{
                 marginTop: "12px",
                 fontFamily: "'IBM Plex Mono', monospace",
-                fontSize: "9px",
+                fontSize: "10px",
                 color: "var(--text-secondary)",
                 lineHeight: "1.4",
               }}
@@ -185,7 +185,7 @@ export const ShareButton: React.FC<ShareButtonProps> = ({ onCopyUrl, getShareUrl
                 color: "var(--text-secondary)",
                 fontFamily: "'Barlow Condensed', sans-serif",
                 fontWeight: 600,
-                fontSize: "9px",
+                fontSize: "10px",
                 letterSpacing: "0.15em",
                 textTransform: "uppercase",
                 cursor: "pointer",

@@ -48,11 +48,20 @@ export const RoleSwitcher: React.FC<RoleSwitcherProps> = ({ currentRole, onRoleC
   const [isOpen, setIsOpen] = useState(false);
   const currentConfig = ROLES[currentRole];
 
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Escape') {
+      setIsOpen(false);
+    }
+  };
+
   return (
-    <div className="relative">
+    <div className="relative" onKeyDown={handleKeyDown}>
       {/* Trigger button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
+        aria-expanded={isOpen}
+        aria-haspopup="true"
+        aria-label={`Current role: ${currentConfig.label}. Click to change role.`}
         className="flex items-center gap-2 px-5 py-2.5 border border-[var(--border)] bg-[var(--carbon-mid)] hover:border-[var(--f1-red)] hover:bg-[var(--carbon-light)] text-[var(--text-primary)] transition-all duration-200 font-label uppercase tracking-widest text-sm clip-para-sm"
       >
         <span className={`${currentConfig.accent}`}>{currentConfig.icon}</span>
@@ -63,13 +72,16 @@ export const RoleSwitcher: React.FC<RoleSwitcherProps> = ({ currentRole, onRoleC
       {/* Dropdown menu */}
       {isOpen && (
         <div
-          className="absolute top-full right-0 mt-2 w-96 z-50 animate-slide-in-down"
+          className="absolute top-full right-0 mt-2 w-96 z-[600] animate-slide-in-down"
           onClick={(e) => e.stopPropagation()}
+          role="menu"
+          aria-label="Select role"
         >
           <div className="pm-panel p-5 space-y-3 shadow-2xl bg-[var(--carbon-mid)]">
             {Object.values(ROLES).map((role) => (
               <button
                 key={role.id}
+                role="menuitem"
                 onClick={() => {
                   onRoleChange(role.id);
                   setIsOpen(false);
@@ -111,7 +123,7 @@ export const RoleSwitcher: React.FC<RoleSwitcherProps> = ({ currentRole, onRoleC
 
       {/* Click outside to close */}
       {isOpen && (
-        <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} aria-hidden="true" />
+        <div className="fixed inset-0 z-[550]" onClick={() => setIsOpen(false)} aria-hidden="true" />
       )}
     </div>
   );

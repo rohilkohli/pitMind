@@ -39,15 +39,15 @@ export const FastF1Loader: React.FC<FastF1LoaderProps> = ({ onDataLoaded }) => {
   };
 
   return (
-    <div className="pm-panel h-full flex flex-col">
-      <div className="pm-panel-header">
+    <div className="flex h-full min-h-0 flex-col">
+      <div className="pm-panel-header" style={{ marginBottom: 12 }}>
         <div className="pm-panel-title flex items-center gap-2">
           <Database className="w-4 h-4 text-[var(--f1-red)]" />
           REAL-SESSION DATA (FastF1)
         </div>
       </div>
-      <div className="p-4 flex-1 flex flex-col">
-        <div className="grid grid-cols-2 gap-4">
+      <div className="flex flex-col gap-0">
+        <div className="grid grid-cols-2 gap-3 mb-1">
           <div className="space-y-1.5">
             <label className="font-label tracking-widest text-[10px] text-[var(--text-secondary)] uppercase">
               Year
@@ -108,7 +108,7 @@ export const FastF1Loader: React.FC<FastF1LoaderProps> = ({ onDataLoaded }) => {
         <button
           onClick={handleLoad}
           disabled={loading}
-          className="pm-btn-primary w-full mt-6 flex items-center justify-center gap-2"
+          className="pm-btn-primary w-full mt-4 flex items-center justify-center gap-2"
         >
           {loading ? (
             <>
@@ -129,7 +129,7 @@ export const FastF1Loader: React.FC<FastF1LoaderProps> = ({ onDataLoaded }) => {
           </p>
         )}
 
-        <p className="mt-auto pt-4 text-[10px] text-[var(--text-secondary)] leading-relaxed uppercase font-tele italic">
+        <p className="mt-4 pt-3 text-[10px] text-[var(--text-secondary)] leading-loose uppercase font-tele italic border-t border-[var(--border)]">
           Note: Outbound connection required. First load of an event may take 30-60s to bootstrap
           the F1 timing cache.
         </p>

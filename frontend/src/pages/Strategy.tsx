@@ -1,5 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { useEffect, useState, Suspense, lazy, Fragment } from "react";
+import { useEffect, useRef, useState, Suspense, lazy, Fragment } from "react";
 import { useFirebaseRaceState } from "../hooks/useFirebaseRaceState";
 import { useDashboardState } from "../hooks/useDashboardState";
 import { useTelemetry } from "../hooks/useTelemetry";
@@ -14,6 +13,8 @@ import { ShareButton } from "../components/dashboard/ShareButton";
 import { StreamHealthMonitor } from "../components/dashboard/StreamHealthMonitor";
 import { RoleSwitcher } from "../components/dashboard/RoleSwitcher";
 import { useRole } from "../contexts/RoleContext";
+import { MinimizablePanel } from "../components/ui/MinimizablePanel";
+import { usePanelStateContext } from "../contexts/PanelStateContext";
 
 import * as Resizable from "react-resizable-panels";
 const { Panel, Group } = Resizable;
@@ -21,6 +22,7 @@ import { ResizeHandle } from "../components/ui/ResizeHandle";
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { SortableContext, sortableKeyboardCoordinates, horizontalListSortingStrategy, arrayMove } from '@dnd-kit/sortable';
 import { SortableColumn } from '../components/layout/SortableColumn';
+import { ChevronDown, ChevronUp } from "lucide-react";
 
 const LapChart = lazy(() => import("../components/dashboard/LapChart").then(m => ({ default: m.LapChart })));
 const PostRaceDebrief = lazy(() => import("../components/dashboard/PostRaceDebrief").then(m => ({ default: m.PostRaceDebrief })));
@@ -31,8 +33,11 @@ export function Strategy() {
   const { currentRole, setRole } = useRole();
   const { getShareableUrl, copyShareableUrl } = useDashboardState({ timeFilter: 'live' });
   const { payload: localPayload } = useTelemetry(demoDriverA);
+  const { collapseAll, expandAll } = usePanelStateContext();
 
   const [reco, setReco] = useState<StrategyRecommendation | null>(null);
+  const missionRef = useRef<HTMLDivElement>(null);
+  const [missionH, setMissionH] = useState(0);
 
   useEffect(() => {
     let active = true;
@@ -98,9 +103,26 @@ export function Strategy() {
   }));
 
   const [columnOrder, setColumnOrder] = useState(() => {
-    const saved = localStorage.getItem('pitmind_strategy_layout');
-    return saved ? JSON.parse(saved) : ['left', 'center', 'right'];
+    try {
+      const saved = localStorage.getItem('pitmind_strategy_layout');
+      return saved ? JSON.parse(saved) : ['left', 'center', 'right'];
+    } catch {
+      return ['left', 'center', 'right'];
+    }
   });
+
+  useEffect(() => {
+    if (!missionRef.current) return;
+
+    const updateMissionHeight = () => {
+      setMissionH(missionRef.current?.offsetHeight ?? 0);
+    };
+
+    updateMissionHeight();
+    const obs = new ResizeObserver(updateMissionHeight);
+    obs.observe(missionRef.current);
+    return () => obs.disconnect();
+  }, []);
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -123,68 +145,132 @@ export function Strategy() {
   }
 
   const renderLeftColumn = () => (
-    <div style={{ display: "flex", flexDirection: "column", gap: 1, background: "var(--border)", height: "100%", overflowY: "auto", paddingBottom: 80 }}>
-      <div className="pm-panel" style={{ flex: "1 1 auto", minHeight: 300 }}>
-        <div className="pm-panel-header">
-          <div className="pm-panel-title">Strategy Timeline</div>
-          <span className="pm-panel-badge pm-badge-ok">LIVE</span>
-        </div>
+    <div style={{ display: "flex", flexDirection: "column", gap: 1, background: "var(--border)", height: "100%", minHeight: 0, overflow: "hidden", minWidth: 300 }}>
+      <MinimizablePanel
+        id="strategy__ai-reasoning-trace"
+        defaultCollapsed={false}
+        persist={false}
+        header={
+          <>
+            <div className="pm-panel-title">AI REASONING TRACE</div>
+            <span className="pm-panel-badge pm-badge-ok">{reco ? `${reco.confidence.toFixed(0)}%` : "LIVE"}</span>
+          </>
+        }
+        headerStyle={{ padding: '10px 16px', borderBottom: '1px solid var(--border)' }}
+        bodyStyle={{ flex: 1, overflow: 'hidden' }}
+        style={{ flex: 1, minHeight: 0 }}
+        className="pm-panel"
+      >
         <StrategyTimeline
           reco={reco}
           strategyChecklistKey={`pitmind.strategy.checklist.${localPayload.circuit}.${localPayload.session_label}.${localPayload.driver}`}
           onInjectBriefToChat={() => {}}
           onCommitStrategy={async () => { return {} as any; }}
+          showHeader={false}
         />
-      </div>
-      <div className="pm-panel" style={{ flex: "1 1 auto", minHeight: 300 }}>
-        <div className="pm-panel-header">
-          <div className="pm-panel-title">Branching Simulator</div>
-          <span className="pm-panel-badge pm-badge-ai">GRANITE</span>
-        </div>
-        <BranchingSimulator onSelectScenario={() => {}} />
-      </div>
+      </MinimizablePanel>
     </div>
   );
 
   const renderCenterColumn = () => (
-    <div style={{ display: "flex", flexDirection: "column", gap: 1, background: "var(--border)", height: "100%", overflowY: "auto", paddingBottom: 80 }}>
-      <div className="pm-panel" style={{ flex: "1 1 auto", minHeight: 400 }}>
-        <div className="pm-panel-header">
-          <div className="pm-panel-title">Telemetry Lap Chart</div>
-        </div>
-        <Suspense fallback={<div className="skeleton-row" style={{ height: 400 }} />}>
-          <LapChart data={mockChartData} />
-        </Suspense>
-      </div>
-      <div className="pm-panel" style={{ flex: "0 0 auto", minHeight: 300 }}>
-        <Suspense fallback={<div className="skeleton-row" style={{ height: 300 }} />}>
-          <PostRaceDebrief />
-        </Suspense>
+    <div style={{ display: "flex", flexDirection: "column", gap: 1, background: "var(--border)", height: "100%", minHeight: 0, overflow: "hidden", minWidth: 0 }}>
+      <div style={{ flex: 1, minHeight: 0, overflowY: "auto", display: "flex", flexDirection: "column", gap: 1, paddingBottom: 0, scrollbarGutter: "stable" }}>
+        <MinimizablePanel
+          id="strategy__lap-time-trace"
+          defaultCollapsed={false}
+          persist={false}
+          header={
+            <div className="pm-panel-title">LAP TIME TRACE</div>
+          }
+          headerStyle={{ padding: '10px 16px', borderBottom: '1px solid var(--border)' }}
+          bodyStyle={{ height: 292, overflow: 'hidden' }}
+          style={{ flex: "0 0 340px", minHeight: 48 }}
+          className="pm-panel"
+        >
+          <Suspense fallback={<div className="skeleton-row" style={{ height: 300 }} />}>
+            <LapChart data={mockChartData} fillHeight showTitle={false} />
+          </Suspense>
+        </MinimizablePanel>
+
+        <MinimizablePanel
+          id="strategy__branching-simulator"
+          header={
+            <>
+              <div className="pm-panel-title">BRANCHING SIMULATOR</div>
+              <span className="pm-panel-badge pm-badge-ai">GRANITE</span>
+            </>
+          }
+          headerStyle={{ padding: '10px 16px', borderBottom: '1px solid var(--border)' }}
+          bodyStyle={{ overflowY: 'auto' }}
+          style={{ flex: "0 0 auto", minHeight: 48 }}
+          className="pm-panel"
+        >
+          <BranchingSimulator onSelectScenario={() => {}} />
+        </MinimizablePanel>
+
+        <MinimizablePanel
+          id="strategy__post-race-debrief"
+          header={
+            <>
+              <div className="pm-panel-title">POST-RACE DEBRIEF</div>
+              <span className="pm-badge-ai">AI Analysis</span>
+              <span className="pm-chip">DOCLING ENABLED</span>
+            </>
+          }
+          headerStyle={{ padding: '10px 16px', borderBottom: '1px solid var(--border)' }}
+          style={{ flex: "0 0 auto", minHeight: 48 }}
+          className="pm-panel"
+        >
+          <Suspense fallback={<div className="skeleton-row" style={{ height: 300 }} />}>
+            <PostRaceDebrief showHeader={false} />
+          </Suspense>
+        </MinimizablePanel>
       </div>
     </div>
   );
 
   const renderRightColumn = () => (
-    <div style={{ display: "flex", flexDirection: "column", gap: 1, background: "var(--border)", height: "100%", overflowY: "auto", paddingBottom: 80 }}>
-      <div className="pm-panel" style={{ flex: "0 0 auto" }}>
-        <ConfidenceDecompositionCard
-          decomposition={reco?.confidence_decomposition}
-          overallConfidence={reco?.confidence ?? 0}
-        />
-      </div>
-      <div className="pm-panel" style={{ flex: "1 1 auto", minHeight: 400 }}>
-        <Suspense fallback={<div className="skeleton-row" style={{ height: 400 }} />}>
-          <DecisionLog onExportSession={() => {}} />
-        </Suspense>
+    <div style={{ display: "flex", flexDirection: "column", gap: 1, background: "var(--border)", height: "100%", minHeight: 0, overflow: "hidden", minWidth: 320 }}>
+      <div style={{ flex: 1, minHeight: 0, overflowY: "auto", display: "flex", flexDirection: "column", gap: 1, paddingBottom: 0, scrollbarGutter: "stable" }}>
+        <MinimizablePanel
+          id="strategy__decision-log"
+          header={
+            <div className="pm-panel-title">DECISION LOG</div>
+          }
+          headerStyle={{ padding: '10px 16px', borderBottom: '1px solid var(--border)' }}
+          bodyStyle={{ flex: 1, overflowY: 'auto' }}
+          style={{ flex: "1 1 auto", minHeight: 48 }}
+          className="pm-panel"
+        >
+          <Suspense fallback={<div className="skeleton-row" style={{ height: 400 }} />}>
+            <DecisionLog onExportSession={() => {}} showHeader={false} />
+          </Suspense>
+        </MinimizablePanel>
+
+        <MinimizablePanel
+          id="strategy__confidence-breakdown"
+          header={
+            <div className="pm-panel-title">CONFIDENCE BREAKDOWN</div>
+          }
+          headerStyle={{ padding: '10px 16px', borderBottom: '1px solid var(--border)' }}
+          bodyStyle={{ minHeight: 120 }}
+          style={{ flex: "0 0 auto", minHeight: 48 }}
+          className="pm-panel"
+        >
+          <ConfidenceDecompositionCard
+            decomposition={reco?.confidence_decomposition}
+            overallConfidence={reco?.confidence ?? 0}
+          />
+        </MinimizablePanel>
       </div>
     </div>
   );
 
   const getColumnProps = (id: string) => {
     switch (id) {
-      case 'left': return { defaultSize: 25, minSize: 18 };
-      case 'center': return { defaultSize: 50, minSize: 30 };
-      case 'right': return { defaultSize: 25, minSize: 18 };
+      case 'left': return { defaultSize: 24, minSize: 20 };
+      case 'center': return { defaultSize: 52, minSize: 10 };
+      case 'right': return { defaultSize: 24, minSize: 22 };
       default: return { defaultSize: 33, minSize: 20 };
     }
   };
@@ -203,25 +289,24 @@ export function Strategy() {
       className="pm-bg-f1-circuit"
       style={{
         position: "relative",
-        minHeight: "100vh",
         width: "100%",
         color: "var(--text-primary)",
         overflowX: "hidden",
+        overflowY: "hidden",
+        minHeight: "calc(100vh - var(--topbar-height, 52px))",
+        height: "calc(100vh - var(--topbar-height, 52px))",
       }}
     >
       {/* Sub-header bar */}
       <div
+        ref={missionRef}
+        className="pm-mission-bar"
         style={{
-          borderBottom: "1px solid var(--border)",
-          background: "rgba(10,10,10,0.9)",
-          padding: "10px 24px",
+          padding: "12px 24px",
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
-          position: "sticky",
-          top: 52,
-          zIndex: 100,
-          backdropFilter: "blur(12px)",
+          borderBottom: "1px solid var(--border)",
         }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
@@ -229,7 +314,7 @@ export function Strategy() {
             <div
               style={{
                 fontFamily: "'Barlow Condensed', sans-serif",
-                fontSize: 9,
+                fontSize: 10,
                 fontWeight: 700,
                 letterSpacing: "0.3em",
                 textTransform: "uppercase",
@@ -258,6 +343,29 @@ export function Strategy() {
             LIVE SYNC ACTIVE
           </div>
           <RoleSwitcher currentRole={currentRole} onRoleChange={setRole} />
+          {/* Collapse All / Expand All */}
+          <div style={{ display: "flex", gap: 4, marginLeft: 8 }}>
+            <button
+              onClick={() => collapseAll('strategy')}
+              title="Collapse all panels"
+              style={{ background: 'none', border: '1px solid var(--border)', color: 'var(--text-secondary)', cursor: 'pointer', padding: '4px 8px', fontFamily: "'Barlow Condensed', sans-serif", fontSize: 10, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: 4, borderRadius: 0 }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--f1-red)'; e.currentTarget.style.color = 'var(--f1-red)'; }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-secondary)'; }}
+            >
+              <ChevronDown size={12} />
+              FOLD
+            </button>
+            <button
+              onClick={() => expandAll('strategy')}
+              title="Expand all panels"
+              style={{ background: 'none', border: '1px solid var(--border)', color: 'var(--text-secondary)', cursor: 'pointer', padding: '4px 8px', fontFamily: "'Barlow Condensed', sans-serif", fontSize: 10, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: 4, borderRadius: 0 }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--f1-red)'; e.currentTarget.style.color = 'var(--f1-red)'; }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-secondary)'; }}
+            >
+              <ChevronUp size={12} />
+              UNFOLD
+            </button>
+          </div>
         </div>
 
         <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
@@ -266,7 +374,7 @@ export function Strategy() {
               <div
                 style={{
                   fontFamily: "'Barlow Condensed', sans-serif",
-                  fontSize: 9,
+                  fontSize: 10,
                   fontWeight: 600,
                   letterSpacing: "0.15em",
                   textTransform: "uppercase",
@@ -291,7 +399,7 @@ export function Strategy() {
               <div
                 style={{
                   fontFamily: "'Barlow Condensed', sans-serif",
-                  fontSize: 9,
+                  fontSize: 10,
                   fontWeight: 600,
                   letterSpacing: "0.15em",
                   textTransform: "uppercase",
@@ -319,18 +427,33 @@ export function Strategy() {
       </div>
 
       {/* Grid Layout upgraded to dnd-kit resizable panels */}
-      <div style={{ maxWidth: 1920, margin: "0 auto", padding: 0, height: "calc(100vh - 104px)" }}>
+      <div
+        style={{
+          maxWidth: 1920,
+          margin: "0 auto",
+          paddingTop: 8,
+          height: missionH
+            ? `calc(100vh - var(--topbar-height, 52px) - ${missionH}px)`
+            : "calc(100vh - var(--topbar-height, 52px) - 58px)",
+          minHeight: 0,
+          overflow: "hidden",
+        }}
+      >
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
           <SortableContext items={columnOrder} strategy={horizontalListSortingStrategy}>
-            <Group orientation="horizontal" className="h-full" style={{ gap: 0, background: "var(--border)" }}>
+            <Group
+              orientation="horizontal"
+              className="h-full min-h-0"
+              style={{ gap: 0, background: "var(--border)", overflow: "hidden" }}
+            >
               {columnOrder.map((id: string, index: number) => (
                 <Fragment key={id}>
-                  <Panel id={id} {...getColumnProps(id)} className="h-full">
+                  <Panel id={id} {...getColumnProps(id)} className="h-full min-h-0">
                     <SortableColumn id={id}>
                       {renderColumnContent(id)}
                     </SortableColumn>
                   </Panel>
-                  {index < columnOrder.length - 1 && <ResizeHandle />}
+                  {index < columnOrder.length - 1 && <ResizeHandle className="shrink-0 w-[2px] mx-1" />}
                 </Fragment>
               ))}
             </Group>

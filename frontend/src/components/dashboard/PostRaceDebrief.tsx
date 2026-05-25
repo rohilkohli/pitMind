@@ -3,7 +3,11 @@ import { FileText, Upload, CheckCircle, AlertCircle, Loader2, Download } from "l
 import { uploadDebrief, type DebriefResponse } from "../../services/api";
 import { auth } from "../../lib/firebase";
 
-export const PostRaceDebrief: React.FC = () => {
+interface PostRaceDebriefProps {
+  showHeader?: boolean;
+}
+
+export const PostRaceDebrief: React.FC<PostRaceDebriefProps> = ({ showHeader = true }) => {
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -46,21 +50,23 @@ export const PostRaceDebrief: React.FC = () => {
   };
 
   return (
-    <div className="pm-panel flex flex-col h-full">
-      <div className="pm-panel-header">
-        <div className="flex items-center justify-between w-full">
-          <div className="pm-panel-title flex items-center gap-2">
-            <FileText className="w-5 h-5 text-[var(--f1-red)]" />
-            Post-Race Debrief
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="pm-badge-ai">AI Analysis</span>
-            <span className="pm-chip">Docling Enabled</span>
+    <div className="flex h-full min-h-0 flex-col">
+      {showHeader && (
+        <div className="pm-panel-header">
+          <div className="flex items-center justify-between w-full">
+            <div className="pm-panel-title flex items-center gap-2">
+              <FileText className="w-5 h-5 text-[var(--f1-red)]" />
+              Post-Race Debrief
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="pm-badge-ai">AI Analysis</span>
+              <span className="pm-chip">Docling Enabled</span>
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
-      <div className="p-6 flex-1 flex flex-col">
+      <div className="flex flex-1 min-h-0 flex-col p-5">
         {!debrief ? (
           <div className="flex flex-col items-center justify-center py-10 border border-[var(--border)] bg-[var(--carbon-mid)] hover:border-[var(--f1-red)] transition-colors cursor-pointer group relative flex-1">
             <input

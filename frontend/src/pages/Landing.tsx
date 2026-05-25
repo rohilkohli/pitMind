@@ -390,7 +390,7 @@ export function Landing() {
                   <span
                     style={{
                       fontFamily: "'Barlow Condensed', sans-serif",
-                      fontSize: 9,
+                      fontSize: 10,
                       padding: "2px 6px",
                       background: "rgba(255,255,255,0.1)",
                       color: card.badgeColor,

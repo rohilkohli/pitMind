@@ -6,7 +6,7 @@ export default {
     extend: {
       colors: {
         /* ── Legacy F1 tokens (keep for backward compat) ── */
-        'f1-red':        '#E10600',
+        'f1-red':        '#E8002D',
         'f1-red-dark':   '#B30500',
         'f1-black':      '#15151E',
         'f1-dark':       '#1F1F27',

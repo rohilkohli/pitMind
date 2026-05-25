@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState } from "react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import type { TooltipProps } from "recharts";
@@ -6,7 +5,17 @@ import type { ValueType, NameType } from "recharts/types/component/DefaultToolti
 
 export type LapData = { lap: number } & Record<string, string | number | null | undefined>;
 
-export function LapChart({ data, minimal = false }: { data?: LapData[], minimal?: boolean }) {
+export function LapChart({
+  data,
+  minimal = false,
+  fillHeight = false,
+  showTitle = true,
+}: {
+  data?: LapData[];
+  minimal?: boolean;
+  fillHeight?: boolean;
+  showTitle?: boolean;
+}) {
   const [selectedDrivers, setSelectedDrivers] = useState<string[]>(["VER", "LEC", "NOR"]);
   
   const isEmpty = !data || data.length === 0;
@@ -45,12 +54,16 @@ export function LapChart({ data, minimal = false }: { data?: LapData[], minimal?
   };
 
   return (
-    <div className={`flex h-full flex-col ${minimal ? 'p-2' : 'p-6'}`}>
+    <div className={`flex h-full min-h-0 flex-col overflow-hidden ${minimal ? 'p-2' : fillHeight ? 'p-5' : 'p-6'}`}>
       {!minimal && (
-        <div className="mb-6">
-          <h2 className="pm-panel-title text-xl mb-4">Lap Time Trace</h2>
+        <div className={fillHeight ? "mb-4" : "mb-6"} style={{ paddingLeft: 8, overflow: 'visible' }}>
+          {showTitle && (
+            <h2 className={`pm-panel-title text-xl ${fillHeight ? "mb-3" : "mb-4"}`}>
+              Lap Time Trace
+            </h2>
+          )}
           
-          <div className="flex flex-wrap gap-2 mb-4">
+          <div className={`flex flex-wrap gap-2 ${fillHeight ? "mb-3" : "mb-4"} ${showTitle ? "" : "pt-1"}`}>
             {drivers.map((d) => (
               <button
                 key={d.id}
@@ -69,7 +82,7 @@ export function LapChart({ data, minimal = false }: { data?: LapData[], minimal?
         </div>
       )}
       
-      <div className={`relative flex-1 ${minimal ? 'min-h-[100px]' : 'min-h-[400px]'}`}>
+      <div className={`relative flex-1 ${minimal ? 'min-h-[100px]' : fillHeight ? 'min-h-0' : 'min-h-[280px]'}`}>
         {isEmpty && !minimal && (
           <div className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none">
             <p className="font-label text-[18px] font-semibold text-[var(--text-secondary)] uppercase tracking-widest">
@@ -80,7 +93,10 @@ export function LapChart({ data, minimal = false }: { data?: LapData[], minimal?
         
         <div className="absolute inset-0">
           <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+            <LineChart
+              data={chartData}
+              margin={{ top: fillHeight ? 8 : 10, right: 24, left: 12, bottom: fillHeight ? 8 : 16 }}
+            >
               <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} opacity={0.3} />
               <XAxis 
                 dataKey="lap" 
@@ -98,6 +114,8 @@ export function LapChart({ data, minimal = false }: { data?: LapData[], minimal?
                 domain={['auto', 'auto']}
                 tickFormatter={(val) => val.toFixed(0) + 's'}
                 reversed={true}
+                width={40}
+                tickMargin={8}
               />
               {!isEmpty && <Tooltip content={<CustomTooltip />} />}
               

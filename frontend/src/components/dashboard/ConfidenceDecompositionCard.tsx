@@ -19,16 +19,19 @@ export const ConfidenceDecompositionCard: React.FC<ConfidenceDecompositionCardPr
 
   if (!decomposition) {
     return (
-      <div style={{ padding: "0" }}>
-        <div style={{ marginBottom: 16 }}>
-          <div className="pm-panel-title">Confidence Analysis</div>
-        </div>
+      <div style={{ padding: "0", display: "flex", flexDirection: "column", height: "100%" }}>
         <div
           style={{
             background: "var(--carbon-light)",
             border: "1px solid var(--border)",
             padding: "16px",
             textAlign: "center",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            minHeight: "180px",
+            flex: 1,
           }}
         >
           <p
@@ -61,10 +64,6 @@ export const ConfidenceDecompositionCard: React.FC<ConfidenceDecompositionCardPr
       }}
     >
       <div style={{ padding: "0" }}>
-        {/* Header */}
-        <div style={{ marginBottom: 16 }}>
-          <div className="pm-panel-title">Confidence Analysis</div>
-        </div>
 
         {/* Overall */}
         <div style={{ marginBottom: 16 }}>
@@ -79,7 +78,7 @@ export const ConfidenceDecompositionCard: React.FC<ConfidenceDecompositionCardPr
             <span
               style={{
                 fontFamily: "'Barlow Condensed', sans-serif",
-                fontSize: 9,
+                fontSize: 10,
                 fontWeight: 600,
                 letterSpacing: "0.18em",
                 textTransform: "uppercase",
@@ -134,7 +133,7 @@ export const ConfidenceDecompositionCard: React.FC<ConfidenceDecompositionCardPr
               <div
                 style={{
                   fontFamily: "'Barlow Condensed', sans-serif",
-                  fontSize: 9,
+                  fontSize: 10,
                   fontWeight: 600,
                   letterSpacing: "0.15em",
                   textTransform: "uppercase",
@@ -190,7 +189,7 @@ export const ConfidenceDecompositionCard: React.FC<ConfidenceDecompositionCardPr
           <div
             style={{
               fontFamily: "'Barlow Condensed', sans-serif",
-              fontSize: 9,
+              fontSize: 10,
               fontWeight: 700,
               letterSpacing: "0.15em",
               textTransform: "uppercase",

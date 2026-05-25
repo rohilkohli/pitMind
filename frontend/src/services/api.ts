@@ -156,49 +156,6 @@ export async function postCommitStrategy(
   return handleResponse<StrategyCommitResponse>(response);
 }
 
-/**
- * Compare two drivers' telemetry data
- *
- * @param request - Driver comparison request
- * @param token - Optional authentication token
- * @returns Comparison chart data and narrative
- */
-export async function postCompareDrivers(
-  request: DriverCompareRequest,
-  token?: string,
-): Promise<DriverCompareResponse> {
-  const response = await fetch(`${BASE}/api/v1/compare/drivers`, {
-    method: "POST",
-    headers: buildHeaders(token),
-    body: JSON.stringify(request),
-  });
-  return handleResponse<DriverCompareResponse>(response);
-}
-
-/**
- * Get audit history with optional filters
- *
- * @param params - Query parameters for filtering and pagination
- * @param token - Optional authentication token
- * @returns Paginated audit log entries
- */
-export async function getAuditHistory(
-  params: AuditHistoryParams = {},
-  token?: string,
-): Promise<AuditHistoryResponse> {
-  const queryParams = new URLSearchParams();
-  if (params.session_id) queryParams.append("session_id", params.session_id);
-  if (params.driver) queryParams.append("driver", params.driver);
-  if (params.limit) queryParams.append("limit", params.limit.toString());
-  if (params.offset) queryParams.append("offset", params.offset.toString());
-
-  const url = `${BASE}/api/v1/strategy/audit/history${queryParams.toString() ? "?" + queryParams.toString() : ""}`;
-  const response = await fetch(url, {
-    method: "GET",
-    headers: buildHeaders(token, false),
-  });
-  return handleResponse<AuditHistoryResponse>(response);
-}
 
 // ============================================================================
 // Chat & Commentary API Functions
@@ -253,17 +210,6 @@ export async function uploadDebrief(file: File, token?: string): Promise<Debrief
 // Fan Engagement API Functions
 // ============================================================================
 
-/**
- * Get fan mode status
- *
- * @returns Current fan mode status
- */
-export async function getFanStatus(): Promise<FanStatusResponse> {
-  const response = await fetch(`${BASE}/api/v1/fan/status`, {
-    method: "GET",
-  });
-  return handleResponse<FanStatusResponse>(response);
-}
 
 /**
  * Submit fan prediction for what-if scenario

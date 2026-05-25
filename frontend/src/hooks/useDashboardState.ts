@@ -54,7 +54,7 @@ export function encodeDashboardState(state: DashboardState): string {
 /**
  * Decodes a URL query string back into dashboard state
  */
-export function decodeDashboardState(queryString: string): DashboardState {
+function decodeDashboardState(queryString: string): DashboardState {
   const params = new URLSearchParams(queryString);
   const state: DashboardState = {};
 

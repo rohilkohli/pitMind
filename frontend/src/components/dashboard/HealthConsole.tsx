@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { RotateCcw } from "lucide-react";
 
 export interface HealthMetric {
   name: string;
@@ -93,25 +92,10 @@ const MOCK_HEALTH: HealthSnapshot = {
   },
 };
 
-const getStatusLabel = (status: string) => {
-  switch (status) {
-    case "healthy":
-      return "HEALTHY";
-    case "warning":
-      return "WARNING";
-    case "critical":
-      return "CRITICAL";
-    default:
-      return "UNKNOWN";
-  }
-};
-
-export const HealthConsole: React.FC<HealthConsoleProps> = ({ onRefresh }) => {
+export const HealthConsole: React.FC<HealthConsoleProps> = () => {
   const [health, setHealth] = useState<HealthSnapshot>(MOCK_HEALTH);
-  const [isRefreshing, setIsRefreshing] = useState(false);
 
   const fetchHealth = async () => {
-    setIsRefreshing(true);
     try {
       const baseUrl = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000";
       const response = await fetch(`${baseUrl}/api/v1/metrics/health`);
@@ -121,8 +105,6 @@ export const HealthConsole: React.FC<HealthConsoleProps> = ({ onRefresh }) => {
       }
     } catch (error) {
       console.error("Failed to fetch health metrics:", error);
-    } finally {
-      setIsRefreshing(false);
     }
   };
 
@@ -131,11 +113,6 @@ export const HealthConsole: React.FC<HealthConsoleProps> = ({ onRefresh }) => {
     const interval = setInterval(fetchHealth, 10000); // Refresh every 10s
     return () => clearInterval(interval);
   }, []);
-
-  const handleRefresh = () => {
-    fetchHealth();
-    onRefresh?.();
-  };
 
   const metrics = [
     health.api,
@@ -149,12 +126,6 @@ export const HealthConsole: React.FC<HealthConsoleProps> = ({ onRefresh }) => {
     health.ai,
   ];
 
-  const healthyCount = metrics.filter((m) => m.status === "healthy").length;
-  const overallStatus = metrics.some((m) => m.status === "critical")
-    ? "critical"
-    : metrics.some((m) => m.status === "warning")
-      ? "warning"
-      : "healthy";
 
   const getLatencyColor = (latency: number) => {
     if (latency < 200) return "var(--neon-green)";
@@ -164,83 +135,6 @@ export const HealthConsole: React.FC<HealthConsoleProps> = ({ onRefresh }) => {
 
   return (
     <div style={{ background: "transparent" }}>
-      {/* Header */}
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          paddingBottom: "12px",
-          borderBottom: "1px solid var(--border)",
-          marginBottom: "16px",
-        }}
-      >
-        <div className="flex items-center gap-2">
-          <div
-            style={{
-              width: 6,
-              height: 6,
-              borderRadius: "50%",
-              background:
-                overallStatus === "healthy"
-                  ? "var(--neon-green)"
-                  : overallStatus === "warning"
-                    ? "var(--amber)"
-                    : "var(--f1-red)",
-              animation: "pulse-green 1.2s ease-in-out infinite",
-            }}
-          />
-          <span
-            style={{
-              fontFamily: "'Barlow Condensed', sans-serif",
-              fontSize: 10,
-              fontWeight: 700,
-              letterSpacing: "0.2em",
-              textTransform: "uppercase",
-              color: "var(--text-secondary)",
-            }}
-          >
-            System Health
-          </span>
-        </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <span
-            className={`pm-panel-badge ${
-              overallStatus === "healthy"
-                ? "pm-badge-live"
-                : overallStatus === "warning"
-                  ? "pm-badge-ok"
-                  : "pm-badge-ai"
-            }`}
-            style={{
-              fontFamily: "'Barlow Condensed', sans-serif",
-              fontWeight: 700,
-              fontSize: "9px",
-              letterSpacing: "0.15em",
-              borderRadius: 0,
-            }}
-          >
-            {getStatusLabel(overallStatus)} · {healthyCount}/{metrics.length} OK
-          </span>
-          <button
-            onClick={handleRefresh}
-            disabled={isRefreshing}
-            style={{
-              background: "none",
-              border: "none",
-              color: "var(--f1-red)",
-              cursor: "pointer",
-              padding: 4,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <RotateCcw className={`w-4 h-4 ${isRefreshing ? "animate-spin" : ""}`} />
-          </button>
-        </div>
-      </div>
-
       {/* Metrics grid */}
       <div
         style={{
@@ -259,6 +153,7 @@ export const HealthConsole: React.FC<HealthConsoleProps> = ({ onRefresh }) => {
                 className={`pm-health-val ${metric.status === "warning" ? "warn" : metric.status === "critical" ? "crit" : ""}`}
               >
                 <span
+                  className="pm-health-value"
                   style={{
                     color: metric.name?.toLowerCase()?.includes("latency")
                       ? getLatencyColor(Number(metric.value))
@@ -269,10 +164,9 @@ export const HealthConsole: React.FC<HealthConsoleProps> = ({ onRefresh }) => {
                 </span>
                 {metric.unit && (
                   <span
+                    className="pm-health-unit"
                     style={{
-                      fontSize: "9px",
                       color: "var(--text-secondary)",
-                      marginLeft: "4px",
                       textTransform: "uppercase",
                       fontFamily: "'IBM Plex Mono', monospace",
                     }}
@@ -306,7 +200,7 @@ export const HealthConsole: React.FC<HealthConsoleProps> = ({ onRefresh }) => {
               <div
                 style={{
                   fontFamily: "'IBM Plex Mono', monospace",
-                  fontSize: "8px",
+                  fontSize: "10px",
                   color: "var(--text-secondary)",
                   textTransform: "uppercase",
                   marginTop: "4px",
@@ -351,7 +245,7 @@ export const HealthConsole: React.FC<HealthConsoleProps> = ({ onRefresh }) => {
               <span
                 style={{
                   fontFamily: "'Barlow Condensed', sans-serif",
-                  fontSize: "9px",
+                  fontSize: "10px",
                   fontWeight: 700,
                   letterSpacing: "0.15em",
                   textTransform: "uppercase",
@@ -414,7 +308,7 @@ export const HealthConsole: React.FC<HealthConsoleProps> = ({ onRefresh }) => {
               <span
                 style={{
                   fontFamily: "'Barlow Condensed', sans-serif",
-                  fontSize: "9px",
+                  fontSize: "10px",
                   fontWeight: 700,
                   letterSpacing: "0.15em",
                   textTransform: "uppercase",
@@ -480,7 +374,7 @@ export const HealthConsole: React.FC<HealthConsoleProps> = ({ onRefresh }) => {
               <span
                 style={{
                   fontFamily: "'Barlow Condensed', sans-serif",
-                  fontSize: "9px",
+                  fontSize: "10px",
                   fontWeight: 700,
                   letterSpacing: "0.15em",
                   textTransform: "uppercase",

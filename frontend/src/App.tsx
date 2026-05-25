@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useOptionalAuthUser } from "./hooks/useOptionalAuthUser";
 import { RoleProvider } from "./contexts/RoleContext";
 import { StreamProvider } from "./contexts/StreamContext";
+import { PanelStateProvider } from "./contexts/PanelStateContext";
 import { PageShell } from "./components/layout/PageShell";
 import { Skeleton } from "./components/ui/skeleton";
 
@@ -101,9 +102,13 @@ function SpeedLinesCanvas() {
     }));
 
     let animId: number;
+    let isVisible = true;
 
     function draw() {
-      if (!canvas || !ctx) return;
+      if (!canvas || !ctx || !isVisible || document.hidden) {
+        animId = requestAnimationFrame(draw);
+        return;
+      }
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       lines.forEach((l) => {
         ctx.strokeStyle = `rgba(232,0,45,${l.opacity})`;
@@ -123,11 +128,19 @@ function SpeedLinesCanvas() {
       animId = requestAnimationFrame(draw);
     }
 
+    // Pause when canvas is off-screen
+    const observer = new IntersectionObserver(
+      ([entry]) => { isVisible = entry.isIntersecting; },
+      { threshold: 0 }
+    );
+    observer.observe(canvas);
+
     draw();
 
     return () => {
       window.removeEventListener("resize", resize);
       cancelAnimationFrame(animId);
+      observer.disconnect();
     };
   }, []);
 
@@ -135,6 +148,7 @@ function SpeedLinesCanvas() {
     <canvas
       ref={canvasRef}
       id="pm-speed-canvas"
+      aria-hidden="true"
       style={{
         position: "fixed",
         inset: 0,
@@ -225,6 +239,7 @@ export default function App() {
       <CustomCursor />
 
       {/* App content above canvas */}
+      <PanelStateProvider>
       <div style={{ position: "relative", zIndex: 10, minHeight: "100vh" }}>
         <Routes>
           <Route
@@ -331,6 +346,7 @@ export default function App() {
           />
         </Routes>
       </div>
+      </PanelStateProvider>
     </BrowserRouter>
   );
 }

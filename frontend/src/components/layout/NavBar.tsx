@@ -36,7 +36,7 @@ export function NavBar() {
       </Link>
 
       {/* Nav Links */}
-      <nav style={{ display: "flex", gap: "2px", flex: 1 }}>
+      <nav aria-label="Main navigation" style={{ display: "flex", gap: "2px", flex: 1 }}>
         {navLinks.map((link) => (
           <Link
             key={link.label}
@@ -56,10 +56,12 @@ export function NavBar() {
       <div style={{ display: "flex", alignItems: "center", gap: "16px", marginLeft: "auto" }}>
         <div
           className="pm-live-pill"
+          role="status"
+          aria-live="polite"
           style={{
             fontFamily: "'Barlow Condensed', sans-serif",
             fontWeight: 700,
-            fontSize: "9px",
+            fontSize: "10px",
             letterSpacing: "0.15em",
             textTransform: "uppercase",
             borderRadius: 0,

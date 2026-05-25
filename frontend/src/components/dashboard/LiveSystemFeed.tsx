@@ -30,6 +30,8 @@ const getTagClass = (module: string): string => {
   return "pm-feed-tag pm-tag-sys"; // STRATEGY, GRANITE-AI, etc.
 };
 
+const getModuleLabel = (module: string): string => module.toUpperCase();
+
 export const LiveSystemFeed: React.FC = () => {
   const [logs, setLogs] = useState<LogEntry[]>([]);
 
@@ -85,35 +87,10 @@ export const LiveSystemFeed: React.FC = () => {
         position: "relative",
       }}
     >
-      {/* Header */}
-      <div
-        style={{
-          padding: "0 0 12px 0",
-          borderBottom: "1px solid var(--border)",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          flexShrink: 0,
-        }}
-      >
-        <div className="pm-panel-title">System Feed</div>
-        <span
-          className="pm-panel-badge pm-badge-live"
-          style={{
-            fontFamily: "'Barlow Condensed', sans-serif",
-            fontWeight: 700,
-            fontSize: "9px",
-            letterSpacing: "0.15em",
-            textTransform: "uppercase",
-            borderRadius: 0,
-          }}
-        >
-          STREAMING
-        </span>
-      </div>
-
       {/* Log entries — max 8 visible */}
       <div
+        aria-live="polite"
+        aria-label="Live system feed"
         style={{
           flex: 1,
           overflowY: "hidden",
@@ -139,16 +116,18 @@ export const LiveSystemFeed: React.FC = () => {
             <span className="pm-feed-time">[{log.timestamp}]</span>
             <span
               className={getTagClass(log.module)}
+              title={getModuleLabel(log.module)}
               style={{
                 borderRadius: 0,
                 fontFamily: "'Barlow Condensed', sans-serif",
                 fontWeight: 700,
-                fontSize: "9px",
+                fontSize: "10px",
                 letterSpacing: "0.15em",
                 textTransform: "uppercase",
+                whiteSpace: "nowrap",
               }}
             >
-              {log.module.slice(0, 7)}
+              {getModuleLabel(log.module)}
             </span>
             <span className="pm-feed-text">{log.message}</span>
           </div>
@@ -178,7 +157,7 @@ export const LiveSystemFeed: React.FC = () => {
           <span
             style={{
               fontFamily: "'Barlow Condensed', sans-serif",
-              fontSize: 9,
+              fontSize: 10,
               letterSpacing: "0.2em",
               textTransform: "uppercase",
               color: "var(--text-secondary)",
@@ -191,7 +170,7 @@ export const LiveSystemFeed: React.FC = () => {
         <span
           style={{
             fontFamily: "'IBM Plex Mono', monospace",
-            fontSize: 9,
+            fontSize: 10,
             color: "var(--text-secondary)",
           }}
         >

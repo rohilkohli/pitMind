@@ -126,7 +126,7 @@ export const BranchingSimulator: React.FC<BranchingSimulatorProps> = ({
   return (
     <div className="space-y-6">
       {/* Scenario Comparison Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="flex flex-col md:flex-row items-stretch gap-4">
         {MOCK_SCENARIOS.map((scenario) => (
           <div
             key={scenario.id}
@@ -134,7 +134,7 @@ export const BranchingSimulator: React.FC<BranchingSimulatorProps> = ({
               setSelectedId(scenario.id);
               onSelectScenario?.(scenario);
             }}
-            className={`cursor-pointer pm-panel min-w-[140px] p-4 transition-all ${
+            className={`cursor-pointer pm-panel min-w-[140px] p-4 transition-all flex flex-col flex-1 ${
               selectedId === scenario.id
                 ? "border-[var(--f1-red)] bg-[var(--f1-red-dim)]"
                 : "hover:border-[var(--f1-red)]"
@@ -143,7 +143,7 @@ export const BranchingSimulator: React.FC<BranchingSimulatorProps> = ({
             <div className="flex items-start justify-between gap-2 mb-3">
               <div>
                 <h3 className="font-label text-sm text-[var(--text-primary)]">{scenario.label}</h3>
-                <p className="font-tele text-[10px] text-[var(--text-secondary)] mt-1">
+                <p className="font-tele text-[10px] text-[var(--text-secondary)] mt-1" style={{ minHeight: "48px", overflow: "hidden", textOverflow: "ellipsis", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>
                   {scenario.description}
                 </p>
               </div>
@@ -163,6 +163,13 @@ export const BranchingSimulator: React.FC<BranchingSimulatorProps> = ({
                         ? "var(--amber)"
                         : "var(--f1-red)",
                   border: `1px solid ${scenario.confidence >= 0.8 ? "var(--neon-green)" : scenario.confidence >= 0.65 ? "var(--amber)" : "var(--f1-red)"}`,
+                  minWidth: "44px",
+                  textAlign: "center",
+                  padding: "2px 8px",
+                  borderRadius: "999px",
+                  fontWeight: 700,
+                  fontSize: "13px",
+                  flexShrink: 0
                 }}
               >
                 {(scenario.confidence * 100).toFixed(0)}%
@@ -170,7 +177,7 @@ export const BranchingSimulator: React.FC<BranchingSimulatorProps> = ({
             </div>
 
             {/* Outcome metrics */}
-            <div className="space-y-2 mb-4">
+            <div className="space-y-2 mb-4 mt-auto flex flex-col gap-1">
               <div className="flex items-center justify-between text-xs">
                 <span className="font-label tracking-widest text-[var(--text-secondary)] uppercase">
                   Predicted Pos

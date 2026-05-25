@@ -17,7 +17,7 @@ export function StandingsTable({ standings }: { standings: DriverState[] | undef
           <span
             style={{
               fontFamily: "'Barlow Condensed', sans-serif",
-              fontSize: 9,
+              fontSize: 10,
               letterSpacing: "0.2em",
               textTransform: "uppercase",
               color: "var(--amber)",
@@ -56,33 +56,6 @@ export function StandingsTable({ standings }: { standings: DriverState[] | undef
 
   return (
     <div style={{ background: "transparent" }}>
-      {/* Header */}
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          paddingBottom: "12px",
-          borderBottom: "1px solid var(--border)",
-          marginBottom: "8px",
-        }}
-      >
-        <div className="pm-panel-title">Live Standings</div>
-        <span
-          className="pm-panel-badge pm-badge-live"
-          style={{
-            fontFamily: "'Barlow Condensed', sans-serif",
-            fontWeight: 700,
-            fontSize: "9px",
-            letterSpacing: "0.15em",
-            textTransform: "uppercase",
-            borderRadius: 0,
-          }}
-        >
-          LIVE
-        </span>
-      </div>
-
       {/* Rows */}
       <div>
         {standings.map((driver) => (

@@ -19,6 +19,7 @@ type StrategyTimelineProps = {
   strategyChecklistKey?: string;
   onInjectBriefToChat?: (brief: string) => void;
   onCommitStrategy?: (payload: StrategyPanelCommitPayload) => Promise<StrategyCommitResponse>;
+  showHeader?: boolean;
 };
 
 type ScoreRowProps = {
@@ -66,6 +67,7 @@ export function StrategyTimeline({
   strategyChecklistKey = "pitmind.strategy.checklist.default",
   onInjectBriefToChat,
   onCommitStrategy,
+  showHeader = true,
 }: StrategyTimelineProps) {
   const [selectedEvidence, setSelectedEvidence] = useState<EvidenceDrilldown | null>(null);
   const [checklist, setChecklist] = useState<StrategyChecklistState>({
@@ -144,7 +146,7 @@ export function StrategyTimeline({
   if (!reco) {
     return (
       <div
-        className="flex h-full items-center justify-center p-8 text-center relative overflow-hidden bg-[var(--carbon-mid)]"
+        className="flex h-full flex-col items-center justify-center p-8 text-center relative overflow-hidden bg-[var(--carbon-mid)]"
         style={{
           backgroundImage: `
             linear-gradient(rgba(225,6,0,0.03) 1px, transparent 1px),
@@ -161,7 +163,7 @@ export function StrategyTimeline({
           <p className="text-[10px] font-tele uppercase text-[var(--text-secondary)] max-w-[200px]">
             The viewer fills in with evidence, confidence, and alternate calls.
           </p>
-          <div className="mt-5 grid grid-cols-2 gap-2 text-left">
+          <div className="mt-[24px] grid grid-cols-2 gap-[12px] text-left">
             <div className="border border-[var(--border)] bg-[var(--carbon-light)] px-3 py-2">
               <p className="text-[9px] font-label font-black uppercase tracking-wider text-[var(--text-secondary)]">
                 Awaiting
@@ -262,22 +264,24 @@ export function StrategyTimeline({
 
   return (
     <>
-      <div className="flex h-full flex-col">
-        <div className="sticky top-0 z-10 border-b border-[var(--border)] bg-[var(--carbon)] px-4 py-4">
-          <div className="flex items-center justify-between gap-3">
-            <div>
-              <h2 className="text-xs font-label uppercase tracking-widest text-[var(--text-primary)]">
-                AI Reasoning Trace
-              </h2>
-              <p className="mt-1 font-tele text-[10px] uppercase tracking-widest text-[var(--text-secondary)]">
-                Model output with guardrails and structured evidence
-              </p>
+      <div className="flex h-full flex-col overflow-hidden min-h-0">
+        {showHeader && (
+          <div className="sticky top-0 z-10 shrink-0 border-b border-[var(--border)] bg-[var(--carbon)] px-4 py-4">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <h2 className="text-xs font-label uppercase tracking-widest text-[var(--text-primary)]">
+                  AI Reasoning Trace
+                </h2>
+                <p className="mt-1 font-tele text-[10px] uppercase tracking-widest text-[var(--text-secondary)]">
+                  Model output with guardrails and structured evidence
+                </p>
+              </div>
+              <span className="pm-chip">{confidence.toFixed(0)}% CONFIDENCE</span>
             </div>
-            <span className="pm-chip">{confidence.toFixed(0)}% CONFIDENCE</span>
           </div>
-        </div>
+        )}
 
-        <div className="space-y-5 overflow-y-auto px-4 py-4">
+        <div className="space-y-5 overflow-y-auto px-4 py-4 flex-1 min-h-0" style={{ scrollbarWidth: "thin", scrollbarColor: "#ff1801 #1a1a1a" }}>
           <div className="pm-panel border-l-4 border-[var(--f1-red)] p-4">
             <div className="flex items-start justify-between gap-3">
               <div>

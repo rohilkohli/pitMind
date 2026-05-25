@@ -19,6 +19,8 @@ import { Loader2, Download, Upload, Zap } from "lucide-react";
 import * as Resizable from "react-resizable-panels";
 const { Panel, Group } = Resizable;
 import { ResizeHandle } from "../components/ui/ResizeHandle";
+import { MinimizablePanel } from "../components/ui/MinimizablePanel";
+import { usePanelStateContext } from "../contexts/PanelStateContext";
 
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { SortableContext, sortableKeyboardCoordinates, horizontalListSortingStrategy, arrayMove } from '@dnd-kit/sortable';
@@ -46,6 +48,7 @@ export function Dashboard() {
   const { getShareableUrl, copyShareableUrl } = useDashboardState({
     timeFilter: 'live',
   });
+  const { collapseAll, expandAll } = usePanelStateContext();
   
   // Local telemetry state (for demo / upload purposes as built in step 1)
   const { payload: initialPayload } = useTelemetry(demoDriverA);
@@ -244,10 +247,6 @@ export function Dashboard() {
   }
 
   function handleExportDecisions(format: 'csv' | 'json') {
-    // MOCK_DECISIONS from DecisionLog.tsx is not exported, but we can assume the component would handle it or we pass it.
-    // However, the DecisionLog component has MOCK_DECISIONS inside it.
-    // For now, let's just toast or log that we are exporting.
-    // In a real app, we'd get the decisions from a hook.
     console.log(`Exporting decisions as ${format}`);
   }
 
@@ -308,6 +307,7 @@ export function Dashboard() {
     }
   }
 
+  /* ── LEFT COLUMN ─────────────────────────────────────────── */
   const renderLeftColumn = () => (
     <div
       style={{
@@ -320,22 +320,45 @@ export function Dashboard() {
         paddingBottom: 80,
       }}
     >
-      <div className="pm-panel" style={{ flex: "0 0 auto" }}>
+      <MinimizablePanel
+        id="dashboard__driver-standings"
+        header={<div className="pm-panel-title">Driver Standings</div>}
+        headerStyle={{ padding: '10px 16px', borderBottom: '1px solid var(--border)' }}
+        className="pm-panel"
+        style={{ flex: "0 0 auto" }}
+      >
         <StandingsTable standings={raceState?.standings} />
-      </div>
-      <div className="pm-panel" style={{ flex: "1 1 auto", minHeight: 280, overflow: "hidden" }}>
+      </MinimizablePanel>
+
+      <MinimizablePanel
+        id="dashboard__team-radio-feed"
+        header={<div className="pm-panel-title">Live System Feed</div>}
+        headerStyle={{ padding: '10px 16px', borderBottom: '1px solid var(--border)' }}
+        className="pm-panel"
+        style={{ flex: "1 1 auto", minHeight: 48 }}
+        bodyStyle={{ minHeight: 200, overflow: 'hidden' }}
+      >
         <Suspense fallback={<div className="skeleton-row" style={{ height: 280 }} />}>
           <LiveSystemFeed />
         </Suspense>
-      </div>
-      <div className="pm-panel" style={{ flex: "0 0 auto" }}>
+      </MinimizablePanel>
+
+      <MinimizablePanel
+        id="dashboard__session-info"
+        header={<div className="pm-panel-title">Health Console</div>}
+        headerStyle={{ padding: '10px 16px', borderBottom: '1px solid var(--border)' }}
+        className="pm-panel"
+        style={{ flex: "0 0 auto" }}
+        defaultCollapsed={true}
+      >
         <Suspense fallback={<div className="skeleton-row" style={{ height: 120 }} />}>
           <HealthConsole />
         </Suspense>
-      </div>
+      </MinimizablePanel>
     </div>
   );
 
+  /* ── CENTER COLUMN ───────────────────────────────────────── */
   const renderCenterColumn = () => (
     <div
       style={{
@@ -348,86 +371,103 @@ export function Dashboard() {
         paddingBottom: 80,
       }}
     >
-      <div className="pm-panel" style={{ flex: "0 0 auto", minHeight: 360 }}>
-        <div className="pm-panel-header">
-          <div className="pm-panel-title">Telemetry Analysis</div>
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <div className="relative overflow-hidden group">
-              <input
-                type="file"
-                onChange={handleUploadTelemetry}
-                style={{ position: "absolute", inset: 0, opacity: 0, cursor: "pointer", zIndex: 10 }}
-                accept=".csv,.json"
-              />
-              <button
-                disabled={isUploading}
+      <MinimizablePanel
+        id="dashboard__gap-chart"
+        header={
+          <>
+            <div className="pm-panel-title">Telemetry Analysis</div>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <div className="relative overflow-hidden group">
+                <input
+                  type="file"
+                  onChange={handleUploadTelemetry}
+                  style={{ position: "absolute", inset: 0, opacity: 0, cursor: "pointer", zIndex: 10 }}
+                  accept=".csv,.json"
+                />
+                <button
+                  disabled={isUploading}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 6,
+                    padding: "4px 10px",
+                    border: "1px solid var(--border-active)",
+                    background: "var(--f1-red-dim)",
+                    color: "var(--f1-red)",
+                    fontFamily: "'Barlow Condensed', sans-serif",
+                    fontSize: 10,
+                    fontWeight: 700,
+                    letterSpacing: "0.15em",
+                    textTransform: "uppercase",
+                    cursor: "pointer",
+                    clipPath: "polygon(4px 0, 100% 0, calc(100% - 4px) 100%, 0 100%)",
+                  }}
+                >
+                  {isUploading ? <Loader2 style={{ width: 10, height: 10 }} className="animate-spin" /> : <Upload style={{ width: 10, height: 10 }} />}
+                  {isUploading ? "Ingesting..." : "Ingest Data"}
+                </button>
+              </div>
+              <span
                 style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 6,
-                  padding: "4px 10px",
-                  border: "1px solid var(--border-active)",
-                  background: "var(--f1-red-dim)",
-                  color: "var(--f1-red)",
-                  fontFamily: "'Barlow Condensed', sans-serif",
-                  fontSize: 9,
+                  fontFamily: "'Orbitron', sans-serif",
+                  fontSize: 10,
                   fontWeight: 700,
-                  letterSpacing: "0.15em",
-                  textTransform: "uppercase",
-                  cursor: "pointer",
-                  clipPath: "polygon(4px 0, 100% 0, calc(100% - 4px) 100%, 0 100%)",
+                  color: "var(--f1-red)",
+                  background: "var(--f1-red-dim)",
+                  border: "1px solid var(--border-active)",
+                  padding: "2px 8px",
                 }}
               >
-                {isUploading ? <Loader2 style={{ width: 10, height: 10 }} className="animate-spin" /> : <Upload style={{ width: 10, height: 10 }} />}
-                {isUploading ? "Ingesting..." : "Ingest Data"}
+                {localPayload.driver}
+              </span>
+              <span
+                style={{
+                  fontFamily: "'IBM Plex Mono', monospace",
+                  fontSize: 10,
+                  color: "var(--text-secondary)",
+                  background: "rgba(255,255,255,0.04)",
+                  border: "1px solid var(--border)",
+                  padding: "2px 8px",
+                }}
+              >
+                LAPS: {localPayload.laps.length}
+              </span>
+              <button
+                onClick={() => handleExportTelemetry('csv')}
+                style={{ color: "var(--text-secondary)", background: "none", border: "none", cursor: "pointer", padding: 4 }}
+                title="Export CSV"
+              >
+                <Download style={{ width: 14, height: 14 }} />
               </button>
             </div>
-            <span
-              style={{
-                fontFamily: "'Orbitron', sans-serif",
-                fontSize: 10,
-                fontWeight: 700,
-                color: "var(--f1-red)",
-                background: "var(--f1-red-dim)",
-                border: "1px solid var(--border-active)",
-                padding: "2px 8px",
-              }}
-            >
-              {localPayload.driver}
-            </span>
-            <span
-              style={{
-                fontFamily: "'IBM Plex Mono', monospace",
-                fontSize: 9,
-                color: "var(--text-secondary)",
-                background: "rgba(255,255,255,0.04)",
-                border: "1px solid var(--border)",
-                padding: "2px 8px",
-              }}
-            >
-              LAPS: {localPayload.laps.length}
-            </span>
-            <button
-              onClick={() => handleExportTelemetry('csv')}
-              style={{ color: "var(--text-secondary)", background: "none", border: "none", cursor: "pointer", padding: 4 }}
-              title="Export CSV"
-            >
-              <Download style={{ width: 14, height: 14 }} />
-            </button>
-          </div>
-        </div>
+          </>
+        }
+        headerStyle={{ padding: '10px 16px', borderBottom: '1px solid var(--border)' }}
+        className="pm-panel"
+        style={{ flex: "0 0 auto", minHeight: 48 }}
+        animationDuration={350}
+      >
         <Suspense fallback={<div style={{ height: 300, display: "flex", alignItems: "center", justifyContent: "center" }}><Loader2 className="animate-spin" style={{ color: "var(--f1-red)", width: 24, height: 24 }} /></div>}>
           <LapChart data={localPayload.laps} />
         </Suspense>
-      </div>
+      </MinimizablePanel>
 
-      <div
+      <MinimizablePanel
+        id="dashboard__race-control-messages"
+        header={
+          <>
+            <div className="pm-panel-title">
+              <Zap style={{ width: 10, height: 10, color: "var(--f1-red)", flexShrink: 0 }} />
+              AI Strategy Oracle
+            </div>
+            <span className="pm-panel-badge pm-badge-ai">GRANITE · ONLINE</span>
+          </>
+        }
+        headerStyle={{ padding: '10px 16px', borderBottom: '1px solid var(--border)' }}
         className="pm-panel"
-        style={{
-          flex: "0 0 auto",
-          position: "relative",
-          overflow: "hidden",
-        }}
+        style={{ flex: "0 0 auto", position: "relative", overflow: "hidden" }}
+        defaultCollapsed={false}
+        persist={false}
       >
         <div
           style={{
@@ -438,13 +478,6 @@ export function Dashboard() {
             pointerEvents: "none",
           }}
         />
-        <div className="pm-panel-header" style={{ position: "relative", zIndex: 1 }}>
-          <div className="pm-panel-title">
-            <Zap style={{ width: 10, height: 10, color: "var(--f1-red)", flexShrink: 0 }} />
-            AI Strategy Oracle
-          </div>
-          <span className="pm-panel-badge pm-badge-ai">GRANITE · ONLINE</span>
-        </div>
 
         <div className="pm-throttle-bar" style={{ marginBottom: 12, position: "relative", zIndex: 1 }}>
           <div className="pm-throttle-fill" />
@@ -463,7 +496,7 @@ export function Dashboard() {
 
           {reco && (
             <div style={{ padding: "14px", background: "var(--f1-red-dim)", border: "1px solid var(--border-active)", marginBottom: 16, borderLeft: "3px solid var(--f1-red)" }}>
-              <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: 9, fontWeight: 700, letterSpacing: "0.25em", textTransform: "uppercase", color: "var(--text-secondary)", marginBottom: 6 }}>Generated Directive</div>
+              <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: 10, fontWeight: 700, letterSpacing: "0.25em", textTransform: "uppercase", color: "var(--text-secondary)", marginBottom: 6 }}>Generated Directive</div>
               <div style={{ fontFamily: "'Orbitron', sans-serif", fontSize: 22, fontWeight: 900, color: "var(--text-primary)", textTransform: "uppercase", letterSpacing: "-0.02em", lineHeight: 1 }}>{reco.action}</div>
             </div>
           )}
@@ -476,31 +509,40 @@ export function Dashboard() {
           >
             {recoLoading ? "Processing Inference..." : "Execute Command"}
           </button>
-          <div style={{ textAlign: "center", fontFamily: "'IBM Plex Mono', monospace", fontSize: 9, color: "var(--text-secondary)", letterSpacing: "0.15em", textTransform: "uppercase" }}>
+          <div style={{ textAlign: "center", fontFamily: "'IBM Plex Mono', monospace", fontSize: 10, color: "var(--text-secondary)", letterSpacing: "0.15em", textTransform: "uppercase" }}>
             AI READY — GRANITE v1.3 — IBM WATSONX
           </div>
         </div>
-      </div>
+      </MinimizablePanel>
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 1, background: "var(--border)" }}>
-        <div className="pm-panel" style={{ minHeight: 320 }}>
+        <MinimizablePanel
+          id="dashboard__pit-stop-history"
+          header={<div className="pm-panel-title">FastF1 Data Loader</div>}
+          headerStyle={{ padding: '10px 16px', borderBottom: '1px solid var(--border)' }}
+          className="pm-panel"
+          style={{ minHeight: 48 }}
+        >
           <Suspense fallback={<div className="skeleton-row" style={{ height: 320 }} />}>
             <FastF1Loader onDataLoaded={(data) => setLocalPayload(data)} />
           </Suspense>
-        </div>
+        </MinimizablePanel>
 
-        <div className="pm-panel" style={{ minHeight: 320 }}>
-          <div className="pm-panel-header">
-            <div className="pm-panel-title">Live Race Timeline</div>
-          </div>
-          <div style={{ overflowY: "auto", maxHeight: 280 }}>
-            <EventTimeline />
-          </div>
-        </div>
+        <MinimizablePanel
+          id="dashboard__live-timing"
+          header={<div className="pm-panel-title">Live Race Timeline</div>}
+          headerStyle={{ padding: '10px 16px', borderBottom: '1px solid var(--border)' }}
+          className="pm-panel"
+          style={{ minHeight: 48 }}
+          bodyStyle={{ overflowY: 'auto', maxHeight: 280 }}
+        >
+          <EventTimeline />
+        </MinimizablePanel>
       </div>
     </div>
   );
 
+  /* ── RIGHT COLUMN ────────────────────────────────────────── */
   const renderRightColumn = () => (
     <div
       style={{
@@ -513,109 +555,141 @@ export function Dashboard() {
         paddingBottom: 80,
       }}
     >
-      <div className="pm-panel" style={{ flex: "0 0 auto" }}>
+      <MinimizablePanel
+        id="dashboard__fastest-laps"
+        header={<div className="pm-panel-title">Confidence Breakdown</div>}
+        headerStyle={{ padding: '10px 16px', borderBottom: '1px solid var(--border)' }}
+        className="pm-panel"
+        style={{ flex: "0 0 auto" }}
+      >
         <ConfidenceDecompositionCard
           decomposition={reco?.confidence_decomposition}
           overallConfidence={reco?.confidence ?? 0}
         />
-      </div>
+      </MinimizablePanel>
 
-      <div className="pm-panel" style={{ flex: "0 0 auto", minHeight: 200, overflowY: "auto", maxHeight: 350 }}>
-        <div className="pm-panel-header">
-          <div className="pm-panel-title">Reasoning Trace</div>
-          <span className="pm-panel-badge pm-badge-ok">LIVE</span>
-        </div>
+      <MinimizablePanel
+        id="dashboard__tyre-strategy-overview"
+        header={
+          <>
+            <div className="pm-panel-title">Reasoning Trace</div>
+            <span className="pm-panel-badge pm-badge-ok">LIVE</span>
+          </>
+        }
+        headerStyle={{ padding: '10px 16px', borderBottom: '1px solid var(--border)' }}
+        className="pm-panel"
+        style={{ flex: "0 0 auto", minHeight: 48 }}
+        bodyStyle={{ overflowY: 'auto', maxHeight: 350 }}
+        defaultCollapsed={false}
+        persist={false}
+      >
         <StrategyTimeline
           reco={reco}
           strategyChecklistKey={`pitmind.strategy.checklist.${localPayload.circuit}.${localPayload.session_label}.${localPayload.driver}`}
           onInjectBriefToChat={handleInjectBriefToChat}
           onCommitStrategy={handleCommitStrategy}
         />
-      </div>
+      </MinimizablePanel>
 
-      <div className="pm-panel" style={{ flex: "0 0 auto" }}>
+      <MinimizablePanel
+        id="dashboard__weather-module"
+        header={<div className="pm-panel-title">Decision Log</div>}
+        headerStyle={{ padding: '10px 16px', borderBottom: '1px solid var(--border)' }}
+        className="pm-panel"
+        style={{ flex: "0 0 auto" }}
+      >
         <Suspense fallback={<div className="skeleton-row" style={{ height: 120 }} />}>
           <DecisionLog onExportSession={() => handleExportDecisions('csv')} />
         </Suspense>
-      </div>
+      </MinimizablePanel>
 
-      <div className="pm-panel" style={{ flex: "1 1 auto", display: "flex", flexDirection: "column", minHeight: 420 }}>
-        <div className="pm-panel-header" style={{ flexShrink: 0 }}>
-          <div className="pm-panel-title">PitMind Assistant</div>
-          <span className="pm-panel-badge pm-badge-ai">GRANITE · ONLINE</span>
-        </div>
+      <MinimizablePanel
+        id="dashboard__race-control-chat"
+        header={
+          <>
+            <div className="pm-panel-title">PitMind Assistant</div>
+            <span className="pm-panel-badge pm-badge-ai">GRANITE · ONLINE</span>
+          </>
+        }
+        headerStyle={{ padding: '10px 16px', borderBottom: '1px solid var(--border)' }}
+        className="pm-panel"
+        style={{ flex: "1 1 auto", minHeight: 48 }}
+        defaultCollapsed={false}
+        persist={false}
+      >
+        <div style={{ display: "flex", flexDirection: "column", minHeight: "calc(100vh - var(--topbar-height) - 200px)", height: "100%" }}>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 12, flexShrink: 0 }}>
+            {promptChips.map((chip) => (
+              <button
+                key={chip}
+                onClick={() => setDraft(chip)}
+                className="pm-chip"
+              >
+                {chip.replace(/[.?]/g, '').toUpperCase().slice(0, 20)}
+              </button>
+            ))}
+          </div>
 
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 12, flexShrink: 0 }}>
-          {promptChips.map((chip) => (
-            <button
-              key={chip}
-              onClick={() => setDraft(chip)}
-              className="pm-chip"
-            >
-              {chip.replace(/[.?]/g, '').toUpperCase().slice(0, 20)}
-            </button>
-          ))}
-        </div>
-
-        <div
-          style={{
-            flex: 1,
-            overflowY: "auto",
-            marginBottom: 12,
-            display: "flex",
-            flexDirection: "column",
-            gap: 0,
-          }}
-        >
-          {chat.map((m, idx) => (
-            <div
-              key={idx}
-              className={`pm-chat-msg ${m.role === "user" ? "user" : "ai"}`}
-            >
-              <div className="pm-msg-label">
-                {m.role === "user" ? "ENGINEER" : "◆ GRANITE · SYSTEM ORACLE"}
-              </div>
-              <div className="pm-msg-bubble">
-                {m.content}
-                {m.streaming && (
-                  <span style={{ marginLeft: 2, color: "var(--f1-red)", animation: "flicker 0.8s infinite" }}>▍</span>
-                )}
-              </div>
-            </div>
-          ))}
-
-          {isChatThinking && (
-            <div className="pm-chat-msg ai">
-              <div className="pm-msg-label">◆ GRANITE</div>
-              <div className="pm-msg-bubble">
-                <div className="pm-typing">
-                  <div className="pm-typing-dot" />
-                  <div className="pm-typing-dot" />
-                  <div className="pm-typing-dot" />
+          <div
+            style={{
+              flex: 1,
+              overflowY: "auto",
+              marginBottom: 12,
+              display: "flex",
+              flexDirection: "column",
+              gap: 0,
+            }}
+          >
+            {chat.map((m, idx) => (
+              <div
+                key={idx}
+                className={`pm-chat-msg ${m.role === "user" ? "user" : "ai"}`}
+              >
+                <div className="pm-msg-label">
+                  {m.role === "user" ? "ENGINEER" : "◆ GRANITE · SYSTEM ORACLE"}
+                </div>
+                <div className="pm-msg-bubble">
+                  {m.content}
+                  {m.streaming && (
+                    <span style={{ marginLeft: 2, color: "var(--f1-red)", animation: "flicker 0.8s infinite" }}>▍</span>
+                  )}
                 </div>
               </div>
-            </div>
-          )}
-        </div>
+            ))}
 
-        <div style={{ display: "flex", gap: 0, flexShrink: 0 }}>
-          <input
-            value={draft}
-            onChange={(e) => setDraft(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && onSendChat()}
-            placeholder="ENTER STRATEGY QUERY..."
-            className="pm-chat-input"
-            disabled={isChatThinking}
-          />
-          <button
-            onClick={onSendChat}
-            disabled={isChatThinking}
-            className="pm-chat-send"
-          >
-            ▶
-          </button>
+            {isChatThinking && (
+              <div className="pm-chat-msg ai">
+                <div className="pm-msg-label">◆ GRANITE</div>
+                <div className="pm-msg-bubble">
+                  <div className="pm-typing">
+                    <div className="pm-typing-dot" />
+                    <div className="pm-typing-dot" />
+                    <div className="pm-typing-dot" />
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div style={{ display: "flex", gap: 0, flexShrink: 0 }}>
+            <input
+              value={draft}
+              onChange={(e) => setDraft(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && onSendChat()}
+              placeholder="ENTER STRATEGY QUERY..."
+              className="pm-chat-input"
+              disabled={isChatThinking}
+            />
+            <button
+              onClick={onSendChat}
+              disabled={isChatThinking}
+              className="pm-chat-send"
+            >
+              ▶
+            </button>
+          </div>
         </div>
-      </div>
+      </MinimizablePanel>
 
     </div>
   );
@@ -651,17 +725,16 @@ export function Dashboard() {
     >
       {/* Dashboard sub-header bar */}
       <div
+        className="pm-mission-bar"
         style={{
-          borderBottom: "1px solid var(--border)",
-          background: "rgba(10,10,10,0.9)",
+          position: "sticky",
+          top: 52,
+          zIndex: 100,
           padding: "10px 24px",
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
-          position: "sticky",
-          top: 52,
-          zIndex: 100,
-          backdropFilter: "blur(12px)",
+          marginBottom: 16,
         }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
@@ -670,7 +743,7 @@ export function Dashboard() {
             <div
               style={{
                 fontFamily: "'Barlow Condensed', sans-serif",
-                fontSize: 9,
+                fontSize: 10,
                 fontWeight: 700,
                 letterSpacing: "0.3em",
                 textTransform: "uppercase",
@@ -704,28 +777,82 @@ export function Dashboard() {
           </div>
 
           <RoleSwitcher currentRole={currentRole} onRoleChange={setRole} />
+
+          {/* Collapse All / Expand All */}
+          <div style={{ display: "flex", gap: 4, marginLeft: 8 }}>
+            <button
+              onClick={() => collapseAll('dashboard')}
+              title="Collapse all panels"
+              style={{
+                background: 'none',
+                border: '1px solid var(--border)',
+                color: 'var(--text-secondary)',
+                cursor: 'pointer',
+                padding: '4px 8px',
+                fontFamily: "'Barlow Condensed', sans-serif",
+                fontSize: 10,
+                fontWeight: 700,
+                letterSpacing: '0.1em',
+                textTransform: 'uppercase',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 4,
+                borderRadius: 0,
+              }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--f1-red)'; e.currentTarget.style.color = 'var(--f1-red)'; }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-secondary)'; }}
+            >
+              <svg width="10" height="10" viewBox="0 0 16 16" fill="none"><path d="M3 6L8 11L13 6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+              FOLD
+            </button>
+            <button
+              onClick={() => expandAll('dashboard')}
+              title="Expand all panels"
+              style={{
+                background: 'none',
+                border: '1px solid var(--border)',
+                color: 'var(--text-secondary)',
+                cursor: 'pointer',
+                padding: '4px 8px',
+                fontFamily: "'Barlow Condensed', sans-serif",
+                fontSize: 10,
+                fontWeight: 700,
+                letterSpacing: '0.1em',
+                textTransform: 'uppercase',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 4,
+                borderRadius: 0,
+              }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--f1-red)'; e.currentTarget.style.color = 'var(--f1-red)'; }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-secondary)'; }}
+            >
+              <svg width="10" height="10" viewBox="0 0 16 16" fill="none"><path d="M3 10L8 5L13 10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+              UNFOLD
+            </button>
+          </div>
         </div>
 
         {/* Track Conditions */}
         <div style={{ display: "flex", gap: 40, alignItems: "center", justifyContent: "center", flex: 1, borderLeft: "1px solid var(--border)", borderRight: "1px solid var(--border)", margin: "0 20px" }}>
           <div style={{ textAlign: "center" }}>
-            <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: 9, color: "var(--text-secondary)", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: 2 }}>TRACK TEMP</div>
+            <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: 10, color: "var(--text-secondary)", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: 2 }}>TRACK TEMP</div>
             <div style={{ fontFamily: "'Orbitron', sans-serif", fontSize: 13, color: "var(--amber)", fontWeight: 700 }}>42°C</div>
           </div>
           <div style={{ textAlign: "center" }}>
-            <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: 9, color: "var(--text-secondary)", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: 2 }}>AIR TEMP</div>
+            <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: 10, color: "var(--text-secondary)", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: 2 }}>AIR TEMP</div>
             <div style={{ fontFamily: "'Orbitron', sans-serif", fontSize: 13, color: "var(--text-primary)", fontWeight: 700 }}>28°C</div>
           </div>
           <div style={{ textAlign: "center" }}>
-            <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: 9, color: "var(--text-secondary)", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: 2 }}>WIND</div>
-            <div style={{ fontFamily: "'Orbitron', sans-serif", fontSize: 13, color: "var(--text-primary)", fontWeight: 700 }}>12 <span style={{fontSize: 9, color: "var(--text-secondary)"}}>KM/H NW</span></div>
+            <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: 10, color: "var(--text-secondary)", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: 2 }}>WIND</div>
+            <div style={{ fontFamily: "'Orbitron', sans-serif", fontSize: 13, color: "var(--text-primary)", fontWeight: 700 }}>12 <span style={{fontSize: 10, color: "var(--text-secondary)"}}>KM/H NW</span></div>
           </div>
           <div style={{ textAlign: "center" }}>
-            <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: 9, color: "var(--text-secondary)", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: 2 }}>WEATHER</div>
+            <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: 10, color: "var(--text-secondary)", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: 2 }}>WEATHER</div>
             <div style={{ fontFamily: "'Orbitron', sans-serif", fontSize: 13, color: "var(--text-primary)", fontWeight: 700 }}>DRY</div>
           </div>
           <div style={{ textAlign: "center" }}>
-            <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: 9, color: "var(--text-secondary)", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: 2 }}>DRS STATUS</div>
+            <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: 10, color: "var(--text-secondary)", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: 2 }}>DRS STATUS</div>
             <div style={{ fontFamily: "'Orbitron', sans-serif", fontSize: 13, color: "var(--neon-green)", fontWeight: 700 }}>ENABLED</div>
           </div>
         </div>
@@ -737,7 +864,7 @@ export function Dashboard() {
               <div
                 style={{
                   fontFamily: "'Barlow Condensed', sans-serif",
-                  fontSize: 9,
+                  fontSize: 10,
                   fontWeight: 600,
                   letterSpacing: "0.15em",
                   textTransform: "uppercase",
@@ -762,7 +889,7 @@ export function Dashboard() {
               <div
                 style={{
                   fontFamily: "'Barlow Condensed', sans-serif",
-                  fontSize: 9,
+                  fontSize: 10,
                   fontWeight: 600,
                   letterSpacing: "0.15em",
                   textTransform: "uppercase",
@@ -790,7 +917,7 @@ export function Dashboard() {
         </div>
       </div>
 
-      <div style={{ maxWidth: 1920, margin: "0 auto", padding: 0, height: "calc(100vh - 104px)" }}>
+      <div style={{ maxWidth: 1920, margin: "0 auto", padding: "16px 0 40px", height: "calc(100vh - 120px)" }}>
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
           <SortableContext items={columnOrder} strategy={horizontalListSortingStrategy}>
             <Group orientation="horizontal" className="h-full" style={{ gap: 0, background: "var(--border)" }}>

@@ -29,4 +29,4 @@ if (hasFirebaseConfig()) {
 
 export { auth, database };
 export const googleProvider = new GoogleAuthProvider();
-export const firebaseReady = hasFirebaseConfig();
+

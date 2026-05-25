@@ -1,76 +1,195 @@
 {
   "name": "pitmind_strategy_pipeline",
-  "description": "Export template mirroring the PitMind backend pipeline: preprocess telemetry, score pit window, optionally enrich via HTTP tool calls, then Granite explanation.",
+  "description": "PitMind full strategy pipeline — telemetry ingestion → Docling PDF parsing → heuristic scoring → Langflow prompt assembly → IBM Granite (Watsonx) narration → confidence decomposition → structured output. Import this JSON directly into Langflow to recreate the visual flow.",
+  "version": "2.0.0",
+  "ibm_tools": ["Granite (IBM Watsonx.ai)", "Docling"],
   "data": {
     "nodes": [
       {
-        "id": "ingest",
+        "id": "telemetry_input",
         "type": "TextInput",
-        "position": { "x": 0, "y": 0 },
+        "position": { "x": 0, "y": 200 },
         "data": {
-          "label": "Telemetry JSON",
-          "value": "{ \"circuit\": \"Monza\", \"driver\": \"VER\", \"laps\": [] }"
+          "label": "Telemetry JSON Input",
+          "description": "Raw telemetry from FastF1 export or live WebSocket feed. Fields: circuit, driver, laps[{lap, lap_time_s, tyre_wear_pct, gap_ahead_s, compound}]",
+          "value": "{\"circuit\": \"Monza\", \"driver\": \"VER\", \"session_label\": \"Race\", \"laps\": [{\"lap\": 34, \"lap_time_s\": 83.4, \"tyre_wear_pct\": 73, \"gap_ahead_s\": 1.8, \"compound\": \"SOFT\"}]}"
         }
       },
       {
-        "id": "normalize",
+        "id": "pdf_ingest",
+        "type": "FileInput",
+        "position": { "x": 0, "y": 0 },
+        "data": {
+          "label": "PDF Race Report (Optional)",
+          "description": "Upload post-race PDF or FIA race notes. Processed by Docling for structured extraction before Granite narration.",
+          "accepted_types": [".pdf"],
+          "optional": true
+        }
+      },
+      {
+        "id": "docling_parser",
         "type": "PythonFunction",
         "position": { "x": 260, "y": 0 },
         "data": {
-          "label": "Preprocess / sanitize",
-          "code": "# Pseudocode — mirror backend/app/services/sanitize.py\nreturn normalized_payload"
+          "label": "Docling PDF Parser (IBM)",
+          "description": "Converts PDF race reports to structured markdown using Docling's layout-aware document AI. Extracts tables, figures, and section headings.",
+          "ibm_tool": "Docling",
+          "code": "from docling.document_converter import DocumentConverter\nimport tempfile, os\n\ndef parse_pdf(raw_bytes: bytes) -> dict:\n    with tempfile.NamedTemporaryFile(suffix='.pdf', delete=False) as tmp:\n        tmp.write(raw_bytes)\n        path = tmp.name\n    try:\n        conv = DocumentConverter()\n        result = conv.convert(path)\n        doc = result.document\n        return {\n            'markdown': doc.export_to_markdown(),\n            'page_count': len(doc.pages),\n            'tables': sum(1 for item, _ in doc.iterate_items() if item.__class__.__name__ == 'TableItem'),\n            'figures': sum(1 for item, _ in doc.iterate_items() if item.__class__.__name__ == 'PictureItem'),\n            'docling_version': __import__('docling').__version__\n        }\n    finally:\n        os.unlink(path)"
         }
       },
       {
-        "id": "score",
+        "id": "sanitize_normalize",
+        "type": "PythonFunction",
+        "position": { "x": 260, "y": 200 },
+        "data": {
+          "label": "Sanitize & Normalize Telemetry",
+          "description": "Validates, caps, and normalizes raw telemetry. Enforces compound codes (SOFT/MEDIUM/HARD/INTER/WET), clamps wear to [0,100], validates lap times.",
+          "code": "# Mirrors backend/services/sanitize.py\ndef normalize(payload: dict) -> dict:\n    for lap in payload.get('laps', []):\n        lap['tyre_wear_pct'] = max(0, min(100, lap.get('tyre_wear_pct', 0)))\n        lap['compound'] = lap.get('compound', 'UNKNOWN').upper()\n        if lap.get('lap_time_s', 0) <= 0:\n            lap['lap_time_s'] = None\n    return payload"
+        }
+      },
+      {
+        "id": "strategy_scorer",
+        "type": "PythonFunction",
+        "position": { "x": 520, "y": 200 },
+        "data": {
+          "label": "Heuristic Pit Urgency Scorer",
+          "description": "Scores pit urgency, undercut risk, SC probability, tyre delta. Mirrors backend/services/strategy_engine.py. Output: scores dict + structured_reasons list.",
+          "code": "# Mirrors backend/services/strategy_engine.py predict_strategy()\ndef score(payload: dict) -> dict:\n    laps = payload.get('laps', [])\n    if not laps:\n        return {'pit_urgency': 0, 'sc_probability_next_3_laps': 0, 'overtake_risk': 0, 'recommended_window_laps': []}\n    last = sorted(laps, key=lambda l: l['lap'])[-1]\n    wear = last.get('tyre_wear_pct', 0)\n    gap = last.get('gap_ahead_s', 999)\n    # Pit urgency: linear from wear, boosted by tyre cliff\n    pit_urgency = min(100, wear * 1.1 + (20 if wear > 70 else 0))\n    undercut_risk = max(0, 60 - gap * 10)  # Risk increases as gap shrinks\n    sc_prob = 15  # Static demo; real: historical SC rate per circuit\n    return {\n        'pit_urgency': round(pit_urgency, 1),\n        'sc_probability_next_3_laps': sc_prob,\n        'overtake_risk': round(undercut_risk, 1),\n        'recommended_window_laps': [last['lap'] + 1, last['lap'] + 4]\n    }"
+        }
+      },
+      {
+        "id": "context_merger",
         "type": "PythonFunction",
         "position": { "x": 520, "y": 0 },
         "data": {
-          "label": "Heuristic pit scoring",
-          "code": "# Pseudocode — mirror backend/app/services/strategy_engine.py\nreturn scores"
+          "label": "Context Merger (Telemetry + PDF)",
+          "description": "Merges structured telemetry scores with optional Docling-extracted PDF context into a single prompt context object for Granite.",
+          "code": "def merge(telemetry_ctx: dict, pdf_ctx: dict | None) -> dict:\n    merged = {**telemetry_ctx}\n    if pdf_ctx and pdf_ctx.get('markdown'):\n        merged['pdf_excerpt'] = pdf_ctx['markdown'][:3000]\n        merged['pdf_pages'] = pdf_ctx.get('page_count', 0)\n    return merged"
         }
       },
       {
-        "id": "http_merge",
-        "type": "HTTPRequest",
-        "position": { "x": 780, "y": -80 },
+        "id": "prompt_builder",
+        "type": "PromptTemplate",
+        "position": { "x": 780, "y": 100 },
         "data": {
-          "label": "Optional external enrichment",
-          "method": "POST",
-          "url": "{{LANGFLOW_MERGE_ENDPOINT}}"
+          "label": "Granite Prompt Builder",
+          "description": "Assembles the system + user prompt for IBM Granite. System prompt constrains output to a structured JSON schema. User prompt injects telemetry scores + optional PDF context.",
+          "system_prompt": "You are PitMind, an F1 race engineer copilot powered by IBM Granite. Return ONLY valid JSON with keys: action (string), pit_this_lap (boolean), confidence (0-100), explanation (1-3 sentence string), evidence (string array), assumptions (string array), alternative (string). Use precise motorsport terminology.",
+          "user_template": "Telemetry for {{driver}} at {{circuit}} (Lap {{current_lap}}):\n- Pit Urgency: {{pit_urgency}}%\n- Tyre Wear: {{tyre_wear_pct}}%\n- Gap to leader: {{gap_ahead_s}}s\n- SC probability (3 laps): {{sc_probability_next_3_laps}}%\n- Undercut risk: {{overtake_risk}}%\n- Optimal pit window: Laps {{recommended_window_laps}}\n{{pdf_context}}\nGenerate a pit strategy recommendation."
         }
       },
       {
-        "id": "granite",
-        "type": "IBMGranite",
-        "position": { "x": 1040, "y": 0 },
+        "id": "granite_llm",
+        "type": "IBMGraniteWatsonx",
+        "position": { "x": 1040, "y": 100 },
         "data": {
-          "label": "Granite explanation",
-          "model": "{{GRANITE_MODEL_ID}}",
-          "prompt": "Explain pit recommendation with telemetry evidence."
+          "label": "IBM Granite LLM (Watsonx.ai)",
+          "description": "Core AI reasoning engine. Calls IBM Granite via Watsonx.ai to generate explainable, structured strategy recommendations grounded in telemetry evidence.",
+          "ibm_tool": "IBM Granite (Watsonx.ai)",
+          "model_id": "{{WATSONX_MODEL_ID}}",
+          "project_id": "{{WATSONX_PROJECT_ID}}",
+          "api_key_env": "WATSONX_API_KEY",
+          "endpoint": "{{WATSONX_URL}}/ml/v1/text/generation?version=2024-05-01",
+          "parameters": {
+            "decoding_method": "greedy",
+            "max_new_tokens": 512,
+            "min_new_tokens": 64,
+            "temperature": 0.0
+          },
+          "fallback": "local_heuristic_fallback"
+        }
+      },
+      {
+        "id": "confidence_decomposer",
+        "type": "PythonFunction",
+        "position": { "x": 1300, "y": 100 },
+        "data": {
+          "label": "Confidence Decomposer",
+          "description": "Breaks overall AI confidence into interpretable dimensions: data_quality, model_certainty, stability, regret_bound. Powers the Confidence Decomposition card in the UI for full explainability.",
+          "code": "def decompose(granite_output: dict, telemetry_laps: list) -> dict:\n    overall = granite_output.get('confidence', 50)\n    lap_quality = sum(1 for l in telemetry_laps if l.get('lap_time_s')) / max(len(telemetry_laps), 1)\n    return {\n        'data_quality': round(min(100, 50 + lap_quality * 50), 1),\n        'model_certainty': overall,\n        'stability': 60 if overall >= 62 else 40,\n        'regret_bound': round(max(0, min(1, (100 - overall) / 100)), 3)\n    }"
+        }
+      },
+      {
+        "id": "fan_adapter",
+        "type": "PythonFunction",
+        "position": { "x": 1300, "y": 0 },
+        "data": {
+          "label": "Fan Narrative Adapter",
+          "description": "Transforms engineer-facing JSON recommendation into a plain-English fan narrative. Used by the Fan Mode page to make AI decisions accessible to non-technical audiences.",
+          "code": "def to_fan_narrative(rec: dict) -> str:\n    action = rec.get('action', 'Hold position')\n    conf = rec.get('confidence', 50)\n    exp = rec.get('explanation', '')\n    return f\"{action} — AI confidence {conf}%. {exp}\""
         }
       },
       {
         "id": "structured_output",
         "type": "StructuredOutput",
-        "position": { "x": 1320, "y": 0 },
+        "position": { "x": 1560, "y": 100 },
         "data": {
-          "label": "Recommendation card JSON",
-          "schema": "{ action: string, pit_this_lap: boolean, scores: object, explanation: string }"
+          "label": "Strategy Recommendation Card",
+          "description": "Final validated output conforming to PitMind StrategyRecommendation schema. Written to UI, audit log, and Firebase Realtime Database.",
+          "schema": {
+            "action": "string",
+            "pit_this_lap": "boolean",
+            "suggested_compound": "string (SOFT|MEDIUM|HARD|INTER|WET)",
+            "confidence": "number (0-100)",
+            "explanation": "string",
+            "evidence": "string[]",
+            "assumptions": "string[]",
+            "alternative": "string",
+            "scores": {
+              "pit_urgency": "number",
+              "sc_probability_next_3_laps": "number",
+              "overtake_risk": "number",
+              "recommended_window_laps": "number[]"
+            },
+            "confidence_decomposition": {
+              "data_quality": "number",
+              "model_certainty": "number",
+              "stability": "number",
+              "regret_bound": "number"
+            },
+            "pipeline_steps": "string[]"
+          }
         }
       }
     ],
     "edges": [
-      { "source": "ingest", "target": "normalize" },
-      { "source": "normalize", "target": "score" },
-      { "source": "score", "target": "http_merge" },
-      { "source": "http_merge", "target": "granite" },
-      { "source": "granite", "target": "structured_output" }
-    ]
+      { "source": "pdf_ingest", "target": "docling_parser", "label": "raw PDF bytes" },
+      { "source": "telemetry_input", "target": "sanitize_normalize", "label": "raw JSON" },
+      { "source": "sanitize_normalize", "target": "strategy_scorer", "label": "normalized telemetry" },
+      { "source": "docling_parser", "target": "context_merger", "label": "pdf markdown + metadata" },
+      { "source": "strategy_scorer", "target": "context_merger", "label": "heuristic scores" },
+      { "source": "context_merger", "target": "prompt_builder", "label": "merged context" },
+      { "source": "prompt_builder", "target": "granite_llm", "label": "system + user prompt" },
+      { "source": "granite_llm", "target": "confidence_decomposer", "label": "Granite JSON output" },
+      { "source": "granite_llm", "target": "fan_adapter", "label": "Granite JSON output" },
+      { "source": "confidence_decomposer", "target": "structured_output", "label": "decomposed confidence" },
+      { "source": "fan_adapter", "target": "structured_output", "label": "fan narrative" }
+    ],
+    "variables": {
+      "WATSONX_API_KEY": "IBM Watsonx API key — set in backend .env",
+      "WATSONX_PROJECT_ID": "IBM Watsonx project ID",
+      "WATSONX_URL": "IBM Watsonx endpoint URL (e.g. https://us-south.ml.cloud.ibm.com)",
+      "WATSONX_MODEL_ID": "Granite model ID (e.g. ibm/granite-13b-instruct-v2)"
+    }
   },
+  "pipeline_stages": [
+    "Stage 1: Ingest — Accept telemetry JSON and/or PDF race report",
+    "Stage 2: Parse — Docling extracts structured content from PDF (tables, headings, figures)",
+    "Stage 3: Normalize — Sanitize and validate telemetry fields",
+    "Stage 4: Score — Heuristic engine computes pit urgency, undercut risk, SC probability",
+    "Stage 5: Merge — Combine telemetry scores with optional Docling PDF context",
+    "Stage 6: Prompt — Assemble structured system + user prompt for Granite",
+    "Stage 7: Generate — IBM Granite (Watsonx.ai) produces explainable JSON recommendation",
+    "Stage 8: Decompose — Break confidence into data_quality, model_certainty, stability, regret_bound",
+    "Stage 9: Adapt — Generate fan-friendly narrative from engineer recommendation",
+    "Stage 10: Output — Return validated StrategyRecommendation schema to UI and audit log"
+  ],
   "notes": [
-    "Langflow component IDs vary by version — treat this file as a blueprint to recreate visually.",
-    "Wire IBM Granite via Watsonx credentials consistent with backend environment variables.",
-    "Point HTTP nodes to FastAPI hooks if you externalize scoring microservices."
+    "Import this JSON into Langflow via Flow > Import. Component types may need remapping depending on your Langflow version.",
+    "Wire IBM Granite via the IBMGraniteWatsonx node using credentials from your backend .env.",
+    "The docling_parser node requires `pip install docling>=2.0.0` in the Langflow environment.",
+    "Fan Narrative Adapter output is consumed by the Fan Mode page (/fan) for public-facing display.",
+    "Confidence Decomposition drives the ConfidenceDecompositionCard React component in the dashboard.",
+    "All strategy decisions are written to the PostgreSQL audit_log table and Firebase Realtime DB for traceability."
   ]
 }

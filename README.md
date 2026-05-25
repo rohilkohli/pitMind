@@ -1,5 +1,7 @@
 # PitMind — AI Race Strategy & Explainability Copilot
 
+> **An IBM AI-powered race engineering platform** that turns raw F1 telemetry into explainable pit-stop decisions, real-time strategy narrations, and fan-ready race commentary — all in one glassmorphic, data-rich interface.
+
 [![CI Pipeline](https://github.com/rohilG/pitMind/actions/workflows/ci.yml/badge.svg)](https://github.com/rohilG/pitMind/actions/workflows/ci.yml)
 [![CD Pipeline](https://github.com/rohilG/pitMind/actions/workflows/cd.yml/badge.svg)](https://github.com/rohilG/pitMind/actions/workflows/cd.yml)
 [![Security Scan](https://github.com/rohilG/pitMind/actions/workflows/security.yml/badge.svg)](https://github.com/rohilG/pitMind/actions/workflows/security.yml)
@@ -7,9 +9,26 @@
 [![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue.svg)](https://www.python.org/downloads/)
 [![Node 20.x](https://img.shields.io/badge/node-20.x-green.svg)](https://nodejs.org/)
 
-PitMind is a demo-grade full-stack assistant for Formula 1-style race engineers. It ingests lap telemetry, scores pit-stop urgency with transparent heuristics, optionally merges Langflow orchestration signals over HTTP, and asks **IBM Granite** (via Watsonx.ai or Replicate-compatible endpoints) to narrate the recommendation in plain language engineers can trust under pressure.
+---
 
-The interface is styled with the official **Formula 1 design language**—featuring signature F1 red (`#EF3340`), bold Outfit typography, premium animations, and data-focused layouts that communicate speed and precision.
+## What PitMind Does
+
+| Feature | Description | IBM Tool |
+|---|---|---|
+| 🧠 **Strategy Oracle** | Heuristic pit scoring → IBM Granite narration | **IBM Granite (Watsonx.ai)** |
+| 📄 **Post-Race Debrief** | Upload PDF race reports → structured extraction + AI debrief | **Docling** + IBM Granite |
+| 🔄 **Pipeline Orchestration** | 10-stage visual strategy pipeline | **Langflow** |
+| 💬 **Copilot Chat** | Real-time race engineer Q&A grounded in live telemetry | IBM Granite |
+| 📊 **Confidence Decomposition** | Breaks AI confidence into 4 explainable dimensions | — |
+| 🏎️ **Fan Mode** | Plain-English AI commentary for non-technical fans | IBM Granite |
+| 🔴 **Live Telemetry** | WebSocket streaming with auto-reconnect | — |
+| 🗂️ **Audit Trail** | Full decision log with annotations + PostgreSQL persistence | — |
+
+### IBM Tools Used
+
+- **[IBM Granite](https://github.com/ibm-granite-community)** — Primary LLM for strategy narration, chat, debrief, and driver comparison. Supports Watsonx.ai, HuggingFace Inference API, and Replicate as providers (`backend/services/granite.py`).
+- **[Docling](https://www.docling.ai)** — Document AI for structured PDF race report parsing. Extracts tables, figures, and headings before passing to Granite (`backend/routes/commentary.py → _try_docling_pdf`).
+- **[Langflow](https://www.langflow.org)** — Visual pipeline orchestration. Ships a 10-stage blueprint (`langflow-flows/pitmind_strategy_pipeline.json`) with Docling, scoring, Granite, and fan adaptation nodes.
 
 Detailed breakdown lives in [`docs/architecture.md`](./docs/architecture.md). For design details, see [`docs/F1_STYLING.md`](./docs/F1_STYLING.md).
 
@@ -33,9 +52,28 @@ Race engineers synthesize hundreds of telemetry-derived signals per lap—tyre d
 
 An engineer under SC/VSC pressure needs to defend every call on the pit wall. Granite-backed rationales tie quantitative triggers—wear proxies, lap-time trends, gap volatility—to prose so humans can agree, override, or annotate quickly without reverse-engineering a black box.
 
+## Fan Mode
+
+PitMind is built for **three audiences simultaneously**:
+
+| Role | View | What they see |
+|---|---|---|
+| **Race Engineer** | Dashboard | Full telemetry, pit scoring, confidence decomposition, copilot chat |
+| **Strategist** | Strategy workspace | Scenario planning, branching simulator, decision log |
+| **Fan / Commentator** | Fan Mode (`/fan`) | Live battle cards, AI-generated race narratives, standings |
+
+Fan Mode converts engineer-facing JSON recommendations into plain English using IBM Granite — making AI race strategy accessible to everyone, not just pit-wall experts.
+
+---
+
 ## Screenshots & Demo Assets
 
-Drop GIFs or PNGs into `docs/screenshots/` and reference them here after capturing your local demo (`docker-compose up --build`).
+> 📸 Run `docker compose up --build` and capture screenshots of:
+> - **Dashboard** — Strategy Oracle + Confidence Decomposition + Copilot Chat
+> - **Fan Mode** — Battle Cards + AI Commentary  
+> - **Post-Race Debrief** — PDF upload + Docling parse stats + Granite report
+
+Place PNGs/GIFs in `docs/screenshots/` and embed them here before submission.
 
 ## Repository Layout
 

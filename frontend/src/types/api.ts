@@ -12,23 +12,6 @@
 // Base Response Types
 // ============================================================================
 
-/**
- * Generic API response wrapper
- */
-export interface ApiResponse<T> {
-  data: T;
-  status: number;
-  message?: string;
-}
-
-/**
- * API error response structure
- */
-export interface ApiError {
-  detail: string;
-  status?: number;
-  code?: string;
-}
 
 // ============================================================================
 // Telemetry & Race State Types
@@ -172,7 +155,7 @@ export interface StrategyRecommendation {
  * Strategy execution checklist
  * Matches backend StrategyChecklist model
  */
-export interface StrategyChecklist {
+interface StrategyChecklist {
   pit_crew_ready: boolean;
   tyre_set_confirmed: boolean;
   radio_call_prepared: boolean;
@@ -225,7 +208,7 @@ export interface DriverCompareResponse {
 /**
  * Chat message role
  */
-export type ChatRole = "user" | "assistant";
+type ChatRole = "user" | "assistant";
 
 /**
  * Single chat message
@@ -262,94 +245,6 @@ export interface DebriefResponse {
   source_note: string;
 }
 
-/**
- * Commentary response for live race
- */
-export interface CommentaryResponse {
-  commentary: string;
-  context: string;
-  timestamp: string;
-  lap?: number;
-}
-
-// ============================================================================
-// Fan Engagement Types
-// ============================================================================
-
-/**
- * Fan prediction submission
- */
-export interface FanPrediction {
-  prediction_id: string;
-  driver: string;
-  action: string;
-  predict_laps: number;
-  confidence?: number;
-  timestamp: string;
-}
-
-/**
- * Fan prediction request
- */
-export interface FanPredictRequest {
-  driver: string;
-  action: string;
-  predict_laps: number;
-}
-
-/**
- * Fan prediction response
- */
-export interface FanPredictResponse {
-  narrative: string;
-  prediction_id?: string;
-  model?: string;
-  confidence?: number | null;
-}
-
-/**
- * Fan battle between drivers
- */
-export interface FanBattle {
-  battle_id: string;
-  driver_a: string;
-  driver_b: string;
-  votes_a: number;
-  votes_b: number;
-  status: "active" | "completed";
-  winner?: string;
-  created_at: string;
-}
-
-/**
- * What-if scenario simulation
- */
-export interface WhatIfScenario {
-  scenario_id: string;
-  driver: string;
-  parameters: {
-    pit_lap?: number;
-    tire_compound?: string;
-    fuel_load?: number;
-    [key: string]: unknown;
-  };
-  predicted_outcome: {
-    final_position: number;
-    time_delta_s: number;
-    risk_level: "low" | "medium" | "high";
-    narrative: string;
-  };
-  confidence: number;
-  timestamp: string;
-}
-
-/**
- * Fan status response
- */
-export interface FanStatusResponse {
-  mode: string;
-  active_session: boolean;
-}
 
 // ============================================================================
 // FastF1 Integration Types
@@ -358,7 +253,7 @@ export interface FanStatusResponse {
 /**
  * FastF1 session type
  */
-export type FastF1SessionType = "R" | "Q" | "S" | "FP1" | "FP2" | "FP3";
+type FastF1SessionType = "R" | "Q" | "S" | "FP1" | "FP2" | "FP3";
 
 /**
  * FastF1 data request
@@ -441,7 +336,7 @@ export interface WebSocketMessage<T = unknown> {
 /**
  * Stream health status
  */
-export interface StreamHealthStatus {
+interface StreamHealthStatus {
   connected: boolean;
   latency_ms: number;
   last_message_at: string;
@@ -453,57 +348,5 @@ export interface StreamHealthStatus {
 // Type Guards & Utilities
 // ============================================================================
 
-/**
- * Type guard to check if a value is an ApiError
- */
-export function isApiError(value: unknown): value is ApiError {
-  return (
-    typeof value === "object" &&
-    value !== null &&
-    "detail" in value &&
-    typeof (value as ApiError).detail === "string"
-  );
-}
-
-/**
- * Type guard to check if a value is a StrategyRecommendation
- */
-export function isStrategyRecommendation(value: unknown): value is StrategyRecommendation {
-  return (
-    typeof value === "object" &&
-    value !== null &&
-    "action" in value &&
-    "pit_this_lap" in value &&
-    "suggested_compound" in value &&
-    "scores" in value &&
-    "confidence" in value
-  );
-}
-
-/**
- * Type guard to check if a value is a ChatResponse
- */
-export function isChatResponse(value: unknown): value is ChatResponse {
-  return (
-    typeof value === "object" &&
-    value !== null &&
-    "reply" in value &&
-    typeof (value as ChatResponse).reply === "string"
-  );
-}
-
-/**
- * Type guard to check if a value is a RaceState
- */
-export function isRaceState(value: unknown): value is RaceState {
-  return (
-    typeof value === "object" &&
-    value !== null &&
-    "session_id" in value &&
-    "current_lap" in value &&
-    "positions" in value &&
-    Array.isArray((value as RaceState).positions)
-  );
-}
 
 // Made with Bob

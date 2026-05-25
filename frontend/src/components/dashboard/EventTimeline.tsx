@@ -14,6 +14,7 @@ export interface RaceEvent {
 interface EventTimelineProps {
   events?: RaceEvent[];
   onEventClick?: (event: RaceEvent) => void;
+  fillHeight?: boolean;
 }
 
 // Mock race events for demo
@@ -129,6 +130,7 @@ const getTagLabel = (type: RaceEvent["type"]): string => {
 export const EventTimeline: React.FC<EventTimelineProps> = ({
   events = MOCK_EVENTS,
   onEventClick,
+  fillHeight = false,
 }) => {
   const [selectedEvent, setSelectedEvent] = useState<string | null>(null);
 
@@ -164,7 +166,15 @@ export const EventTimeline: React.FC<EventTimelineProps> = ({
   }
 
   return (
-    <div style={{ background: "var(--carbon)", overflow: "hidden" }}>
+    <div
+      style={{
+        background: "var(--carbon)",
+        overflow: "hidden",
+        ...(fillHeight
+          ? { height: "100%", minHeight: 0, display: "flex", flexDirection: "column" as const }
+          : {}),
+      }}
+    >
       {/* Header */}
       <div
         style={{
@@ -175,6 +185,7 @@ export const EventTimeline: React.FC<EventTimelineProps> = ({
           borderBottom: "1px solid var(--border)",
           flexWrap: "wrap",
           gap: 8,
+          flexShrink: 0,
         }}
       >
         <div className="pm-panel-title">Live Race Timeline</div>
@@ -188,7 +199,7 @@ export const EventTimeline: React.FC<EventTimelineProps> = ({
               borderRadius: 0,
               fontFamily: "'Barlow Condensed', sans-serif",
               fontWeight: 700,
-              fontSize: "9px",
+              fontSize: "10px",
               letterSpacing: "0.15em",
               textTransform: "uppercase",
             }}
@@ -201,7 +212,7 @@ export const EventTimeline: React.FC<EventTimelineProps> = ({
               borderRadius: 0,
               fontFamily: "'Barlow Condensed', sans-serif",
               fontWeight: 700,
-              fontSize: "9px",
+              fontSize: "10px",
               letterSpacing: "0.15em",
               textTransform: "uppercase",
             }}
@@ -214,7 +225,7 @@ export const EventTimeline: React.FC<EventTimelineProps> = ({
               borderRadius: 0,
               fontFamily: "'Barlow Condensed', sans-serif",
               fontWeight: 700,
-              fontSize: "9px",
+              fontSize: "10px",
               letterSpacing: "0.15em",
               textTransform: "uppercase",
             }}
@@ -225,7 +236,13 @@ export const EventTimeline: React.FC<EventTimelineProps> = ({
       </div>
 
       {/* Timeline */}
-      <div style={{ overflowY: "auto", maxHeight: "calc(100% - 52px)" }}>
+      <div
+        style={
+          fillHeight
+            ? { overflowY: "auto", flex: "1 1 0", minHeight: 0 }
+            : { overflowY: "auto", maxHeight: 320 }
+        }
+      >
         {events.map((event, i) => {
           const dotColor = getDotColor(event.type);
           const isSelected = selectedEvent === event.id;
@@ -265,7 +282,7 @@ export const EventTimeline: React.FC<EventTimelineProps> = ({
                       borderRadius: 0,
                       fontFamily: "'Barlow Condensed', sans-serif",
                       fontWeight: 700,
-                      fontSize: "9px",
+                      fontSize: "10px",
                       letterSpacing: "0.15em",
                       textTransform: "uppercase",
                     }}
@@ -283,7 +300,7 @@ export const EventTimeline: React.FC<EventTimelineProps> = ({
                         borderRadius: 0,
                         fontFamily: "'Barlow Condensed', sans-serif",
                         fontWeight: 700,
-                        fontSize: "9px",
+                        fontSize: "10px",
                         letterSpacing: "0.15em",
                         textTransform: "uppercase",
                       }}

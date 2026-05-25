@@ -22,6 +22,7 @@ interface DecisionLogProps {
   decisions?: StrategyDecision[];
   onAddAnnotation?: (decisionId: string, annotation: string) => void;
   onExportSession?: () => void;
+  showHeader?: boolean;
 }
 
 const MOCK_DECISIONS: StrategyDecision[] = [
@@ -75,6 +76,7 @@ export const DecisionLog: React.FC<DecisionLogProps> = ({
   decisions = MOCK_DECISIONS,
   onAddAnnotation: _onAddAnnotation,
   onExportSession,
+  showHeader = true,
 }) => {
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
@@ -116,6 +118,7 @@ export const DecisionLog: React.FC<DecisionLogProps> = ({
     >
       <div>
         {/* Header */}
+        {showHeader && (
         <div
           style={{
             display: "flex",
@@ -129,7 +132,7 @@ export const DecisionLog: React.FC<DecisionLogProps> = ({
             <span
               style={{
                 fontFamily: "'IBM Plex Mono', monospace",
-                fontSize: 9,
+                fontSize: 10,
                 color: "var(--text-secondary)",
               }}
             >
@@ -146,7 +149,7 @@ export const DecisionLog: React.FC<DecisionLogProps> = ({
                 background: "var(--carbon-light)",
                 color: "var(--text-secondary)",
                 fontFamily: "'Barlow Condensed', sans-serif",
-                fontSize: 9,
+                fontSize: 10,
                 fontWeight: 700,
                 letterSpacing: "0.15em",
                 textTransform: "uppercase",
@@ -168,6 +171,7 @@ export const DecisionLog: React.FC<DecisionLogProps> = ({
             </button>
           </div>
         </div>
+        )}
 
         {/* Cards */}
         {decisions.map((decision) => (
@@ -207,7 +211,7 @@ export const DecisionLog: React.FC<DecisionLogProps> = ({
               <span
                 style={{
                   fontFamily: "'Barlow Condensed', sans-serif",
-                  fontSize: 9,
+                  fontSize: 10,
                   fontWeight: 700,
                   letterSpacing: "0.15em",
                   textTransform: "uppercase",
@@ -224,7 +228,7 @@ export const DecisionLog: React.FC<DecisionLogProps> = ({
               <span
                 style={{
                   fontFamily: "'IBM Plex Mono', monospace",
-                  fontSize: 9,
+                  fontSize: 10,
                   color: "var(--text-secondary)",
                 }}
               >
@@ -244,7 +248,7 @@ export const DecisionLog: React.FC<DecisionLogProps> = ({
                     alignItems: "center",
                     gap: 4,
                     fontFamily: "'Barlow Condensed', sans-serif",
-                    fontSize: 9,
+                    fontSize: 10,
                     fontWeight: 700,
                     letterSpacing: "0.15em",
                     textTransform: "uppercase",
@@ -269,7 +273,7 @@ export const DecisionLog: React.FC<DecisionLogProps> = ({
                 <div
                   style={{
                     fontFamily: "'Barlow Condensed', sans-serif",
-                    fontSize: 9,
+                    fontSize: 10,
                     fontWeight: 700,
                     letterSpacing: "0.15em",
                     textTransform: "uppercase",
@@ -290,7 +294,7 @@ export const DecisionLog: React.FC<DecisionLogProps> = ({
                     style={{
                       marginTop: 6,
                       fontFamily: "'IBM Plex Mono', monospace",
-                      fontSize: 9,
+                      fontSize: 10,
                       color: "var(--text-secondary)",
                       fontStyle: "italic",
                     }}
@@ -343,7 +347,7 @@ export const DecisionLog: React.FC<DecisionLogProps> = ({
               <div
                 style={{
                   fontFamily: "'Barlow Condensed', sans-serif",
-                  fontSize: 9,
+                  fontSize: 10,
                   fontWeight: 700,
                   letterSpacing: "0.15em",
                   textTransform: "uppercase",

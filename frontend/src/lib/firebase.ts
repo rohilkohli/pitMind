@@ -30,6 +30,7 @@ if (hasFirebaseConfig()) {
 
 }
 
+export const firebaseReady = Boolean(app);
 export { auth, database };
 export const googleProvider = new GoogleAuthProvider();
 

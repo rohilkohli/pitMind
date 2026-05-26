@@ -60,3 +60,7 @@ backup-*.yaml
 # GitHub Actions
 .github/workflows/*.log
 data/fastf1_cache/
+
+# Backend virtualenv (accidentally committed)
+backend/.venv_fix/
+

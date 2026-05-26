@@ -77,11 +77,12 @@ class Settings(BaseSettings):
     langflow_flow_id: str = Field(default="", validation_alias=AliasChoices("LANGFLOW_FLOW_ID", "langflow_flow_id"))
     langflow_api_key: str = Field(default="", validation_alias=AliasChoices("LANGFLOW_API_KEY", "langflow_api_key"))
 
-    google_maps_api_key: str = Field(default="", validation_alias=AliasChoices("GOOGLE_MAPS_API_KEY", "google_maps_api_key"))
-    firebase_project_id: str = Field(default="pitminds-ibm", validation_alias=AliasChoices("FIREBASE_PROJECT_ID", "firebase_project_id"))
     replicate_api_token: str = Field(default="", validation_alias=AliasChoices("REPLICATE_API_TOKEN", "replicate_api_token"))
     replicate_model_owner: str = Field(default="replicate", validation_alias=AliasChoices("REPLICATE_MODEL_OWNER", "replicate_model_owner"))
     replicate_model_name: str = Field(default="llama-2-70b-chat", validation_alias=AliasChoices("REPLICATE_MODEL_NAME", "replicate_model_name"))
+
+    google_maps_api_key: str = Field(default="", validation_alias=AliasChoices("GOOGLE_MAPS_API_KEY", "google_maps_api_key"))
+    firebase_project_id: str = Field(default="pitminds-ibm", validation_alias=AliasChoices("FIREBASE_PROJECT_ID", "firebase_project_id"))
 
     # Redis Configuration
     redis_url: str = Field(
@@ -166,6 +167,8 @@ class Settings(BaseSettings):
         validation_alias=AliasChoices("CACHE_MAX_SIZE", "cache_max_size"),
         description="Maximum cache entries per session"
     )
+
+
 
 
 @lru_cache

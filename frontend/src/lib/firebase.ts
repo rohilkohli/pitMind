@@ -13,7 +13,7 @@ const firebaseConfig = {
 };
 
 function hasFirebaseConfig(): boolean {
-  return Boolean(firebaseConfig.apiKey && firebaseConfig.databaseURL);
+  return Boolean(firebaseConfig.apiKey);
 }
 
 let app: FirebaseApp | null = null;
@@ -24,7 +24,10 @@ if (hasFirebaseConfig()) {
   app = initializeApp(firebaseConfig);
   auth = getAuth(app);
   forceWebSockets();
-  database = getDatabase(app);
+  if (firebaseConfig.databaseURL) {
+    database = getDatabase(app);
+  }
+
 }
 
 export { auth, database };

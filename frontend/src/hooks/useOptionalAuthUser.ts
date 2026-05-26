@@ -1,22 +1,17 @@
-import { useEffect, useState } from "react";
-import { onAuthStateChanged, type User } from "firebase/auth";
-import { auth } from "../lib/firebase";
+import { useAuthState } from "react-firebase-hooks/auth";
+import { auth, firebaseReady } from "../lib/firebase";
 
+/**
+ * Hook to get the current Firebase user if it exists.
+ * Returns { user, loading, error }.
+ * If Firebase is not configured, returns { user: null, loading: false }.
+ */
 export function useOptionalAuthUser() {
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState<boolean>(Boolean(auth));
+  // If firebase is not configured, return null/false immediately
+  if (!firebaseReady || !auth) {
+    return { user: null, loading: false, error: undefined };
+  }
 
-  useEffect(() => {
-    if (!auth) {
-      setLoading(false);
-      return;
-    }
-    const unsub = onAuthStateChanged(auth, (next) => {
-      setUser(next);
-      setLoading(false);
-    });
-    return () => unsub();
-  }, []);
-
-  return { user, loading };
+  const [user, loading, error] = useAuthState(auth);
+  return { user, loading, error };
 }

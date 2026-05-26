@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { ArrowRight, TrendingUp, Zap, Clock } from "lucide-react";
+import { ArrowRight, TrendingUp, Zap, Clock, CheckCircle } from "lucide-react";
 
 export interface PitScenario {
   id: string;
@@ -114,6 +114,12 @@ const MOCK_SCENARIOS: PitScenario[] = [
   },
 ];
 
+function confidenceColor(c: number) {
+  if (c >= 0.8) return { bg: "rgba(57,255,20,0.08)", border: "var(--neon-green)", text: "var(--neon-green)" };
+  if (c >= 0.65) return { bg: "rgba(255,152,0,0.08)", border: "var(--amber)", text: "var(--amber)" };
+  return { bg: "rgba(225,6,0,0.08)", border: "var(--f1-red)", text: "var(--f1-red)" };
+}
+
 export const BranchingSimulator: React.FC<BranchingSimulatorProps> = ({
   currentLap = 27,
   currentPosition = 1,
@@ -124,102 +130,129 @@ export const BranchingSimulator: React.FC<BranchingSimulatorProps> = ({
   const selectedScenario = MOCK_SCENARIOS.find((s) => s.id === selectedId);
 
   return (
-      <div className="space-y-6">
-        {/* Scenario Comparison Cards */}
-        <div className="flex flex-col md:flex-row items-stretch gap-4">
-          {MOCK_SCENARIOS.map((scenario) => (
+    <div className="space-y-4" style={{ padding: "16px 16px 8px" }}>
+      {/* Scenario Cards */}
+      <div className="flex flex-col md:flex-row items-stretch gap-3">
+        {MOCK_SCENARIOS.map((scenario) => {
+          const cc = confidenceColor(scenario.confidence);
+          const isSelected = selectedId === scenario.id;
+          return (
             <div
-            key={scenario.id}
-            onClick={() => {
-              setSelectedId(scenario.id);
-              onSelectScenario?.(scenario);
-            }}
-              className={`cursor-pointer pm-panel pm-glass-card border border-[var(--border)] min-w-[140px] p-4 transition-all flex flex-col flex-1 ${
-                selectedId === scenario.id
-                  ? "border-[var(--f1-red)]"
-                  : "hover:border-[var(--f1-red)]"
-              }`}
+              key={scenario.id}
+              onClick={() => {
+                setSelectedId(scenario.id);
+                onSelectScenario?.(scenario);
+              }}
+              style={{
+                flex: 1,
+                minWidth: 0,
+                cursor: "pointer",
+                borderRadius: 0,
+                border: `1px solid ${isSelected ? "var(--f1-red)" : "rgba(255,255,255,0.08)"}`,
+                background: isSelected
+                  ? "linear-gradient(135deg, rgba(225,6,0,0.12) 0%, rgba(18,18,20,0.92) 100%)"
+                  : "linear-gradient(135deg, rgba(255,255,255,0.04) 0%, rgba(10,10,11,0.88) 100%)",
+                backdropFilter: "blur(16px) saturate(1.4)",
+                WebkitBackdropFilter: "blur(16px) saturate(1.4)",
+                boxShadow: isSelected
+                  ? "0 0 0 1px var(--f1-red), inset 0 1px 0 rgba(255,255,255,0.06), 0 8px 32px rgba(225,6,0,0.18)"
+                  : "inset 0 1px 0 rgba(255,255,255,0.04), 0 4px 16px rgba(0,0,0,0.4)",
+                padding: "16px",
+                display: "flex",
+                flexDirection: "column",
+                gap: 12,
+                transition: "all 0.2s cubic-bezier(0.4,0,0.2,1)",
+                position: "relative",
+                overflow: "hidden",
+              }}
+              onMouseEnter={e => {
+                if (!isSelected) {
+                  (e.currentTarget as HTMLDivElement).style.borderColor = "rgba(225,6,0,0.45)";
+                  (e.currentTarget as HTMLDivElement).style.boxShadow = "inset 0 1px 0 rgba(255,255,255,0.06), 0 8px 24px rgba(0,0,0,0.5)";
+                }
+              }}
+              onMouseLeave={e => {
+                if (!isSelected) {
+                  (e.currentTarget as HTMLDivElement).style.borderColor = "rgba(255,255,255,0.08)";
+                  (e.currentTarget as HTMLDivElement).style.boxShadow = "inset 0 1px 0 rgba(255,255,255,0.04), 0 4px 16px rgba(0,0,0,0.4)";
+                }
+              }}
             >
-            <div className="flex items-start justify-between gap-2 mb-3">
-              <div>
-                <h3 className="font-label text-sm text-[var(--text-primary)]">{scenario.label}</h3>
-                <p className="font-tele text-[10px] text-[var(--text-secondary)] mt-1" style={{ minHeight: "48px", overflow: "hidden", textOverflow: "ellipsis", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>
-                  {scenario.description}
-                </p>
-              </div>
-              <div
-                className={`pm-badge-ai`}
-                style={{
-                  background:
-                    scenario.confidence >= 0.8
-                      ? "var(--neon-green-dim)"
-                      : scenario.confidence >= 0.65
-                        ? "var(--amber-dim)"
-                        : "var(--f1-red-dim)",
-                  color:
-                    scenario.confidence >= 0.8
-                      ? "var(--neon-green)"
-                      : scenario.confidence >= 0.65
-                        ? "var(--amber)"
-                        : "var(--f1-red)",
-                  border: `1px solid ${scenario.confidence >= 0.8 ? "var(--neon-green)" : scenario.confidence >= 0.65 ? "var(--amber)" : "var(--f1-red)"}`,
-                  minWidth: "44px",
-                  textAlign: "center",
-                  padding: "2px 8px",
-                  borderRadius: "999px",
-                  fontWeight: 700,
-                  fontSize: "13px",
-                  flexShrink: 0
-                }}
-              >
-                {(scenario.confidence * 100).toFixed(0)}%
-              </div>
-            </div>
+              {/* Subtle top highlight line */}
+              <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 1, background: isSelected ? "linear-gradient(90deg, transparent, var(--f1-red), transparent)" : "linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent)" }} />
 
-            {/* Outcome metrics */}
-            <div className="space-y-2 mb-4 mt-auto flex flex-col gap-1">
-              <div className="flex items-center justify-between text-xs">
-                <span className="font-label tracking-widest text-[var(--text-secondary)] uppercase">
-                  Predicted Pos
-                </span>
-                <span className="font-race text-[var(--text-primary)]">
-                  P{scenario.predictedPosition}
-                </span>
+              {/* Header row */}
+              <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 8 }}>
+                <div>
+                  <div style={{ fontFamily: "'Orbitron', sans-serif", fontSize: 11, fontWeight: 700, color: "var(--text-primary)", textTransform: "uppercase", letterSpacing: "0.08em" }}>
+                    {scenario.label}
+                  </div>
+                  <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: 10, color: "var(--text-secondary)", marginTop: 4, textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                    {scenario.description}
+                  </div>
+                </div>
+                <div style={{ padding: "3px 8px", borderRadius: 2, background: cc.bg, border: `1px solid ${cc.border}`, color: cc.text, fontFamily: "'Orbitron', sans-serif", fontSize: 12, fontWeight: 700, flexShrink: 0 }}>
+                  {(scenario.confidence * 100).toFixed(0)}%
+                </div>
               </div>
-              <div className="flex items-center justify-between text-xs">
-                <span className="font-label tracking-widest text-[var(--text-secondary)] uppercase">
-                  Gap
-                </span>
-                <span
-                  className={`font-race ${scenario.predictedGap > 0 ? "text-[var(--f1-red)]" : "text-[var(--neon-green)]"}`}
-                >
-                  {scenario.predictedGap > 0 ? "+" : ""}
-                  {scenario.predictedGap.toFixed(1)}s
-                </span>
-              </div>
-              <div className="flex items-center justify-between text-xs">
-                <span className="font-label tracking-widest text-[var(--text-secondary)] uppercase">
-                  Lap Time
-                </span>
-                <span className="font-tele text-[var(--text-primary)]">
-                  {scenario.predictedLapTime.toFixed(1)}s
-                </span>
-              </div>
-            </div>
 
-            {/* Selection indicator */}
-            {selectedId === scenario.id && (
-              <div className="pt-3 border-t border-white/10">
-                <p className="text-xs text-f1-red font-semibold">✓ Selected scenario</p>
+              {/* Metrics */}
+              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                {[
+                  { label: "Pred. Pos", value: `P${scenario.predictedPosition}`, colored: false },
+                  {
+                    label: "Gap",
+                    value: `${scenario.predictedGap > 0 ? "+" : ""}${scenario.predictedGap.toFixed(1)}s`,
+                    colored: true,
+                    positive: scenario.predictedGap <= 0,
+                  },
+                  { label: "Lap Time", value: `${scenario.predictedLapTime.toFixed(1)}s`, colored: false },
+                ].map(m => (
+                  <div key={m.label} style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                    <span style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: 10, color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.1em" }}>
+                      {m.label}
+                    </span>
+                    <span style={{
+                      fontFamily: "'Orbitron', sans-serif",
+                      fontSize: 11,
+                      fontWeight: 700,
+                      color: m.colored
+                        ? (m.positive ? "var(--neon-green)" : "var(--f1-red)")
+                        : "var(--text-primary)",
+                    }}>
+                      {m.value}
+                    </span>
+                  </div>
+                ))}
               </div>
-            )}
-          </div>
-        ))}
+
+              {/* Selected indicator */}
+              {isSelected && (
+                <div style={{ display: "flex", alignItems: "center", gap: 6, paddingTop: 8, borderTop: "1px solid rgba(225,6,0,0.2)" }}>
+                  <CheckCircle size={12} color="var(--f1-red)" />
+                  <span style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: 10, color: "var(--f1-red)", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em" }}>
+                    Selected
+                  </span>
+                </div>
+              )}
+            </div>
+          );
+        })}
       </div>
 
       {/* Detailed scenario view */}
       {selectedScenario && (
-        <div className="pm-panel pm-glass-card border border-[var(--border)] p-6">
+        <div style={{
+          border: "1px solid rgba(255,255,255,0.08)",
+          background: "linear-gradient(135deg, rgba(255,255,255,0.03) 0%, rgba(10,10,11,0.92) 100%)",
+          backdropFilter: "blur(16px)",
+          WebkitBackdropFilter: "blur(16px)",
+          padding: "20px",
+          boxShadow: "inset 0 1px 0 rgba(255,255,255,0.04), 0 8px 32px rgba(0,0,0,0.5)",
+          position: "relative",
+          overflow: "hidden",
+        }}>
+          <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 1, background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.06), transparent)" }} />
           <div className="grid gap-6 md:grid-cols-2">
             {/* Left: Pros & Cons */}
             <div className="space-y-4">
@@ -264,13 +297,12 @@ export const BranchingSimulator: React.FC<BranchingSimulatorProps> = ({
                 {selectedScenario.timeline.map((entry, idx) => (
                   <div
                     key={idx}
-                    className="p-3 rounded-lg border border-white/10 bg-black/20 text-xs text-white"
+                    style={{ padding: "10px 12px", border: "1px solid rgba(255,255,255,0.07)", background: "rgba(0,0,0,0.25)", backdropFilter: "blur(8px)" }}
+                    className="text-xs text-white"
                   >
                     <div className="flex items-center justify-between mb-1">
                       <span className="font-semibold">Lap {entry.lap}</span>
-                      <span
-                        className={`font-mono ${entry.delta.includes("+") ? "text-red-400" : "text-emerald-400"}`}
-                      >
+                      <span className={`font-mono ${entry.delta.includes("+") ? "text-red-400" : "text-emerald-400"}`}>
                         {entry.delta}
                       </span>
                     </div>
@@ -282,7 +314,7 @@ export const BranchingSimulator: React.FC<BranchingSimulatorProps> = ({
           </div>
 
           {/* Action button */}
-          <div className="mt-6 pt-6" style={{ borderTop: "1px solid var(--border)" }}>
+          <div className="mt-6 pt-6" style={{ borderTop: "1px solid rgba(255,255,255,0.07)" }}>
             <button className="pm-btn-primary w-full flex items-center justify-center gap-2">
               <span>Execute {selectedScenario.label} Strategy</span>
               <ArrowRight className="w-4 h-4" />
@@ -293,8 +325,11 @@ export const BranchingSimulator: React.FC<BranchingSimulatorProps> = ({
 
       {/* Info panel */}
       <div
-        className="pm-panel p-4 bg-[var(--carbon-mid)]"
-        style={{ border: "1px solid var(--border)" }}
+        style={{
+          padding: "10px 14px",
+          border: "1px solid rgba(255,255,255,0.06)",
+          background: "rgba(10,10,11,0.6)",
+        }}
       >
         <p className="font-tele text-[10px] text-[var(--text-secondary)]">
           <span className="font-label tracking-widest text-[var(--text-primary)] uppercase mr-2">
@@ -303,9 +338,8 @@ export const BranchingSimulator: React.FC<BranchingSimulatorProps> = ({
           Lap {currentLap}, P{currentPosition}, Gap {currentGap > 0 ? "+" : ""}
           {currentGap.toFixed(1)}s
         </p>
-        <p className="text-xs text-f1-muted mt-2">
-          Click a scenario card to view pros/cons and predicted timeline. Compare outcomes before
-          committing to a pit strategy.
+        <p className="text-xs text-f1-muted mt-1">
+          Click a scenario card to view pros/cons and predicted timeline.
         </p>
       </div>
     </div>

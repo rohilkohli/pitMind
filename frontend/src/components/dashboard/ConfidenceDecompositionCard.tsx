@@ -19,7 +19,7 @@ export const ConfidenceDecompositionCard: React.FC<ConfidenceDecompositionCardPr
 
   if (!decomposition) {
     return (
-      <div style={{ padding: "0", display: "flex", flexDirection: "column", height: "100%" }}>
+      <div style={{ padding: "16px", display: "flex", flexDirection: "column", height: "100%" }}>
         <div
           style={{
             background: "var(--carbon-light)",
@@ -63,7 +63,7 @@ export const ConfidenceDecompositionCard: React.FC<ConfidenceDecompositionCardPr
         position: "relative",
       }}
     >
-      <div style={{ padding: "0" }}>
+      <div style={{ padding: "16px" }}>
 
         {/* Overall */}
         <div style={{ marginBottom: 16 }}>

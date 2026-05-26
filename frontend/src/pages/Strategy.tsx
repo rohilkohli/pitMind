@@ -144,6 +144,7 @@ export function Strategy() {
     }
   }
 
+  // ─── LEFT COLUMN: AI Reasoning Trace ──────────────────────────────────────
   const renderLeftColumn = () => (
     <div style={{ display: "flex", flexDirection: "column", gap: 1, background: "var(--border)", height: "100%", minHeight: 0, overflow: "hidden", minWidth: 300 }}>
       <MinimizablePanel
@@ -158,7 +159,7 @@ export function Strategy() {
           </>
         }
         headerStyle={{ padding: '10px 16px', borderBottom: '1px solid var(--border)' }}
-        bodyStyle={{ height: '100%', minHeight: 0, overflow: 'hidden' }}
+        bodyStyle={{ flex: 1, minHeight: 0, overflowY: 'auto' }}
         style={{ flex: 1, minHeight: 0 }}
         className="pm-panel"
       >
@@ -173,25 +174,34 @@ export function Strategy() {
     </div>
   );
 
+  // ─── CENTER COLUMN: Branching Simulator → Post-Race Debrief → Lap Time Trace
   const renderCenterColumn = () => (
     <div style={{ display: "flex", flexDirection: "column", gap: 1, background: "var(--border)", height: "100%", minHeight: 0, overflow: "hidden", minWidth: 0 }}>
-      <div style={{ flex: 1, minHeight: 0, overflowY: "auto", display: "flex", flexDirection: "column", gap: 1, paddingBottom: 0, scrollbarGutter: "stable" }}>
+      <div style={{ flex: 1, minHeight: 0, overflowY: "auto", display: "flex", flexDirection: "column", gap: 1, scrollbarGutter: "stable" }}>
+
+        {/* 1. Branching Simulator — top */}
         <MinimizablePanel
           id="strategy__branching-simulator"
           header={
             <>
               <div className="pm-panel-title">BRANCHING SIMULATOR</div>
-              <span className="pm-panel-badge pm-badge-granite">GRANITE</span>
+              <span
+                className="pm-panel-badge"
+                style={{ background: 'var(--f1-red-dim)', color: 'var(--f1-red)', border: '1px solid var(--f1-red)', fontWeight: 700 }}
+              >
+                GRANITE
+              </span>
             </>
           }
           headerStyle={{ padding: '10px 16px', borderBottom: '1px solid var(--border)' }}
-          bodyStyle={{ overflowY: 'auto' }}
-          style={{ flex: "0 0 auto", minHeight: 48 }}
+          bodyStyle={{ overflowY: 'auto', flex: 1 }}
+          style={{ flex: "0 0 auto", minHeight: 48, maxHeight: '70vh' }}
           className="pm-panel"
         >
           <BranchingSimulator onSelectScenario={() => {}} />
         </MinimizablePanel>
 
+        {/* 2. Post-Race Debrief — middle */}
         <MinimizablePanel
           id="strategy__post-race-debrief"
           header={
@@ -209,6 +219,7 @@ export function Strategy() {
           </Suspense>
         </MinimizablePanel>
 
+        {/* 3. Lap Time Trace — bottom */}
         <MinimizablePanel
           id="strategy__lap-time-trace"
           defaultCollapsed={false}
@@ -217,11 +228,11 @@ export function Strategy() {
             <div className="pm-panel-title">LAP TIME TRACE</div>
           }
           headerStyle={{ padding: '10px 16px', borderBottom: '1px solid var(--border)' }}
-          bodyStyle={{ height: 312, overflow: 'hidden' }}
-          style={{ flex: "0 0 360px", minHeight: 48 }}
+          bodyStyle={{ height: 380, overflow: 'hidden', flexShrink: 0 }}
+          style={{ flex: "0 0 auto", minHeight: 48 }}
           className="pm-panel"
         >
-          <Suspense fallback={<div className="skeleton-row" style={{ height: 320 }} />}>
+          <Suspense fallback={<div className="skeleton-row" style={{ height: 380 }} />}>
             <LapChart data={mockChartData} fillHeight showTitle={false} />
           </Suspense>
         </MinimizablePanel>
@@ -229,40 +240,41 @@ export function Strategy() {
     </div>
   );
 
+  // ─── RIGHT COLUMN: Decision Log + Confidence Breakdown ────────────────────
   const renderRightColumn = () => (
     <div style={{ display: "flex", flexDirection: "column", gap: 1, background: "var(--border)", height: "100%", minHeight: 0, overflow: "hidden", minWidth: 320 }}>
-      <div style={{ flex: 1, minHeight: 0, overflowY: "auto", display: "flex", flexDirection: "column", gap: 1, paddingBottom: 0, scrollbarGutter: "stable" }}>
-        <MinimizablePanel
-          id="strategy__decision-log"
-          header={
-            <div className="pm-panel-title">DECISION LOG</div>
-          }
-          headerStyle={{ padding: '10px 16px', borderBottom: '1px solid var(--border)' }}
-          bodyStyle={{ height: '100%', minHeight: 0, overflowY: 'auto' }}
-          style={{ flex: "1 1 auto", minHeight: 48 }}
-          className="pm-panel"
-        >
-          <Suspense fallback={<div className="skeleton-row" style={{ height: 400 }} />}>
-            <DecisionLog onExportSession={() => {}} showHeader={false} />
-          </Suspense>
-        </MinimizablePanel>
+      {/* Decision Log — scrollable within its own capped height */}
+      <MinimizablePanel
+        id="strategy__decision-log"
+        header={
+          <div className="pm-panel-title">DECISION LOG</div>
+        }
+        headerStyle={{ padding: '10px 16px', borderBottom: '1px solid var(--border)' }}
+        bodyStyle={{ overflowY: 'auto', flex: 1 }}
+        style={{ flex: "1 1 0", minHeight: 48, maxHeight: '60vh', overflow: 'hidden' }}
+        className="pm-panel"
+      >
+        <Suspense fallback={<div className="skeleton-row" style={{ height: 200 }} />}>
+          <DecisionLog onExportSession={() => {}} showHeader={false} />
+        </Suspense>
+      </MinimizablePanel>
 
-        <MinimizablePanel
-          id="strategy__confidence-breakdown"
-          header={
-            <div className="pm-panel-title">CONFIDENCE BREAKDOWN</div>
-          }
-          headerStyle={{ padding: '10px 16px', borderBottom: '1px solid var(--border)' }}
-          bodyStyle={{ minHeight: 160, overflowY: 'auto' }}
-          style={{ flex: "0 0 auto", minHeight: 48 }}
-          className="pm-panel"
-        >
-          <ConfidenceDecompositionCard
-            decomposition={reco?.confidence_decomposition}
-            overallConfidence={reco?.confidence ?? 0}
-          />
-        </MinimizablePanel>
-      </div>
+      {/* Confidence Breakdown — always visible at bottom, fixed height */}
+      <MinimizablePanel
+        id="strategy__confidence-breakdown"
+        header={
+          <div className="pm-panel-title">CONFIDENCE BREAKDOWN</div>
+        }
+        headerStyle={{ padding: '10px 16px', borderBottom: '1px solid var(--border)' }}
+        bodyStyle={{ overflowY: 'auto', flex: 1 }}
+        style={{ flex: "0 0 auto", minHeight: 48, maxHeight: '45vh', overflow: 'hidden' }}
+        className="pm-panel"
+      >
+        <ConfidenceDecompositionCard
+          decomposition={reco?.confidence_decomposition}
+          overallConfidence={reco?.confidence ?? 0}
+        />
+      </MinimizablePanel>
     </div>
   );
 
@@ -426,7 +438,7 @@ export function Strategy() {
         </div>
       </div>
 
-      {/* Grid Layout upgraded to dnd-kit resizable panels */}
+      {/* Grid Layout */}
       <div
         style={{
           maxWidth: 1920,

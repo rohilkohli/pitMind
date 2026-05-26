@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import type { RaceState } from "../../hooks/useFirebaseRaceState";
 
 const MONACO_PATH = `

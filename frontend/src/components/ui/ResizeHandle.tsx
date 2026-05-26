@@ -21,14 +21,27 @@ export function ResizeHandle({ direction = "horizontal", className = "", id }: R
       <div
         className={`absolute bg-f1-border group-hover:bg-f1-red transition-all duration-300 ${
           direction === "horizontal"
-            ? "w-[1px] group-hover:w-[2px] h-12"
-            : "h-[1px] group-hover:h-[2px] w-12"
+            ? "w-[1px] group-hover:w-[2px] h-[80%]"
+            : "h-[1px] group-hover:h-[2px] w-[80%]"
         }`}
+        style={{
+          background: "linear-gradient(to bottom, transparent, var(--border-active), transparent)"
+        }}
+      />
+      
+      {/* Handle Grip Indicator */}
+      <div
+        className={`absolute bg-f1-border group-hover:bg-f1-red transition-all duration-300 rounded-full ${
+          direction === "horizontal"
+            ? "w-[2px] group-hover:w-[3px] h-[32px]"
+            : "h-[2px] group-hover:h-[3px] w-[32px]"
+        }`}
+        style={direction === "horizontal" ? { boxShadow: "0 0 10px rgba(225, 6, 0, 0.2)" } : {}}
       />
 
       {/* Subtle background glow on hover */}
       <div
-        className={`absolute bg-f1-red/0 group-hover:bg-f1-red/5 transition-all duration-300 ${
+        className={`absolute bg-f1-red/0 group-hover:bg-f1-red/10 transition-all duration-300 ${
           direction === "horizontal" ? "w-full h-full" : "h-full w-full"
         }`}
       />

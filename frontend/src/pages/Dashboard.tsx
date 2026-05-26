@@ -3,8 +3,7 @@ import { useFirebaseRaceState } from "../hooks/useFirebaseRaceState";
 import { useDashboardState } from "../hooks/useDashboardState";
 import { useRole } from "../contexts/RoleContext";
 import { StandingsTable } from "../components/dashboard/StandingsTable";
-import { StrategyTimeline } from "../components/dashboard/StrategyTimeline";
-import type { StrategyPanelCommitPayload } from "../components/dashboard/StrategyTimeline";
+
 import { EventTimeline } from "../components/dashboard/EventTimeline";
 import { ConfidenceDecompositionCard } from "../components/dashboard/ConfidenceDecompositionCard";
 import { ShareButton } from "../components/dashboard/ShareButton";
@@ -12,7 +11,7 @@ import { RoleSwitcher } from "../components/dashboard/RoleSwitcher";
 import { StreamHealthMonitor } from "../components/dashboard/StreamHealthMonitor";
 import { useTelemetry } from "../hooks/useTelemetry";
 import { demoDriverA } from "../data/demoTelemetry";
-import { postRecommend, postChat, postCommitStrategy, uploadTelemetry, type StrategyRecommendation, type TelemetryPayload } from "../services/api";
+import { postRecommend, postChat, uploadTelemetry, type StrategyRecommendation, type TelemetryPayload } from "../services/api";
 import { auth } from "../lib/firebase";
 import { Loader2, Download, Upload, Zap } from "lucide-react";
 import * as Resizable from "react-resizable-panels";
@@ -253,33 +252,6 @@ export function Dashboard() {
     setDraft(brief);
   }
 
-  async function handleCommitStrategy(payload: StrategyPanelCommitPayload) {
-    if (!reco) {
-      throw new Error("No recommendation available to commit");
-    }
-
-    const token = await auth?.currentUser?.getIdToken(true);
-    return postCommitStrategy(
-      {
-        recommendation: reco,
-        checklist: {
-          pit_crew_ready: payload.checklist.pitCrewReady,
-          tyre_set_confirmed: payload.checklist.tyreSetConfirmed,
-          radio_call_prepared: payload.checklist.radioCallPrepared,
-        },
-        execution_brief: payload.executionBrief,
-        session_context: {
-          circuit: localPayload.circuit,
-          session_label: localPayload.session_label,
-          driver: localPayload.driver,
-          lap_count: localPayload.laps.length,
-          current_lap: raceState?.current_lap,
-          session_status: raceState?.session_status,
-        },
-      },
-      token,
-    );
-  }
 
   const [columnOrder, setColumnOrder] = useState(() => {
     const saved = localStorage.getItem('pitmind_dashboard_layout');
@@ -326,7 +298,7 @@ export function Dashboard() {
         {/* Decision Log — top of left panel */}
         <MinimizablePanel
           id="dashboard__weather-module"
-          header={<div className="pm-panel-title">Decision Log</div>}
+          header={<></>}
           headerStyle={{ padding: '10px 16px', borderBottom: '1px solid var(--border)' }}
           className="pm-panel"
           style={{ flex: "0 0 auto", maxHeight: '38vh', overflow: 'hidden' }}
@@ -340,7 +312,7 @@ export function Dashboard() {
         {/* Driver Standings */}
         <MinimizablePanel
           id="dashboard__driver-standings"
-          header={<div className="pm-panel-title">Driver Standings</div>}
+          header={<></>}
           headerStyle={{ padding: '10px 16px', borderBottom: '1px solid var(--border)' }}
           className="pm-panel"
           style={{ flex: "0 0 auto" }}
@@ -352,7 +324,7 @@ export function Dashboard() {
         {/* Live System Feed */}
         <MinimizablePanel
           id="dashboard__team-radio-feed"
-          header={<div className="pm-panel-title">Live System Feed</div>}
+          header={<></>}
           headerStyle={{ padding: '10px 16px', borderBottom: '1px solid var(--border)' }}
           className="pm-panel"
           style={{ flex: "0 0 auto", minHeight: 48 }}
@@ -366,7 +338,7 @@ export function Dashboard() {
         {/* Health Console */}
         <MinimizablePanel
           id="dashboard__session-info"
-          header={<div className="pm-panel-title">Health Console</div>}
+          header={<></>}
           headerStyle={{ padding: '10px 16px', borderBottom: '1px solid var(--border)' }}
           className="pm-panel"
           style={{ flex: "0 0 auto" }}
@@ -388,7 +360,6 @@ export function Dashboard() {
         id="dashboard__gap-chart"
         header={
           <>
-            <div className="pm-panel-title">Telemetry Analysis</div>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               <div className="relative overflow-hidden group">
                 <input
@@ -467,15 +438,7 @@ export function Dashboard() {
 
       <MinimizablePanel
         id="dashboard__race-control-messages"
-        header={
-          <>
-            <div className="pm-panel-title">
-              <Zap style={{ width: 10, height: 10, color: "var(--f1-red)", flexShrink: 0 }} />
-              AI Strategy Oracle
-            </div>
-            <span className="pm-panel-badge pm-badge-ai">GRANITE · ONLINE</span>
-          </>
-        }
+        header={<></>}
         headerStyle={{ padding: '10px 16px', borderBottom: '1px solid var(--border)' }}
         className="pm-panel"
         style={{ flex: "0 0 auto", position: "relative", overflow: "hidden" }}
@@ -531,7 +494,7 @@ export function Dashboard() {
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 1, background: "var(--border)" }}>
         <MinimizablePanel
           id="dashboard__pit-stop-history"
-          header={<div className="pm-panel-title">FastF1 Data Loader</div>}
+          header={<></>}
           headerStyle={{ padding: '10px 16px', borderBottom: '1px solid var(--border)' }}
           className="pm-panel"
           style={{ minHeight: 48 }}
@@ -543,7 +506,7 @@ export function Dashboard() {
 
         <MinimizablePanel
           id="dashboard__live-timing"
-          header={<div className="pm-panel-title">Live Race Timeline</div>}
+          header={<></>}
           headerStyle={{ padding: '10px 16px', borderBottom: '1px solid var(--border)' }}
           className="pm-panel"
           style={{ minHeight: 48 }}
@@ -563,12 +526,7 @@ export function Dashboard() {
       {/* PitMind Assistant Chat — TOP, takes most of the space */}
       <MinimizablePanel
         id="dashboard__race-control-chat"
-        header={
-          <>
-            <div className="pm-panel-title">PitMind Assistant</div>
-            <span className="pm-panel-badge pm-badge-ai">GRANITE · ONLINE</span>
-          </>
-        }
+        header={<></>}
         headerStyle={{ padding: '10px 16px', borderBottom: '1px solid var(--border)' }}
         className="pm-panel"
         style={{ flex: "1 1 0", minHeight: 280, overflow: 'hidden' }}
@@ -628,34 +586,12 @@ export function Dashboard() {
         </div>
       </MinimizablePanel>
 
-      {/* Reasoning Trace — middle, capped with scroll */}
-      <MinimizablePanel
-        id="dashboard__tyre-strategy-overview"
-        header={
-          <>
-            <div className="pm-panel-title">Reasoning Trace</div>
-            <span className="pm-panel-badge pm-badge-ok">LIVE</span>
-          </>
-        }
-        headerStyle={{ padding: '10px 16px', borderBottom: '1px solid var(--border)' }}
-        className="pm-panel"
-        style={{ flex: "0 0 auto", maxHeight: '38vh', overflow: 'hidden' }}
-        bodyStyle={{ overflowY: 'auto', flex: 1 }}
-        defaultCollapsed={true}
-        persist={false}
-      >
-        <StrategyTimeline
-          reco={reco}
-          strategyChecklistKey={`pitmind.strategy.checklist.${localPayload.circuit}.${localPayload.session_label}.${localPayload.driver}`}
-          onInjectBriefToChat={handleInjectBriefToChat}
-          onCommitStrategy={handleCommitStrategy}
-        />
-      </MinimizablePanel>
+
 
       {/* Confidence Breakdown — BOTTOM */}
       <MinimizablePanel
         id="dashboard__fastest-laps"
-        header={<div className="pm-panel-title">Confidence Breakdown</div>}
+        header={<></>}
         headerStyle={{ padding: '10px 16px', borderBottom: '1px solid var(--border)' }}
         className="pm-panel"
         style={{ flex: "0 0 auto", maxHeight: '32vh', overflow: 'hidden' }}

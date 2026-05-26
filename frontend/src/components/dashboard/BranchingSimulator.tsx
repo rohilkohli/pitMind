@@ -124,22 +124,22 @@ export const BranchingSimulator: React.FC<BranchingSimulatorProps> = ({
   const selectedScenario = MOCK_SCENARIOS.find((s) => s.id === selectedId);
 
   return (
-    <div className="space-y-6">
-      {/* Scenario Comparison Cards */}
-      <div className="flex flex-col md:flex-row items-stretch gap-4">
-        {MOCK_SCENARIOS.map((scenario) => (
-          <div
+      <div className="space-y-6">
+        {/* Scenario Comparison Cards */}
+        <div className="flex flex-col md:flex-row items-stretch gap-4">
+          {MOCK_SCENARIOS.map((scenario) => (
+            <div
             key={scenario.id}
             onClick={() => {
               setSelectedId(scenario.id);
               onSelectScenario?.(scenario);
             }}
-            className={`cursor-pointer pm-panel min-w-[140px] p-4 transition-all flex flex-col flex-1 ${
-              selectedId === scenario.id
-                ? "border-[var(--f1-red)] bg-[var(--f1-red-dim)]"
-                : "hover:border-[var(--f1-red)]"
-            }`}
-          >
+              className={`cursor-pointer pm-panel pm-glass-card border border-[var(--border)] min-w-[140px] p-4 transition-all flex flex-col flex-1 ${
+                selectedId === scenario.id
+                  ? "border-[var(--f1-red)]"
+                  : "hover:border-[var(--f1-red)]"
+              }`}
+            >
             <div className="flex items-start justify-between gap-2 mb-3">
               <div>
                 <h3 className="font-label text-sm text-[var(--text-primary)]">{scenario.label}</h3>
@@ -219,7 +219,7 @@ export const BranchingSimulator: React.FC<BranchingSimulatorProps> = ({
 
       {/* Detailed scenario view */}
       {selectedScenario && (
-        <div className="pm-panel p-6">
+        <div className="pm-panel pm-glass-card border border-[var(--border)] p-6">
           <div className="grid gap-6 md:grid-cols-2">
             {/* Left: Pros & Cons */}
             <div className="space-y-4">

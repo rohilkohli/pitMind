@@ -1,8 +1,26 @@
-# HTTPS/TLS Configuration Guide
+<div align="center">
+
+# 📖 HTTPS/TLS Configuration Guide
+**PitMind Documentation**
+
+[![PitMind Platform](https://img.shields.io/badge/PitMind-Platform-e10600.svg?style=for-the-badge)](#)
+[![Return to Home](https://img.shields.io/badge/Return_to_Home-15151e.svg?style=for-the-badge)](../README.md)
+
+</div>
+
+<br/>
+
+> **Overview:** This document outlines the core concepts, configurations, and technical specifications for the **HTTPS/TLS Configuration Guide** module within the PitMind AI ecosystem.
+
+---
 
 Complete guide for configuring HTTPS/TLS for pitMind in production environments.
 
-## Table of Contents
+
+
+<details>
+<summary><b>Table of Contents</b></summary>
+<br/>
 
 - [Overview](#overview)
 - [Certificate Management](#certificate-management)
@@ -12,7 +30,13 @@ Complete guide for configuring HTTPS/TLS for pitMind in production environments.
 - [Security Best Practices](#security-best-practices)
 - [Troubleshooting](#troubleshooting)
 
-## Overview
+</details>
+
+
+
+<details>
+<summary><b>Overview</b></summary>
+<br/>
 
 HTTPS/TLS is essential for production deployments to:
 - Encrypt data in transit
@@ -26,7 +50,13 @@ HTTPS/TLS is essential for production deployments to:
 **For Development**: Use self-signed certificates
 **For Enterprise**: Use your organization's CA-signed certificates
 
-## Certificate Management
+</details>
+
+
+
+<details>
+<summary><b>Certificate Management</b></summary>
+<br/>
 
 ### Option 1: Let's Encrypt (Recommended)
 
@@ -104,7 +134,13 @@ openssl req -new -newkey rsa:2048 -nodes \
 # Place in ./certs/ directory
 ```
 
-## Nginx SSL Configuration
+</details>
+
+
+
+<details>
+<summary><b>Nginx SSL Configuration</b></summary>
+<br/>
 
 ### Basic SSL Configuration
 
@@ -211,7 +247,13 @@ limit_req_zone $binary_remote_addr zone=ssl_limit:10m rate=10r/s;
 limit_req zone=ssl_limit burst=20 nodelay;
 ```
 
-## Docker Compose SSL Setup
+</details>
+
+
+
+<details>
+<summary><b>Docker Compose SSL Setup</b></summary>
+<br/>
 
 ### Production Docker Compose with SSL
 
@@ -316,7 +358,13 @@ DOMAIN=pitmind.example.com
 EMAIL=admin@example.com
 ```
 
-## Load Balancer SSL Termination
+</details>
+
+
+
+<details>
+<summary><b>Load Balancer SSL Termination</b></summary>
+<br/>
 
 ### AWS Application Load Balancer
 
@@ -390,7 +438,13 @@ server {
 }
 ```
 
-## Security Best Practices
+</details>
+
+
+
+<details>
+<summary><b>Security Best Practices</b></summary>
+<br/>
 
 ### 1. Certificate Security
 
@@ -451,7 +505,13 @@ curl -I https://pitmind.example.com
 # https://www.ssllabs.com/ssltest/
 ```
 
-## Troubleshooting
+</details>
+
+
+
+<details>
+<summary><b>Troubleshooting</b></summary>
+<br/>
 
 ### Common Issues
 
@@ -536,14 +596,26 @@ ssl_stapling_verify on;
 ssl_buffer_size 4k;
 ```
 
-## Additional Resources
+</details>
+
+
+
+<details>
+<summary><b>Additional Resources</b></summary>
+<br/>
 
 - [Mozilla SSL Configuration Generator](https://ssl-config.mozilla.org/)
 - [Let's Encrypt Documentation](https://letsencrypt.org/docs/)
 - [SSL Labs Server Test](https://www.ssllabs.com/ssltest/)
 - [OWASP TLS Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Transport_Layer_Protection_Cheat_Sheet.html)
 
-## Next Steps
+</details>
+
+
+
+<details>
+<summary><b>Next Steps</b></summary>
+<br/>
 
 1. Choose certificate management approach
 2. Configure Nginx with SSL
@@ -553,3 +625,12 @@ ssl_buffer_size 4k;
 6. Document certificate renewal process
 
 For production deployment, see [PRODUCTION_DEPLOYMENT.md](./PRODUCTION_DEPLOYMENT.md).
+
+</details>
+
+---
+
+<div align="center">
+  <p>Built for the speed of Formula 1. Engineered for absolute transparency.</p>
+  <p><a href="../README.md">🏠 Back to Main README</a></p>
+</div>

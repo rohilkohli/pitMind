@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { MinimizeIcon } from './MinimizeIcon';
 import { usePanelState } from '../../hooks/usePanelState';
 
@@ -37,21 +37,6 @@ export const MinimizablePanel: React.FC<MinimizablePanelProps> = ({
   style,
 }) => {
   const { isCollapsed, toggle } = usePanelState({ id, defaultCollapsed, persist });
-  const bodyRef = useRef<HTMLDivElement>(null);
-  const [bodyHeight, setBodyHeight] = useState<number | undefined>(undefined);
-
-  // Measure actual body height for smooth animation
-  useEffect(() => {
-    if (bodyRef.current) {
-      const resizeObserver = new ResizeObserver(() => {
-        if (bodyRef.current && !isCollapsed) {
-          setBodyHeight(bodyRef.current.scrollHeight);
-        }
-      });
-      resizeObserver.observe(bodyRef.current);
-      return () => resizeObserver.disconnect();
-    }
-  }, [isCollapsed]);
 
   useEffect(() => {
     onCollapseChange?.(isCollapsed);
@@ -106,21 +91,24 @@ export const MinimizablePanel: React.FC<MinimizablePanelProps> = ({
         role="region"
         aria-labelledby={`${id}-header`}
         style={{
-          maxHeight: isCollapsed ? '0px' : bodyHeight ? `${bodyHeight}px` : '9999px',
-          overflow: 'hidden',
+          maxHeight: isCollapsed ? '0px' : '9999px',
+          overflow: isCollapsed ? 'hidden' : 'visible',
           transition: `max-height ${dur}ms cubic-bezier(0.4, 0, 0.2, 1), opacity ${opacityDur}ms ease`,
           opacity: isCollapsed ? 0 : 1,
           flex: isCollapsed ? '0 0 0px' : '1 1 auto',
-          minHeight: isCollapsed ? 0 : undefined,
+          minHeight: 0,
+          display: 'flex',
+          flexDirection: 'column',
         }}
       >
         <div
-          ref={bodyRef}
           className={`pitmind-panel-body ${bodyClassName}`}
           style={{
             display: 'flex',
             flexDirection: 'column',
-            overflow: 'hidden',
+            flex: '1 1 auto',
+            minHeight: 0,
+            overflow: 'clip',
             ...bodyStyle,
           }}
         >

@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any, react-hooks/exhaustive-deps */
 import React, { lazy, Suspense, useEffect, useRef, useState, Fragment } from "react";
 import { useFirebaseRaceState } from "../hooks/useFirebaseRaceState";
 import { useDashboardState } from "../hooks/useDashboardState";
@@ -287,6 +286,17 @@ export function Dashboard() {
     return saved ? JSON.parse(saved) : ['left', 'center', 'right'];
   });
 
+  // Track mission bar height for correct grid height calc
+  const missionRef = useRef<HTMLDivElement>(null);
+  const [missionH, setMissionH] = useState(0);
+  useEffect(() => {
+    if (!missionRef.current) return;
+    const ro = new ResizeObserver(([entry]) => setMissionH(entry.contentRect.height));
+    ro.observe(missionRef.current);
+    setMissionH(missionRef.current.offsetHeight);
+    return () => ro.disconnect();
+  }, []);
+
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, {
@@ -309,68 +319,71 @@ export function Dashboard() {
 
   /* ── LEFT COLUMN ─────────────────────────────────────────── */
   const renderLeftColumn = () => (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        gap: 1,
-        height: "100%",
-        overflowY: "auto",
-        background: "var(--border)",
-        paddingBottom: 80,
-      }}
-    >
-      <MinimizablePanel
-        id="dashboard__driver-standings"
-        header={<div className="pm-panel-title">Driver Standings</div>}
-        headerStyle={{ padding: '10px 16px', borderBottom: '1px solid var(--border)' }}
-        className="pm-panel"
-        style={{ flex: "0 0 auto" }}
-      >
-        <StandingsTable standings={raceState?.standings} />
-      </MinimizablePanel>
+    <div style={{ display: "flex", flexDirection: "column", gap: 1, height: "100%", minHeight: 0, overflow: "hidden", background: "var(--border)" }}>
+      {/* Scrollable inner */}
+      <div style={{ flex: 1, minHeight: 0, overflowY: "auto", display: "flex", flexDirection: "column", gap: 1, scrollbarGutter: "stable" }}>
 
-      <MinimizablePanel
-        id="dashboard__team-radio-feed"
-        header={<div className="pm-panel-title">Live System Feed</div>}
-        headerStyle={{ padding: '10px 16px', borderBottom: '1px solid var(--border)' }}
-        className="pm-panel"
-        style={{ flex: "1 1 auto", minHeight: 48 }}
-        bodyStyle={{ minHeight: 200, overflow: 'hidden' }}
-      >
-        <Suspense fallback={<div className="skeleton-row" style={{ height: 280 }} />}>
-          <LiveSystemFeed />
-        </Suspense>
-      </MinimizablePanel>
+        {/* Decision Log — top of left panel */}
+        <MinimizablePanel
+          id="dashboard__weather-module"
+          header={<div className="pm-panel-title">Decision Log</div>}
+          headerStyle={{ padding: '10px 16px', borderBottom: '1px solid var(--border)' }}
+          className="pm-panel"
+          style={{ flex: "0 0 auto", maxHeight: '38vh', overflow: 'hidden' }}
+          bodyStyle={{ overflowY: 'auto', flex: 1 }}
+        >
+          <Suspense fallback={<div className="skeleton-row" style={{ height: 120 }} />}>
+            <DecisionLog onExportSession={() => handleExportDecisions('csv')} />
+          </Suspense>
+        </MinimizablePanel>
 
-      <MinimizablePanel
-        id="dashboard__session-info"
-        header={<div className="pm-panel-title">Health Console</div>}
-        headerStyle={{ padding: '10px 16px', borderBottom: '1px solid var(--border)' }}
-        className="pm-panel"
-        style={{ flex: "0 0 auto" }}
-        defaultCollapsed={true}
-      >
-        <Suspense fallback={<div className="skeleton-row" style={{ height: 120 }} />}>
-          <HealthConsole />
-        </Suspense>
-      </MinimizablePanel>
+        {/* Driver Standings */}
+        <MinimizablePanel
+          id="dashboard__driver-standings"
+          header={<div className="pm-panel-title">Driver Standings</div>}
+          headerStyle={{ padding: '10px 16px', borderBottom: '1px solid var(--border)' }}
+          className="pm-panel"
+          style={{ flex: "0 0 auto" }}
+          bodyStyle={{ overflowY: 'auto', maxHeight: '38vh' }}
+        >
+          <StandingsTable standings={raceState?.standings} />
+        </MinimizablePanel>
+
+        {/* Live System Feed */}
+        <MinimizablePanel
+          id="dashboard__team-radio-feed"
+          header={<div className="pm-panel-title">Live System Feed</div>}
+          headerStyle={{ padding: '10px 16px', borderBottom: '1px solid var(--border)' }}
+          className="pm-panel"
+          style={{ flex: "0 0 auto", minHeight: 48 }}
+          bodyStyle={{ overflowY: 'auto', maxHeight: '35vh' }}
+        >
+          <Suspense fallback={<div className="skeleton-row" style={{ height: 200 }} />}>
+            <LiveSystemFeed />
+          </Suspense>
+        </MinimizablePanel>
+
+        {/* Health Console */}
+        <MinimizablePanel
+          id="dashboard__session-info"
+          header={<div className="pm-panel-title">Health Console</div>}
+          headerStyle={{ padding: '10px 16px', borderBottom: '1px solid var(--border)' }}
+          className="pm-panel"
+          style={{ flex: "0 0 auto" }}
+          defaultCollapsed={true}
+        >
+          <Suspense fallback={<div className="skeleton-row" style={{ height: 120 }} />}>
+            <HealthConsole />
+          </Suspense>
+        </MinimizablePanel>
+      </div>
     </div>
   );
 
   /* ── CENTER COLUMN ───────────────────────────────────────── */
   const renderCenterColumn = () => (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        gap: 1,
-        height: "100%",
-        overflowY: "auto",
-        background: "var(--border)",
-        paddingBottom: 80,
-      }}
-    >
+    <div style={{ display: "flex", flexDirection: "column", gap: 1, height: "100%", minHeight: 0, overflow: "hidden", background: "var(--border)" }}>
+      <div style={{ flex: 1, minHeight: 0, overflowY: "auto", display: "flex", flexDirection: "column", gap: 1, scrollbarGutter: "stable" }}>
       <MinimizablePanel
         id="dashboard__gap-chart"
         header={
@@ -539,70 +552,15 @@ export function Dashboard() {
           <EventTimeline />
         </MinimizablePanel>
       </div>
+      </div>
     </div>
   );
 
   /* ── RIGHT COLUMN ────────────────────────────────────────── */
   const renderRightColumn = () => (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        gap: 1,
-        height: "100%",
-        overflowY: "auto",
-        background: "var(--border)",
-        paddingBottom: 80,
-      }}
-    >
-      <MinimizablePanel
-        id="dashboard__fastest-laps"
-        header={<div className="pm-panel-title">Confidence Breakdown</div>}
-        headerStyle={{ padding: '10px 16px', borderBottom: '1px solid var(--border)' }}
-        className="pm-panel"
-        style={{ flex: "0 0 auto" }}
-      >
-        <ConfidenceDecompositionCard
-          decomposition={reco?.confidence_decomposition}
-          overallConfidence={reco?.confidence ?? 0}
-        />
-      </MinimizablePanel>
+    <div style={{ display: "flex", flexDirection: "column", gap: 1, height: "100%", minHeight: 0, overflow: "hidden", background: "var(--border)" }}>
 
-      <MinimizablePanel
-        id="dashboard__tyre-strategy-overview"
-        header={
-          <>
-            <div className="pm-panel-title">Reasoning Trace</div>
-            <span className="pm-panel-badge pm-badge-ok">LIVE</span>
-          </>
-        }
-        headerStyle={{ padding: '10px 16px', borderBottom: '1px solid var(--border)' }}
-        className="pm-panel"
-        style={{ flex: "0 0 auto", minHeight: 48 }}
-        bodyStyle={{ overflowY: 'auto', maxHeight: 350 }}
-        defaultCollapsed={false}
-        persist={false}
-      >
-        <StrategyTimeline
-          reco={reco}
-          strategyChecklistKey={`pitmind.strategy.checklist.${localPayload.circuit}.${localPayload.session_label}.${localPayload.driver}`}
-          onInjectBriefToChat={handleInjectBriefToChat}
-          onCommitStrategy={handleCommitStrategy}
-        />
-      </MinimizablePanel>
-
-      <MinimizablePanel
-        id="dashboard__weather-module"
-        header={<div className="pm-panel-title">Decision Log</div>}
-        headerStyle={{ padding: '10px 16px', borderBottom: '1px solid var(--border)' }}
-        className="pm-panel"
-        style={{ flex: "0 0 auto" }}
-      >
-        <Suspense fallback={<div className="skeleton-row" style={{ height: 120 }} />}>
-          <DecisionLog onExportSession={() => handleExportDecisions('csv')} />
-        </Suspense>
-      </MinimizablePanel>
-
+      {/* PitMind Assistant Chat — TOP, takes most of the space */}
       <MinimizablePanel
         id="dashboard__race-control-chat"
         header={
@@ -613,82 +571,100 @@ export function Dashboard() {
         }
         headerStyle={{ padding: '10px 16px', borderBottom: '1px solid var(--border)' }}
         className="pm-panel"
-        style={{ flex: "1 1 auto", minHeight: 48 }}
+        style={{ flex: "1 1 0", minHeight: 280, overflow: 'hidden' }}
+        bodyStyle={{ display: 'flex', flexDirection: 'column', flex: 1, overflow: 'hidden', padding: '12px 16px' }}
         defaultCollapsed={false}
         persist={false}
       >
-        <div style={{ display: "flex", flexDirection: "column", minHeight: "calc(100vh - var(--topbar-height) - 200px)", height: "100%" }}>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 12, flexShrink: 0 }}>
-            {promptChips.map((chip) => (
-              <button
-                key={chip}
-                onClick={() => setDraft(chip)}
-                className="pm-chip"
-              >
-                {chip.replace(/[.?]/g, '').toUpperCase().slice(0, 20)}
-              </button>
-            ))}
-          </div>
-
-          <div
-            style={{
-              flex: 1,
-              overflowY: "auto",
-              marginBottom: 12,
-              display: "flex",
-              flexDirection: "column",
-              gap: 0,
-            }}
-          >
-            {chat.map((m, idx) => (
-              <div
-                key={idx}
-                className={`pm-chat-msg ${m.role === "user" ? "user" : "ai"}`}
-              >
-                <div className="pm-msg-label">
-                  {m.role === "user" ? "ENGINEER" : "◆ GRANITE · SYSTEM ORACLE"}
-                </div>
-                <div className="pm-msg-bubble">
-                  {m.content}
-                  {m.streaming && (
-                    <span style={{ marginLeft: 2, color: "var(--f1-red)", animation: "flicker 0.8s infinite" }}>▍</span>
-                  )}
-                </div>
-              </div>
-            ))}
-
-            {isChatThinking && (
-              <div className="pm-chat-msg ai">
-                <div className="pm-msg-label">◆ GRANITE</div>
-                <div className="pm-msg-bubble">
-                  <div className="pm-typing">
-                    <div className="pm-typing-dot" />
-                    <div className="pm-typing-dot" />
-                    <div className="pm-typing-dot" />
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-
-          <div style={{ display: "flex", gap: 0, flexShrink: 0 }}>
-            <input
-              value={draft}
-              onChange={(e) => setDraft(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && onSendChat()}
-              placeholder="ENTER STRATEGY QUERY..."
-              className="pm-chat-input"
-              disabled={isChatThinking}
-            />
-            <button
-              onClick={onSendChat}
-              disabled={isChatThinking}
-              className="pm-chat-send"
-            >
-              ▶
+        {/* Prompt chips */}
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 10, flexShrink: 0 }}>
+          {promptChips.map((chip) => (
+            <button key={chip} onClick={() => setDraft(chip)} className="pm-chip">
+              {chip.replace(/[.?]/g, '').toUpperCase().slice(0, 22)}
             </button>
-          </div>
+          ))}
         </div>
+
+        {/* Messages */}
+        <div style={{ flex: 1, minHeight: 0, overflowY: "auto", display: "flex", flexDirection: "column", gap: 0, marginBottom: 10 }}>
+          {chat.map((m, idx) => (
+            <div key={idx} className={`pm-chat-msg ${m.role === "user" ? "user" : "ai"}`}>
+              <div className="pm-msg-label">
+                {m.role === "user" ? "ENGINEER" : "◆ GRANITE · SYSTEM ORACLE"}
+              </div>
+              <div className="pm-msg-bubble">
+                {m.content}
+                {m.streaming && (
+                  <span style={{ marginLeft: 2, color: "var(--f1-red)", animation: "flicker 0.8s infinite" }}>▍</span>
+                )}
+              </div>
+            </div>
+          ))}
+          {isChatThinking && (
+            <div className="pm-chat-msg ai">
+              <div className="pm-msg-label">◆ GRANITE</div>
+              <div className="pm-msg-bubble">
+                <div className="pm-typing">
+                  <div className="pm-typing-dot" />
+                  <div className="pm-typing-dot" />
+                  <div className="pm-typing-dot" />
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Input */}
+        <div style={{ display: "flex", gap: 0, flexShrink: 0 }}>
+          <input
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && onSendChat()}
+            placeholder="ENTER STRATEGY QUERY..."
+            className="pm-chat-input"
+            disabled={isChatThinking}
+          />
+          <button onClick={onSendChat} disabled={isChatThinking} className="pm-chat-send">▶</button>
+        </div>
+      </MinimizablePanel>
+
+      {/* Reasoning Trace — middle, capped with scroll */}
+      <MinimizablePanel
+        id="dashboard__tyre-strategy-overview"
+        header={
+          <>
+            <div className="pm-panel-title">Reasoning Trace</div>
+            <span className="pm-panel-badge pm-badge-ok">LIVE</span>
+          </>
+        }
+        headerStyle={{ padding: '10px 16px', borderBottom: '1px solid var(--border)' }}
+        className="pm-panel"
+        style={{ flex: "0 0 auto", maxHeight: '38vh', overflow: 'hidden' }}
+        bodyStyle={{ overflowY: 'auto', flex: 1 }}
+        defaultCollapsed={true}
+        persist={false}
+      >
+        <StrategyTimeline
+          reco={reco}
+          strategyChecklistKey={`pitmind.strategy.checklist.${localPayload.circuit}.${localPayload.session_label}.${localPayload.driver}`}
+          onInjectBriefToChat={handleInjectBriefToChat}
+          onCommitStrategy={handleCommitStrategy}
+        />
+      </MinimizablePanel>
+
+      {/* Confidence Breakdown — BOTTOM */}
+      <MinimizablePanel
+        id="dashboard__fastest-laps"
+        header={<div className="pm-panel-title">Confidence Breakdown</div>}
+        headerStyle={{ padding: '10px 16px', borderBottom: '1px solid var(--border)' }}
+        className="pm-panel"
+        style={{ flex: "0 0 auto", maxHeight: '32vh', overflow: 'hidden' }}
+        bodyStyle={{ overflowY: 'auto', flex: 1 }}
+      >
+        <ConfidenceDecompositionCard
+          decomposition={reco?.confidence_decomposition}
+          overallConfidence={reco?.confidence ?? 0}
+        />
       </MinimizablePanel>
 
     </div>
@@ -717,24 +693,26 @@ export function Dashboard() {
       className="pm-bg-f1-circuit"
       style={{
         position: "relative",
-        minHeight: "100vh",
         width: "100%",
+        height: "calc(100vh - var(--topbar-height, 52px))",
+        display: "flex",
+        flexDirection: "column",
         color: "var(--text-primary)",
         overflowX: "hidden",
+        overflowY: "hidden",
       }}
     >
       {/* Dashboard sub-header bar */}
       <div
+        ref={missionRef}
         className="pm-mission-bar"
         style={{
-          position: "sticky",
-          top: 52,
-          zIndex: 100,
+          flexShrink: 0,
           padding: "10px 24px",
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
-          marginBottom: 16,
+          borderBottom: "1px solid var(--border)",
         }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
@@ -917,18 +895,26 @@ export function Dashboard() {
         </div>
       </div>
 
-      <div style={{ maxWidth: 1920, margin: "0 auto", padding: "16px 0 40px", height: "calc(100vh - 120px)" }}>
+      {/* Main grid — takes all remaining height */}
+      <div style={{
+        flex: 1,
+        minHeight: 0,
+        maxWidth: 1920,
+        margin: "0 auto",
+        width: "100%",
+        paddingTop: 8,
+      }}>
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
           <SortableContext items={columnOrder} strategy={horizontalListSortingStrategy}>
-            <Group orientation="horizontal" className="h-full" style={{ gap: 0, background: "var(--border)" }}>
+            <Group orientation="horizontal" className="h-full min-h-0" style={{ gap: 0, background: "var(--border)", overflow: "hidden", height: "100%" }}>
               {columnOrder.map((id: string, index: number) => (
                 <Fragment key={id}>
-                  <Panel id={id} {...getColumnProps(id)} className="h-full">
+                  <Panel id={id} {...getColumnProps(id)} className="h-full min-h-0">
                     <SortableColumn id={id}>
                       {renderColumnContent(id)}
                     </SortableColumn>
                   </Panel>
-                  {index < columnOrder.length - 1 && <ResizeHandle />}
+                  {index < columnOrder.length - 1 && <ResizeHandle className="shrink-0 w-[2px] mx-1" />}
                 </Fragment>
               ))}
             </Group>

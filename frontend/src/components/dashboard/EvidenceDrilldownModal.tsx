@@ -1,6 +1,5 @@
 import React from 'react';
-import { Card } from '../ui/card';
-import { X, BarChart3, TrendingDown, AlertCircle } from 'lucide-react';
+import { X, BarChart3, TrendingDown, AlertCircle, TrendingUp, Minus } from 'lucide-react';
 
 export interface EvidenceDrilldown {
   evidence: string;
@@ -26,27 +25,25 @@ export const EvidenceDrilldownModal: React.FC<EvidenceDrilldownModalProps> = ({
 
   const getTrendColor = (trend: string) => {
     switch (trend) {
-      case 'improving':
-        return 'text-emerald-600';
-      case 'degrading':
-        return 'text-red-600';
-      case 'stable':
-        return 'text-slate-600';
-      default:
-        return 'text-slate-600';
+      case 'improving': return 'var(--neon-green)';
+      case 'degrading': return 'var(--f1-red)';
+      default: return 'var(--amber)';
+    }
+  };
+
+  const getTrendIcon = (trend: string) => {
+    switch (trend) {
+      case 'improving': return <TrendingDown style={{ width: 12, height: 12 }} />;
+      case 'degrading': return <TrendingUp style={{ width: 12, height: 12 }} />;
+      default: return <Minus style={{ width: 12, height: 12 }} />;
     }
   };
 
   const getTrendLabel = (trend: string) => {
     switch (trend) {
-      case 'improving':
-        return '↓ Improving';
-      case 'degrading':
-        return '↑ Degrading';
-      case 'stable':
-        return '→ Stable';
-      default:
-        return 'Unknown';
+      case 'improving': return 'IMPROVING';
+      case 'degrading': return 'DEGRADING';
+      default: return 'STABLE';
     }
   };
 
@@ -60,165 +57,201 @@ export const EvidenceDrilldownModal: React.FC<EvidenceDrilldownModalProps> = ({
     { min: Infinity, max: -Infinity, sum: 0 }
   );
 
-  const minValue = evidence.dataPoints.length > 0 ? stats.min : Infinity;
-  const maxValue = evidence.dataPoints.length > 0 ? stats.max : -Infinity;
+  const minValue = evidence.dataPoints.length > 0 ? stats.min : 0;
+  const maxValue = evidence.dataPoints.length > 0 ? stats.max : 0;
   const range = maxValue - minValue || 1;
-  const avgValue = evidence.dataPoints.length > 0 ? stats.sum / evidence.dataPoints.length : NaN;
+  const avgValue = evidence.dataPoints.length > 0 ? stats.sum / evidence.dataPoints.length : 0;
+  const trendColor = getTrendColor(evidence.trend);
 
   return (
     <div
-      className={`fixed inset-0 z-50 flex items-center justify-center transition-opacity ${
-        isOpen ? 'opacity-100' : 'pointer-events-none opacity-0'
-      }`}
+      style={{
+        position: 'fixed',
+        inset: 0,
+        zIndex: 9999,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '16px',
+      }}
       onClick={onClose}
     >
       {/* Backdrop */}
-      <div className="absolute inset-0 bg-f1-black/80" />
-
-      {/* Modal */}
       <div
-        className="relative z-10 w-full max-w-2xl border border-f1-border bg-f1-black p-8"
+        style={{
+          position: 'absolute',
+          inset: 0,
+          background: 'rgba(10,10,11,0.88)',
+          backdropFilter: 'blur(6px)',
+          WebkitBackdropFilter: 'blur(6px)',
+        }}
+      />
+
+      {/* Modal panel */}
+      <div
+        style={{
+          position: 'relative',
+          zIndex: 1,
+          width: '100%',
+          maxWidth: 680,
+          maxHeight: '90vh',
+          overflowY: 'auto',
+          background: 'linear-gradient(160deg, rgba(22,22,26,0.98) 0%, rgba(14,14,16,0.98) 100%)',
+          border: '1px solid rgba(255,255,255,0.10)',
+          borderTop: '1px solid rgba(255,255,255,0.16)',
+          boxShadow: '0 0 0 1px rgba(225,6,0,0.2), 0 24px 64px rgba(0,0,0,0.8)',
+        }}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Close button */}
-        <button
-          onClick={onClose}
-          className="absolute right-4 top-4 p-2 text-f1-muted hover:text-f1-white"
-        >
-          <X className="w-5 h-5" />
-        </button>
+        {/* Red accent top bar */}
+        <div style={{ height: 2, background: 'linear-gradient(90deg, var(--f1-red), transparent)' }} />
 
         {/* Header */}
-        <div className="mb-6 border-l-4 border-f1-red pl-4">
-          <div className="flex items-start justify-between mb-3">
-            <h2 className="text-2xl font-display font-black uppercase text-f1-white">{evidence.metric}</h2>
-            <div className={`px-3 py-1 text-sm font-bold uppercase tracking-widest ${getTrendColor(evidence.trend)} bg-f1-dark border border-f1-border`}>
-              {getTrendLabel(evidence.trend)}
+        <div style={{ padding: '20px 24px 0', borderBottom: '1px solid rgba(255,255,255,0.07)', paddingBottom: 16 }}>
+          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16 }}>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: trendColor, padding: '3px 8px', border: `1px solid ${trendColor}`, background: `${trendColor}18`, fontFamily: "'Barlow Condensed', sans-serif", fontSize: 10, fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase' }}>
+                  {getTrendIcon(evidence.trend)}
+                  {getTrendLabel(evidence.trend)}
+                </div>
+                <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: 10, fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'var(--text-secondary)' }}>
+                  EVIDENCE DRILLDOWN
+                </div>
+              </div>
+              <div style={{ fontFamily: "'Orbitron', sans-serif", fontSize: 14, fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-primary)', letterSpacing: '0.05em', marginBottom: 6 }}>
+                {evidence.metric}
+              </div>
+              <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 11, color: 'var(--text-secondary)', lineHeight: 1.5 }}>
+                {evidence.evidence}
+              </div>
             </div>
+            <button
+              onClick={onClose}
+              style={{ background: 'none', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--text-secondary)', cursor: 'pointer', padding: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.15s ease' }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--f1-red)'; e.currentTarget.style.color = 'var(--f1-red)'; }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; e.currentTarget.style.color = 'var(--text-secondary)'; }}
+            >
+              <X style={{ width: 16, height: 16 }} />
+            </button>
           </div>
-          <p className="text-f1-secondary">{evidence.evidence}</p>
         </div>
 
-        {/* Summary Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
-          <div className="p-3 bg-f1-dark border border-f1-border">
-            <div className="text-xs text-f1-muted mb-1 uppercase tracking-widest">Lap Range</div>
-            <div className="text-lg font-display font-black text-f1-white">
-              {evidence.lapRange[0]}—{evidence.lapRange[1]}
+        {/* Stats row */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 1, padding: '16px 24px', background: 'rgba(0,0,0,0.2)' }}>
+          {[
+            { label: 'Lap Range', value: `${evidence.lapRange[0]}–${evidence.lapRange[1]}` },
+            { label: 'Data Points', value: String(evidence.dataPoints.length) },
+            { label: 'Avg Value', value: avgValue.toFixed(1) },
+            { label: 'Confidence', value: `${(evidence.confidence * 100).toFixed(0)}%` },
+          ].map(stat => (
+            <div key={stat.label} style={{ padding: '10px 12px', border: '1px solid rgba(255,255,255,0.06)', background: 'rgba(255,255,255,0.02)' }}>
+              <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: 9, fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'var(--text-secondary)', marginBottom: 4 }}>
+                {stat.label}
+              </div>
+              <div style={{ fontFamily: "'Orbitron', sans-serif", fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>
+                {stat.value}
+              </div>
             </div>
-          </div>
-          <div className="p-3 bg-f1-dark border border-f1-border">
-            <div className="text-xs text-f1-muted mb-1 uppercase tracking-widest">Data Points</div>
-            <div className="text-lg font-display font-black text-f1-white">{evidence.dataPoints.length}</div>
-          </div>
-          <div className="p-3 bg-f1-dark border border-f1-border">
-            <div className="text-xs text-f1-muted mb-1 uppercase tracking-widest">Avg Value</div>
-            <div className="text-lg font-display font-black text-f1-white">{avgValue.toFixed(1)}</div>
-          </div>
-          <div className="p-3 bg-f1-dark border border-f1-border">
-            <div className="text-xs text-f1-muted mb-1 uppercase tracking-widest">Confidence</div>
-            <div className="text-lg font-display font-black text-f1-white">{(evidence.confidence * 100).toFixed(0)}%</div>
-          </div>
+          ))}
         </div>
 
-        {/* Chart-like visualization */}
-        <div className="mb-6">
-          <h3 className="text-sm font-bold text-f1-white mb-3 flex items-center gap-2 uppercase tracking-widest">
-            <BarChart3 className="w-4 h-4" />
-            Metric Timeline
-          </h3>
-          <div className="relative h-40 p-4 bg-f1-dark border border-f1-border">
+        {/* Chart visualization */}
+        <div style={{ padding: '16px 24px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+            <BarChart3 style={{ width: 14, height: 14, color: 'var(--f1-red)' }} />
+            <span style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: 10, fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'var(--text-secondary)' }}>
+              METRIC TIMELINE
+            </span>
+          </div>
+
+          <div style={{ position: 'relative', height: 140, border: '1px solid rgba(255,255,255,0.07)', background: 'rgba(0,0,0,0.3)', padding: '12px 12px 28px 36px' }}>
             {/* Y-axis labels */}
-            <div className="absolute left-2 top-2 text-[10px] text-f1-muted font-mono">
-              {maxValue.toFixed(1)}
-            </div>
-            <div className="absolute left-2 bottom-2 text-[10px] text-f1-muted font-mono">
-              {minValue.toFixed(1)}
-            </div>
-
-            {/* Mini chart bars */}
-            <div className="absolute inset-4 left-10 flex items-end justify-around gap-1">
+            <div style={{ position: 'absolute', left: 4, top: 10, fontFamily: "'IBM Plex Mono', monospace", fontSize: 9, color: 'var(--text-secondary)' }}>{maxValue.toFixed(1)}</div>
+            <div style={{ position: 'absolute', left: 4, bottom: 28, fontFamily: "'IBM Plex Mono', monospace", fontSize: 9, color: 'var(--text-secondary)' }}>{minValue.toFixed(1)}</div>
+            {/* Bars */}
+            <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-around', gap: 2, height: '100%' }}>
               {evidence.dataPoints.map((point, idx) => {
                 const normalizedValue = (point.value - minValue) / range;
-                const heightPercent = normalizedValue * 100;
-
+                const heightPercent = Math.max(normalizedValue * 100, 4);
                 return (
-                  <div
-                    key={idx}
-                    className="flex-1 flex flex-col items-center gap-1 group"
-                  >
+                  <div key={idx} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, height: '100%', justifyContent: 'flex-end' }}>
                     <div
-                      className={`w-full transition-all ${
-                        evidence.trend === 'improving'
-                          ? 'bg-inter'
-                          : evidence.trend === 'degrading'
-                          ? 'bg-f1-red'
-                          : 'bg-f1-muted'
-                      } hover:opacity-80 cursor-help`}
-                      style={{ height: `${Math.max(heightPercent, 5)}%` }}
-                      title={`Lap ${point.lap}: ${point.value.toFixed(1)}`}
+                      style={{
+                        width: '100%',
+                        height: `${heightPercent}%`,
+                        background: trendColor,
+                        opacity: 0.7 + normalizedValue * 0.3,
+                        boxShadow: `0 0 6px ${trendColor}44`,
+                        cursor: 'help',
+                        transition: 'opacity 0.15s',
+                      }}
+                      title={`Lap ${point.lap}: ${point.value.toFixed(2)}`}
                     />
-                    <div className="text-[9px] text-f1-muted font-mono">{point.lap}</div>
+                    {evidence.dataPoints.length <= 12 && (
+                      <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 8, color: 'var(--text-secondary)', transform: 'rotate(-45deg)', transformOrigin: 'center', whiteSpace: 'nowrap' }}>
+                        {point.lap}
+                      </div>
+                    )}
                   </div>
                 );
               })}
             </div>
           </div>
-          <div className="mt-2 text-xs text-f1-muted">
-            Shows metric values across the lap range. Hover bars to see exact values.
+          <div style={{ marginTop: 6, fontFamily: "'Barlow Condensed', sans-serif", fontSize: 9, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+            Hover bars for exact values · Laps {evidence.lapRange[0]}–{evidence.lapRange[1]}
           </div>
         </div>
 
-        {/* Min/Max/Trend details */}
-        <div className="grid grid-cols-2 gap-4 mb-6">
-          <Card className="p-4 bg-f1-dark border border-f1-border">
-            <div className="flex items-start gap-2 mb-2">
-              <TrendingDown className="w-4 h-4 text-inter mt-0.5" />
-              <div>
-                <div className="text-sm font-bold text-f1-white uppercase tracking-widest">Best Value</div>
-                <div className="text-2xl font-display font-black text-inter">{minValue.toFixed(1)}</div>
-              </div>
+        {/* Min / Max */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1, padding: '0 24px 16px' }}>
+          <div style={{ padding: '14px', border: '1px solid rgba(255,255,255,0.07)', background: 'rgba(57,255,20,0.04)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+              <TrendingDown style={{ width: 14, height: 14, color: 'var(--neon-green)' }} />
+              <span style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: 10, fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--text-secondary)' }}>BEST VALUE</span>
             </div>
-            <p className="text-xs text-f1-muted">Lowest recorded metric value in range</p>
-          </Card>
-
-          <Card className="p-4 bg-f1-dark border border-f1-border">
-            <div className="flex items-start gap-2 mb-2">
-              <AlertCircle className="w-4 h-4 text-f1-red mt-0.5" />
-              <div>
-                <div className="text-sm font-bold text-f1-white uppercase tracking-widest">Worst Value</div>
-                <div className="text-2xl font-display font-black text-f1-red">{maxValue.toFixed(1)}</div>
-              </div>
+            <div style={{ fontFamily: "'Orbitron', sans-serif", fontSize: 22, fontWeight: 700, color: 'var(--neon-green)' }}>{minValue.toFixed(2)}</div>
+            <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: 10, color: 'var(--text-secondary)', marginTop: 4 }}>Lowest recorded in range</div>
+          </div>
+          <div style={{ padding: '14px', border: '1px solid rgba(255,255,255,0.07)', background: 'rgba(225,6,0,0.04)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+              <AlertCircle style={{ width: 14, height: 14, color: 'var(--f1-red)' }} />
+              <span style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: 10, fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--text-secondary)' }}>WORST VALUE</span>
             </div>
-            <p className="text-xs text-f1-muted">Highest recorded metric value in range</p>
-          </Card>
+            <div style={{ fontFamily: "'Orbitron', sans-serif", fontSize: 22, fontWeight: 700, color: 'var(--f1-red)' }}>{maxValue.toFixed(2)}</div>
+            <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: 10, color: 'var(--text-secondary)', marginTop: 4 }}>Highest recorded in range</div>
+          </div>
         </div>
 
         {/* Interpretation */}
-        <div className="p-4 bg-f1-dark border border-f1-border mb-6">
-          <h3 className="text-sm font-bold text-f1-white mb-2 uppercase tracking-widest">Interpretation</h3>
-          <p className="text-sm text-f1-secondary">
+        <div style={{ margin: '0 24px 24px', padding: '14px', borderLeft: '2px solid var(--f1-red)', background: 'rgba(225,6,0,0.04)', border: '1px solid rgba(225,6,0,0.2)' }}>
+          <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: 10, fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'var(--text-secondary)', marginBottom: 8 }}>INTERPRETATION</div>
+          <p style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 11, color: 'var(--text-primary)', lineHeight: 1.6 }}>
             {evidence.trend === 'improving'
-              ? 'This metric is showing improvement across the analyzed laps, indicating positive performance trajectory.'
+              ? 'This metric is showing improvement across the analyzed laps, indicating a positive performance trajectory. No immediate action required.'
               : evidence.trend === 'degrading'
-              ? 'This metric is degrading over time, suggesting wear, fuel load, or grip loss. Consider immediate strategic action.'
-              : 'This metric is stable, indicating consistent performance without significant changes.'}
+              ? 'This metric is degrading over time — wear, fuel load, or grip loss detected. Consider immediate strategic intervention.'
+              : 'This metric is stable, indicating consistent performance without significant changes across the lap window.'}
           </p>
         </div>
 
-        {/* Action buttons */}
-        <div className="flex gap-3">
+        {/* Actions */}
+        <div style={{ display: 'flex', gap: 8, padding: '0 24px 24px' }}>
           <button
             onClick={onClose}
-            className="flex-1 px-4 py-2 border border-f1-border text-f1-white font-bold uppercase tracking-widest hover:bg-f1-dark transition"
+            style={{ flex: 1, padding: '10px 16px', border: '1px solid rgba(255,255,255,0.12)', background: 'transparent', color: 'var(--text-primary)', fontFamily: "'Barlow Condensed', sans-serif", fontSize: 11, fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', cursor: 'pointer', transition: 'all 0.15s' }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--text-primary)'; }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.12)'; }}
           >
-            Close
+            CLOSE
           </button>
           <button
             onClick={onClose}
-            className="flex-1 px-4 py-2 bg-f1-red text-white font-bold uppercase tracking-widest hover:bg-f1-red-dark transition"
+            style={{ flex: 1, padding: '10px 16px', border: '1px solid var(--f1-red)', background: 'var(--f1-red)', color: 'white', fontFamily: "'Barlow Condensed', sans-serif", fontSize: 11, fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', cursor: 'pointer', transition: 'all 0.15s' }}
+            onMouseEnter={e => { e.currentTarget.style.opacity = '0.85'; }}
+            onMouseLeave={e => { e.currentTarget.style.opacity = '1'; }}
           >
-            Export Data
+            EXPORT DATA
           </button>
         </div>
       </div>

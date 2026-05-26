@@ -1,8 +1,26 @@
-# Database Setup and Migration Guide
+<div align="center">
+
+# 📖 Database Setup and Migration Guide
+**PitMind Documentation**
+
+[![PitMind Platform](https://img.shields.io/badge/PitMind-Platform-e10600.svg?style=for-the-badge)](#)
+[![Return to Home](https://img.shields.io/badge/Return_to_Home-15151e.svg?style=for-the-badge)](../README.md)
+
+</div>
+
+<br/>
+
+> **Overview:** This document outlines the core concepts, configurations, and technical specifications for the **Database Setup and Migration Guide** module within the PitMind AI ecosystem.
+
+---
 
 This guide covers setting up Redis and PostgreSQL for the pitMind project, including running migrations and troubleshooting.
 
-## Overview
+
+
+<details>
+<summary><b>Overview</b></summary>
+<br/>
 
 The pitMind project uses:
 - **Redis** for caching, session management, and WebSocket connection tracking
@@ -11,7 +29,13 @@ The pitMind project uses:
 
 Both services support **graceful degradation** - the application will continue to function with reduced capabilities if either service is unavailable.
 
-## Quick Start with Docker Compose
+</details>
+
+
+
+<details>
+<summary><b>Quick Start with Docker Compose</b></summary>
+<br/>
 
 The easiest way to run the full stack with Redis and PostgreSQL:
 
@@ -26,7 +50,13 @@ docker-compose ps
 docker-compose logs -f api
 ```
 
-## Local Development Setup
+</details>
+
+
+
+<details>
+<summary><b>Local Development Setup</b></summary>
+<br/>
 
 ### 1. Install Dependencies
 
@@ -123,7 +153,13 @@ alembic upgrade head
 # psql -U pitmind -d pitmind -c "\dt"
 ```
 
-## Database Migrations
+</details>
+
+
+
+<details>
+<summary><b>Database Migrations</b></summary>
+<br/>
 
 ### Creating a New Migration
 
@@ -165,7 +201,13 @@ alembic downgrade <revision_id>
 alembic downgrade base
 ```
 
-## Verifying the Setup
+</details>
+
+
+
+<details>
+<summary><b>Verifying the Setup</b></summary>
+<br/>
 
 ### Check Redis Connection
 
@@ -216,7 +258,13 @@ Expected response:
 }
 ```
 
-## Graceful Degradation
+</details>
+
+
+
+<details>
+<summary><b>Graceful Degradation</b></summary>
+<br/>
 
 The application is designed to continue functioning even if Redis or PostgreSQL are unavailable:
 
@@ -236,7 +284,13 @@ The application is designed to continue functioning even if Redis or PostgreSQL 
 - All data lost on restart
 - Suitable for development/testing
 
-## Troubleshooting
+</details>
+
+
+
+<details>
+<summary><b>Troubleshooting</b></summary>
+<br/>
 
 ### Redis Connection Issues
 
@@ -308,7 +362,13 @@ alembic upgrade head
 - Run migrations: `alembic upgrade head`
 - Check migration status: `alembic current`
 
-## Production Considerations
+</details>
+
+
+
+<details>
+<summary><b>Production Considerations</b></summary>
+<br/>
 
 ### Security
 
@@ -366,9 +426,24 @@ Monitor these metrics in production:
 
 Use the `/api/v1/metrics/health` endpoint for real-time monitoring.
 
-## Additional Resources
+</details>
+
+
+
+<details>
+<summary><b>Additional Resources</b></summary>
+<br/>
 
 - [Redis Documentation](https://redis.io/documentation)
 - [PostgreSQL Documentation](https://www.postgresql.org/docs/)
 - [Alembic Documentation](https://alembic.sqlalchemy.org/)
 - [SQLAlchemy Async Documentation](https://docs.sqlalchemy.org/en/20/orm/extensions/asyncio.html)
+
+</details>
+
+---
+
+<div align="center">
+  <p>Built for the speed of Formula 1. Engineered for absolute transparency.</p>
+  <p><a href="../README.md">🏠 Back to Main README</a></p>
+</div>

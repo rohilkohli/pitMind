@@ -1,10 +1,32 @@
-# CI/CD Pipeline Documentation
+<div align="center">
 
-## Overview
+# 📖 CI/CD Pipeline Documentation
+**PitMind Documentation**
+
+[![PitMind Platform](https://img.shields.io/badge/PitMind-Platform-e10600.svg?style=for-the-badge)](#)
+[![Return to Home](https://img.shields.io/badge/Return_to_Home-15151e.svg?style=for-the-badge)](../README.md)
+
+</div>
+
+<br/>
+
+> **Overview:** This document outlines the core concepts, configurations, and technical specifications for the **CI/CD Pipeline Documentation** module within the PitMind AI ecosystem.
+
+---
+
+<details>
+<summary><b>Overview</b></summary>
+<br/>
 
 The pitMind project uses GitHub Actions for continuous integration and continuous deployment. This document describes the complete CI/CD pipeline architecture, workflows, and best practices.
 
-## Table of Contents
+</details>
+
+
+
+<details>
+<summary><b>Table of Contents</b></summary>
+<br/>
 
 - [Pipeline Architecture](#pipeline-architecture)
 - [Workflows](#workflows)
@@ -13,7 +35,13 @@ The pitMind project uses GitHub Actions for continuous integration and continuou
 - [Troubleshooting](#troubleshooting)
 - [Best Practices](#best-practices)
 
-## Pipeline Architecture
+</details>
+
+
+
+<details>
+<summary><b>Pipeline Architecture</b></summary>
+<br/>
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
@@ -61,7 +89,13 @@ The pitMind project uses GitHub Actions for continuous integration and continuou
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-## Workflows
+</details>
+
+
+
+<details>
+<summary><b>Workflows</b></summary>
+<br/>
 
 ### 1. CI Pipeline (`ci.yml`)
 
@@ -221,7 +255,13 @@ gh release create v1.0.0 --generate-notes
 - Auto-assigns to maintainers
 - Labels PRs appropriately
 
-## Setup Instructions
+</details>
+
+
+
+<details>
+<summary><b>Setup Instructions</b></summary>
+<br/>
 
 ### Prerequisites
 
@@ -286,7 +326,13 @@ gh release create v1.0.0 --generate-notes
    docker pull ghcr.io/USERNAME/pitmind/frontend:latest
    ```
 
-## Deployment Process
+</details>
+
+
+
+<details>
+<summary><b>Deployment Process</b></summary>
+<br/>
 
 ### Staging Deployment
 
@@ -347,7 +393,13 @@ For urgent fixes:
 
 5. Release workflow deploys to production
 
-## Troubleshooting
+</details>
+
+
+
+<details>
+<summary><b>Troubleshooting</b></summary>
+<br/>
 
 ### Common Issues
 
@@ -446,7 +498,13 @@ Enable debug logging:
 2. Add `ACTIONS_STEP_DEBUG` = `true`
 3. Re-run workflow
 
-## Best Practices
+</details>
+
+
+
+<details>
+<summary><b>Best Practices</b></summary>
+<br/>
 
 ### 1. Commit Messages
 
@@ -498,7 +556,13 @@ ci: update CI/CD
 - Monitor deployment health
 - Set up notifications
 
-## Workflow Status
+</details>
+
+
+
+<details>
+<summary><b>Workflow Status</b></summary>
+<br/>
 
 Check the status of all workflows:
 
@@ -513,14 +577,26 @@ gh run view RUN_ID
 gh run rerun RUN_ID
 ```
 
-## Additional Resources
+</details>
+
+
+
+<details>
+<summary><b>Additional Resources</b></summary>
+<br/>
 
 - [GitHub Actions Documentation](https://docs.github.com/en/actions)
 - [Docker Documentation](https://docs.docker.com/)
 - [Dependabot Documentation](https://docs.github.com/en/code-security/dependabot)
 - [CodeQL Documentation](https://codeql.github.com/docs/)
 
-## Support
+</details>
+
+
+
+<details>
+<summary><b>Support</b></summary>
+<br/>
 
 For issues or questions:
 - Create an issue in the repository
@@ -531,3 +607,12 @@ For issues or questions:
 
 **Last Updated:** 2026-05-20
 **Maintained By:** pitMind Development Team
+
+</details>
+
+---
+
+<div align="center">
+  <p>Built for the speed of Formula 1. Engineered for absolute transparency.</p>
+  <p><a href="../README.md">🏠 Back to Main README</a></p>
+</div>

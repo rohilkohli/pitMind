@@ -1,6 +1,22 @@
-# 🏎️ PitMind — Detailed Project Summary
+<div align="center">
 
-## Project Overview
+# 📖 🏎️ PitMind — Detailed Project Summary
+**PitMind Documentation**
+
+[![PitMind Platform](https://img.shields.io/badge/PitMind-Platform-e10600.svg?style=for-the-badge)](#)
+[![Return to Home](https://img.shields.io/badge/Return_to_Home-15151e.svg?style=for-the-badge)](../README.md)
+
+</div>
+
+<br/>
+
+> **Overview:** This document outlines the core concepts, configurations, and technical specifications for the **🏎️ PitMind — Detailed Project Summary** module within the PitMind AI ecosystem.
+
+---
+
+<details>
+<summary><b>Project Overview</b></summary>
+<br/>
 
 **PitMind** is a full-stack AI-powered **Formula 1 Race Strategy & Explainability Assistant** built for race engineers under high-pressure pit wall conditions. It transforms raw telemetry data into transparent, AI-narrated strategic recommendations using **IBM Granite**, ensuring trust through explainability rather than opaque black-box scores.
 
@@ -10,7 +26,13 @@ Race engineers must synthesize hundreds of telemetry signals per lap (tyre degra
 
 ---
 
-## Technology Stack
+</details>
+
+
+
+<details>
+<summary><b>Technology Stack</b></summary>
+<br/>
 
 ### Frontend (React + Vite + Tailwind)
 
@@ -50,7 +72,13 @@ Race engineers must synthesize hundreds of telemetry signals per lap (tyre degra
 
 ---
 
-## Architecture & Data Flow
+</details>
+
+
+
+<details>
+<summary><b>Architecture & Data Flow</b></summary>
+<br/>
 
 ```
 User (Browser)
@@ -86,7 +114,13 @@ Response back to Frontend
 
 ---
 
-## Key Features & Components
+</details>
+
+
+
+<details>
+<summary><b>Key Features & Components</b></summary>
+<br/>
 
 ### Engineer Dashboard (Authenticated)
 
@@ -129,7 +163,13 @@ Response back to Frontend
 
 ---
 
-## Design Language (Formula 1 Styling)
+</details>
+
+
+
+<details>
+<summary><b>Design Language (Formula 1 Styling)</b></summary>
+<br/>
 
 ### Color Palette
 
@@ -163,7 +203,13 @@ Response back to Frontend
 
 ---
 
-## AI/ML Integration
+</details>
+
+
+
+<details>
+<summary><b>AI/ML Integration</b></summary>
+<br/>
 
 ### Heuristic Strategy Scoring (Transparent)
 
@@ -208,7 +254,13 @@ Metrics calculated:
 
 ---
 
-## Data Models
+</details>
+
+
+
+<details>
+<summary><b>Data Models</b></summary>
+<br/>
 
 ### Core Models (`backend/models/`)
 
@@ -227,7 +279,13 @@ Metrics calculated:
 
 ---
 
-## Security & Best Practices
+</details>
+
+
+
+<details>
+<summary><b>Security & Best Practices</b></summary>
+<br/>
 
 ✅ **Secrets Management**
 - `.env` file (not in git) for API keys, database URLs, OAuth credentials
@@ -257,7 +315,13 @@ Metrics calculated:
 
 ---
 
-## Project Structure
+</details>
+
+
+
+<details>
+<summary><b>Project Structure</b></summary>
+<br/>
 
 ```
 pitMind/
@@ -312,7 +376,13 @@ pitMind/
 
 ---
 
-## Current Status ✅
+</details>
+
+
+
+<details>
+<summary><b>Current Status ✅</b></summary>
+<br/>
 
 ### Running Locally
 
@@ -339,7 +409,13 @@ pitMind/
 
 ---
 
-## Deployment Options
+</details>
+
+
+
+<details>
+<summary><b>Deployment Options</b></summary>
+<br/>
 
 ### Docker Compose (Recommended for production)
 
@@ -369,7 +445,13 @@ cd frontend && npm install && npm run dev
 
 ---
 
-## Key Innovation: Explainability-First Design
+</details>
+
+
+
+<details>
+<summary><b>Key Innovation: Explainability-First Design</b></summary>
+<br/>
 
 Unlike black-box strategy tools, PitMind:
 
@@ -381,7 +463,13 @@ Unlike black-box strategy tools, PitMind:
 
 ---
 
-## Dependencies & Licenses
+</details>
+
+
+
+<details>
+<summary><b>Dependencies & Licenses</b></summary>
+<br/>
 
 **Key Open Source Projects:**
 
@@ -395,7 +483,13 @@ Unlike black-box strategy tools, PitMind:
 
 ---
 
-## Next Steps / Future Enhancements
+</details>
+
+
+
+<details>
+<summary><b>Next Steps / Future Enhancements</b></summary>
+<br/>
 
 - [ ] Live FastF1 data integration (real F1 sessions)
 - [ ] Multi-team strategy comparison (FIA data access)
@@ -409,7 +503,13 @@ Unlike black-box strategy tools, PitMind:
 
 ---
 
-## Summary
+</details>
+
+
+
+<details>
+<summary><b>Summary</b></summary>
+<br/>
 
 **PitMind is a sophisticated full-stack application that bridges the gap between real-time data and human decision-making under pressure, making AI racing strategy trustworthy through explainability.** 🏁
 
@@ -421,3 +521,12 @@ The project successfully combines:
 - Official Formula 1 design language & aesthetics
 
 Perfect for race engineers who need to make high-stakes strategic decisions with confidence and transparency.
+
+</details>
+
+---
+
+<div align="center">
+  <p>Built for the speed of Formula 1. Engineered for absolute transparency.</p>
+  <p><a href="../README.md">🏠 Back to Main README</a></p>
+</div>

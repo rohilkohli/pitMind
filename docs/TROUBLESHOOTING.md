@@ -1,8 +1,26 @@
-# Troubleshooting Guide
+<div align="center">
+
+# 📖 Troubleshooting Guide
+**PitMind Documentation**
+
+[![PitMind Platform](https://img.shields.io/badge/PitMind-Platform-e10600.svg?style=for-the-badge)](#)
+[![Return to Home](https://img.shields.io/badge/Return_to_Home-15151e.svg?style=for-the-badge)](../README.md)
+
+</div>
+
+<br/>
+
+> **Overview:** This document outlines the core concepts, configurations, and technical specifications for the **Troubleshooting Guide** module within the PitMind AI ecosystem.
+
+---
 
 Comprehensive troubleshooting guide for pitMind deployment and operation issues.
 
-## Table of Contents
+
+
+<details>
+<summary><b>Table of Contents</b></summary>
+<br/>
 
 - [Common Issues](#common-issues)
 - [Debugging Guide](#debugging-guide)
@@ -10,7 +28,13 @@ Comprehensive troubleshooting guide for pitMind deployment and operation issues.
 - [Error Message Reference](#error-message-reference)
 - [Support Escalation](#support-escalation)
 
-## Common Issues
+</details>
+
+
+
+<details>
+<summary><b>Common Issues</b></summary>
+<br/>
 
 ### 1. Application Won't Start
 
@@ -412,7 +436,13 @@ const API_URL = window.location.protocol === 'https:'
   : 'http://localhost:8000';
 ```
 
-## Debugging Guide
+</details>
+
+
+
+<details>
+<summary><b>Debugging Guide</b></summary>
+<br/>
 
 ### Enable Debug Logging
 
@@ -473,7 +503,13 @@ SELECT pg_terminate_backend(pid);
 SELECT * FROM pg_locks WHERE NOT granted;
 ```
 
-## Performance Troubleshooting
+</details>
+
+
+
+<details>
+<summary><b>Performance Troubleshooting</b></summary>
+<br/>
 
 ### Identify Bottlenecks
 
@@ -520,7 +556,13 @@ FROM pg_stat_user_indexes
 WHERE idx_scan = 0;
 ```
 
-## Error Message Reference
+</details>
+
+
+
+<details>
+<summary><b>Error Message Reference</b></summary>
+<br/>
 
 ### Backend Errors
 
@@ -550,7 +592,13 @@ WHERE idx_scan = 0;
 | 503 | Service Unavailable | Database or cache down |
 | 504 | Gateway Timeout | Request timeout |
 
-## Support Escalation
+</details>
+
+
+
+<details>
+<summary><b>Support Escalation</b></summary>
+<br/>
 
 ### Level 1: Self-Service
 
@@ -639,16 +687,37 @@ netstat -tulpn | grep -E "8000|5432|6379"
 docker-compose logs backend | grep -i error | tail -50
 ```
 
-## Additional Resources
+</details>
+
+
+
+<details>
+<summary><b>Additional Resources</b></summary>
+<br/>
 
 - [Production Deployment Guide](./PRODUCTION_DEPLOYMENT.md)
 - [HTTPS/TLS Configuration](./HTTPS_TLS.md)
 - [Testing Guide](./TESTING.md)
 - [API Documentation](./API.md)
 
-## Getting Help
+</details>
+
+
+
+<details>
+<summary><b>Getting Help</b></summary>
+<br/>
 
 - **Documentation**: Check all docs in `/docs` directory
 - **GitHub Issues**: https://github.com/your-org/pitmind/issues
 - **Community**: Join our Discord/Slack
 - **Email**: support@example.com
+
+</details>
+
+---
+
+<div align="center">
+  <p>Built for the speed of Formula 1. Engineered for absolute transparency.</p>
+  <p><a href="../README.md">🏠 Back to Main README</a></p>
+</div>

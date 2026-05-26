@@ -1,10 +1,28 @@
-# PitMind — System Architecture
+<div align="center">
+
+# 📖 PitMind — System Architecture
+**PitMind Documentation**
+
+[![PitMind Platform](https://img.shields.io/badge/PitMind-Platform-e10600.svg?style=for-the-badge)](#)
+[![Return to Home](https://img.shields.io/badge/Return_to_Home-15151e.svg?style=for-the-badge)](../README.md)
+
+</div>
+
+<br/>
+
+> **Overview:** This document outlines the core concepts, configurations, and technical specifications for the **PitMind — System Architecture** module within the PitMind AI ecosystem.
+
+---
 
 PitMind is a full-stack AI race strategy platform built for Formula 1-style environments. This document describes every layer of the system and how they connect.
 
 ---
 
-## High-Level Architecture
+
+
+<details>
+<summary><b>High-Level Architecture</b></summary>
+<br/>
 
 ```mermaid
 flowchart LR
@@ -39,7 +57,13 @@ flowchart LR
 
 ---
 
-## Component Breakdown
+</details>
+
+
+
+<details>
+<summary><b>Component Breakdown</b></summary>
+<br/>
 
 ### Frontend (`frontend/`)
 
@@ -84,7 +108,13 @@ flowchart LR
 
 ---
 
-## IBM AI Pipeline (detailed)
+</details>
+
+
+
+<details>
+<summary><b>IBM AI Pipeline (detailed)</b></summary>
+<br/>
 
 ```
 Telemetry JSON ──┐
@@ -120,7 +150,13 @@ PDF Upload ──► Docling Parser ──────────────�
 
 ---
 
-## Data Flow — Strategy Recommendation
+</details>
+
+
+
+<details>
+<summary><b>Data Flow — Strategy Recommendation</b></summary>
+<br/>
 
 ```
 1. Frontend POSTs TelemetryPayload to /api/v1/strategy/recommend
@@ -137,7 +173,13 @@ PDF Upload ──► Docling Parser ──────────────�
 6. UI renders: Strategy Oracle card, Confidence chart, Evidence drill-down
 ```
 
-## Data Flow — Post-Race Debrief (Docling)
+</details>
+
+
+
+<details>
+<summary><b>Data Flow — Post-Race Debrief (Docling)</b></summary>
+<br/>
 
 ```
 1. User uploads PDF to /api/v1/debrief/upload
@@ -154,7 +196,13 @@ PDF Upload ──► Docling Parser ──────────────�
 
 ---
 
-## WebSocket Telemetry Streaming
+</details>
+
+
+
+<details>
+<summary><b>WebSocket Telemetry Streaming</b></summary>
+<br/>
 
 ```
 Browser ──WS──► /api/v1/stream/telemetry?session_id=current_race
@@ -171,7 +219,13 @@ Browser ──WS──► /api/v1/stream/telemetry?session_id=current_race
 
 ---
 
-## Infrastructure
+</details>
+
+
+
+<details>
+<summary><b>Infrastructure</b></summary>
+<br/>
 
 | Service | Port | Purpose |
 |---|---|---|
@@ -180,3 +234,12 @@ Browser ──WS──► /api/v1/stream/telemetry?session_id=current_race
 | Redis | 6379 | Strategy response cache (TTL-based) |
 | PostgreSQL | 5432 | Audit log, strategy commits |
 | Firebase | Cloud | Auth + Realtime DB for live race state |
+
+</details>
+
+---
+
+<div align="center">
+  <p>Built for the speed of Formula 1. Engineered for absolute transparency.</p>
+  <p><a href="../README.md">🏠 Back to Main README</a></p>
+</div>

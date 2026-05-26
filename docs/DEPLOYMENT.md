@@ -1,6 +1,22 @@
-# PitMind Deployment Guide
+<div align="center">
 
-## Quick Start with Docker
+# 📖 PitMind Deployment Guide
+**PitMind Documentation**
+
+[![PitMind Platform](https://img.shields.io/badge/PitMind-Platform-e10600.svg?style=for-the-badge)](#)
+[![Return to Home](https://img.shields.io/badge/Return_to_Home-15151e.svg?style=for-the-badge)](../README.md)
+
+</div>
+
+<br/>
+
+> **Overview:** This document outlines the core concepts, configurations, and technical specifications for the **PitMind Deployment Guide** module within the PitMind AI ecosystem.
+
+---
+
+<details>
+<summary><b>Quick Start with Docker</b></summary>
+<br/>
 
 ### Prerequisites
 - Docker and Docker Compose installed
@@ -59,7 +75,13 @@ BACKEND_CORS_ORIGINS=http://localhost:5173,http://localhost:8080,http://0.0.0.0:
 RATE_LIMIT_PER_MINUTE=60
 ```
 
-## Production Deployment
+</details>
+
+
+
+<details>
+<summary><b>Production Deployment</b></summary>
+<br/>
 
 ### Docker Registry Push
 
@@ -182,7 +204,13 @@ kubectl apply -f kubernetes.yaml
 kubectl get services -n pitmind
 ```
 
-## Performance Optimization
+</details>
+
+
+
+<details>
+<summary><b>Performance Optimization</b></summary>
+<br/>
 
 ### Frontend (Vite)
 
@@ -218,7 +246,13 @@ Optimizations in place:
 - Redis cache for health metrics (optional)
 - In-memory cache for AI model responses
 
-## Monitoring & Logging
+</details>
+
+
+
+<details>
+<summary><b>Monitoring & Logging</b></summary>
+<br/>
 
 ### Health Checks
 
@@ -252,7 +286,13 @@ Implement monitoring for:
 - Database connection pool
 - Memory and CPU usage
 
-## Troubleshooting
+</details>
+
+
+
+<details>
+<summary><b>Troubleshooting</b></summary>
+<br/>
 
 ### WebSocket Connection Fails
 
@@ -275,7 +315,13 @@ Check:
 2. Project and space IDs correct
 3. Network access to watsonx URL
 
-## Database Migrations
+</details>
+
+
+
+<details>
+<summary><b>Database Migrations</b></summary>
+<br/>
 
 For future database changes:
 ```bash
@@ -285,14 +331,26 @@ alembic revision --autogenerate -m "migration_description"
 alembic upgrade head
 ```
 
-## Backup Strategy
+</details>
+
+
+
+<details>
+<summary><b>Backup Strategy</b></summary>
+<br/>
 
 For production:
 1. **Firebase**: Google handles backups automatically
 2. **Application Code**: Git repository with tags for releases
 3. **Configuration**: Keep .env files in secure vault (HashiCorp Vault, AWS Secrets Manager)
 
-## Zero-Downtime Deployment
+</details>
+
+
+
+<details>
+<summary><b>Zero-Downtime Deployment</b></summary>
+<br/>
 
 1. Update docker-compose or Kubernetes manifests
 2. Apply updates to secondary instance
@@ -311,3 +369,12 @@ docker-compose up -d --scale api=2 --scale web=2
 docker-compose down
 docker-compose up -d
 ```
+
+</details>
+
+---
+
+<div align="center">
+  <p>Built for the speed of Formula 1. Engineered for absolute transparency.</p>
+  <p><a href="../README.md">🏠 Back to Main README</a></p>
+</div>

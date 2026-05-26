@@ -1,10 +1,32 @@
-# PitMind Caching Architecture
+<div align="center">
 
-## Overview
+# 📖 PitMind Caching Architecture
+**PitMind Documentation**
+
+[![PitMind Platform](https://img.shields.io/badge/PitMind-Platform-e10600.svg?style=for-the-badge)](#)
+[![Return to Home](https://img.shields.io/badge/Return_to_Home-15151e.svg?style=for-the-badge)](../README.md)
+
+</div>
+
+<br/>
+
+> **Overview:** This document outlines the core concepts, configurations, and technical specifications for the **PitMind Caching Architecture** module within the PitMind AI ecosystem.
+
+---
+
+<details>
+<summary><b>Overview</b></summary>
+<br/>
 
 PitMind implements a comprehensive Redis-backed caching layer to optimize AI response times, reduce API costs, and improve user experience. The caching system is designed to be transparent, intelligent, and resilient.
 
-## Architecture
+</details>
+
+
+
+<details>
+<summary><b>Architecture</b></summary>
+<br/>
 
 ### Components
 
@@ -24,7 +46,13 @@ PitMind implements a comprehensive Redis-backed caching layer to optimize AI res
    - Strategy Engine - caches heuristic scoring
    - Health Endpoints - exposes cache metrics
 
-## Cache Key Strategy
+</details>
+
+
+
+<details>
+<summary><b>Cache Key Strategy</b></summary>
+<br/>
 
 ### Format
 
@@ -65,7 +93,13 @@ Rounding is applied to ensure minor variations don't break cache hits:
 - Fuel: 1 decimal place
 - Gaps: 2 decimal places
 
-## TTL Configuration
+</details>
+
+
+
+<details>
+<summary><b>TTL Configuration</b></summary>
+<br/>
 
 Different cache types have different Time-To-Live (TTL) values:
 
@@ -91,7 +125,13 @@ CACHE_TTL_HEALTH=60
 CACHE_MAX_SIZE=1000
 ```
 
-## Cache Invalidation
+</details>
+
+
+
+<details>
+<summary><b>Cache Invalidation</b></summary>
+<br/>
 
 ### Automatic Invalidation
 
@@ -158,7 +198,13 @@ Supported conditions:
 - `race_end`
 - `session_change`
 
-## Cache Warming
+</details>
+
+
+
+<details>
+<summary><b>Cache Warming</b></summary>
+<br/>
 
 Pre-warm cache before race sessions to reduce latency:
 
@@ -175,7 +221,13 @@ POST /api/v1/strategy/cache/warm
 }
 ```
 
-## Monitoring
+</details>
+
+
+
+<details>
+<summary><b>Monitoring</b></summary>
+<br/>
 
 ### Cache Statistics
 
@@ -242,7 +294,13 @@ Response:
 }
 ```
 
-## Performance Impact
+</details>
+
+
+
+<details>
+<summary><b>Performance Impact</b></summary>
+<br/>
 
 ### Expected Improvements
 
@@ -260,7 +318,13 @@ With caching enabled:
 | Heuristic Scoring | 0.5s | 0.05s | 90% faster |
 | AI Explanation | 3.0s | 0.2s | 93% faster |
 
-## Best Practices
+</details>
+
+
+
+<details>
+<summary><b>Best Practices</b></summary>
+<br/>
 
 ### 1. Cache Warming
 
@@ -303,7 +367,13 @@ if cached is None:
     result = await compute_strategy(payload)
 ```
 
-## Troubleshooting
+</details>
+
+
+
+<details>
+<summary><b>Troubleshooting</b></summary>
+<br/>
 
 ### Low Hit Rate
 
@@ -346,7 +416,13 @@ if cached is None:
 2. Reduce TTL for frequently changing data
 3. Use manual invalidation when needed
 
-## API Reference
+</details>
+
+
+
+<details>
+<summary><b>API Reference</b></summary>
+<br/>
 
 ### Cache Management Endpoints
 
@@ -398,7 +474,13 @@ GET /api/v1/strategy/cache/invalidation-log?limit=50
 POST /api/v1/strategy/cache/reset-stats
 ```
 
-## Development
+</details>
+
+
+
+<details>
+<summary><b>Development</b></summary>
+<br/>
 
 ### Testing Cache Behavior
 
@@ -436,7 +518,13 @@ docker run -d -p 6379:6379 redis:7-alpine
 docker-compose up redis
 ```
 
-## Future Enhancements
+</details>
+
+
+
+<details>
+<summary><b>Future Enhancements</b></summary>
+<br/>
 
 1. **Distributed Caching**: Multi-region Redis clusters
 2. **Cache Preloading**: ML-based prediction of likely queries
@@ -444,6 +532,21 @@ docker-compose up redis
 4. **Cache Compression**: Reduce memory footprint
 5. **Cache Analytics**: Detailed usage patterns and optimization suggestions
 
-## Made with Bob
+</details>
+
+
+
+<details>
+<summary><b>Made with Bob</b></summary>
+<br/>
 
 For questions or issues, refer to the main [README.md](../README.md) or open an issue on GitHub.
+
+</details>
+
+---
+
+<div align="center">
+  <p>Built for the speed of Formula 1. Engineered for absolute transparency.</p>
+  <p><a href="../README.md">🏠 Back to Main README</a></p>
+</div>

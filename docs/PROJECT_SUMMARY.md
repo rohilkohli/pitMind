@@ -14,7 +14,9 @@
 
 ---
 
-## Project Overview
+<details>
+<summary><b>Project Overview</b></summary>
+<br/>
 
 **PitMind** is a full-stack AI-powered **Formula 1 Race Strategy & Explainability Assistant** built for race engineers under high-pressure pit wall conditions. It transforms raw telemetry data into transparent, AI-narrated strategic recommendations using **IBM Granite**, ensuring trust through explainability rather than opaque black-box scores.
 
@@ -24,9 +26,13 @@ Race engineers must synthesize hundreds of telemetry signals per lap (tyre degra
 
 ---
 
-<br/>
+</details>
 
-## Technology Stack
+
+
+<details>
+<summary><b>Technology Stack</b></summary>
+<br/>
 
 ### Frontend (React + Vite + Tailwind)
 
@@ -66,9 +72,13 @@ Race engineers must synthesize hundreds of telemetry signals per lap (tyre degra
 
 ---
 
-<br/>
+</details>
 
-## Architecture & Data Flow
+
+
+<details>
+<summary><b>Architecture & Data Flow</b></summary>
+<br/>
 
 ```
 User (Browser)
@@ -104,9 +114,13 @@ Response back to Frontend
 
 ---
 
-<br/>
+</details>
 
-## Key Features & Components
+
+
+<details>
+<summary><b>Key Features & Components</b></summary>
+<br/>
 
 ### Engineer Dashboard (Authenticated)
 
@@ -149,9 +163,13 @@ Response back to Frontend
 
 ---
 
-<br/>
+</details>
 
-## Design Language (Formula 1 Styling)
+
+
+<details>
+<summary><b>Design Language (Formula 1 Styling)</b></summary>
+<br/>
 
 ### Color Palette
 
@@ -185,9 +203,13 @@ Response back to Frontend
 
 ---
 
-<br/>
+</details>
 
-## AI/ML Integration
+
+
+<details>
+<summary><b>AI/ML Integration</b></summary>
+<br/>
 
 ### Heuristic Strategy Scoring (Transparent)
 
@@ -232,9 +254,13 @@ Metrics calculated:
 
 ---
 
-<br/>
+</details>
 
-## Data Models
+
+
+<details>
+<summary><b>Data Models</b></summary>
+<br/>
 
 ### Core Models (`backend/models/`)
 
@@ -253,9 +279,13 @@ Metrics calculated:
 
 ---
 
-<br/>
+</details>
 
-## Security & Best Practices
+
+
+<details>
+<summary><b>Security & Best Practices</b></summary>
+<br/>
 
 ✅ **Secrets Management**
 - `.env` file (not in git) for API keys, database URLs, OAuth credentials
@@ -285,9 +315,13 @@ Metrics calculated:
 
 ---
 
-<br/>
+</details>
 
-## Project Structure
+
+
+<details>
+<summary><b>Project Structure</b></summary>
+<br/>
 
 ```
 pitMind/
@@ -342,9 +376,13 @@ pitMind/
 
 ---
 
-<br/>
+</details>
 
-## Current Status ✅
+
+
+<details>
+<summary><b>Current Status ✅</b></summary>
+<br/>
 
 ### Running Locally
 
@@ -371,9 +409,13 @@ pitMind/
 
 ---
 
-<br/>
+</details>
 
-## Deployment Options
+
+
+<details>
+<summary><b>Deployment Options</b></summary>
+<br/>
 
 ### Docker Compose (Recommended for production)
 
@@ -403,9 +445,13 @@ cd frontend && npm install && npm run dev
 
 ---
 
-<br/>
+</details>
 
-## Key Innovation: Explainability-First Design
+
+
+<details>
+<summary><b>Key Innovation: Explainability-First Design</b></summary>
+<br/>
 
 Unlike black-box strategy tools, PitMind:
 
@@ -417,9 +463,13 @@ Unlike black-box strategy tools, PitMind:
 
 ---
 
-<br/>
+</details>
 
-## Dependencies & Licenses
+
+
+<details>
+<summary><b>Dependencies & Licenses</b></summary>
+<br/>
 
 **Key Open Source Projects:**
 
@@ -433,9 +483,13 @@ Unlike black-box strategy tools, PitMind:
 
 ---
 
-<br/>
+</details>
 
-## Next Steps / Future Enhancements
+
+
+<details>
+<summary><b>Next Steps / Future Enhancements</b></summary>
+<br/>
 
 - [ ] Live FastF1 data integration (real F1 sessions)
 - [ ] Multi-team strategy comparison (FIA data access)
@@ -449,9 +503,13 @@ Unlike black-box strategy tools, PitMind:
 
 ---
 
-<br/>
+</details>
 
-## Summary
+
+
+<details>
+<summary><b>Summary</b></summary>
+<br/>
 
 **PitMind is a sophisticated full-stack application that bridges the gap between real-time data and human decision-making under pressure, making AI racing strategy trustworthy through explainability.** 🏁
 
@@ -463,6 +521,8 @@ The project successfully combines:
 - Official Formula 1 design language & aesthetics
 
 Perfect for race engineers who need to make high-stakes strategic decisions with confidence and transparency.
+
+</details>
 
 ---
 

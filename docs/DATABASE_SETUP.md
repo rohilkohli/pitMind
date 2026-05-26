@@ -16,9 +16,11 @@
 
 This guide covers setting up Redis and PostgreSQL for the pitMind project, including running migrations and troubleshooting.
 
-<br/>
 
-## Overview
+
+<details>
+<summary><b>Overview</b></summary>
+<br/>
 
 The pitMind project uses:
 - **Redis** for caching, session management, and WebSocket connection tracking
@@ -27,9 +29,13 @@ The pitMind project uses:
 
 Both services support **graceful degradation** - the application will continue to function with reduced capabilities if either service is unavailable.
 
-<br/>
+</details>
 
-## Quick Start with Docker Compose
+
+
+<details>
+<summary><b>Quick Start with Docker Compose</b></summary>
+<br/>
 
 The easiest way to run the full stack with Redis and PostgreSQL:
 
@@ -44,9 +50,13 @@ docker-compose ps
 docker-compose logs -f api
 ```
 
-<br/>
+</details>
 
-## Local Development Setup
+
+
+<details>
+<summary><b>Local Development Setup</b></summary>
+<br/>
 
 ### 1. Install Dependencies
 
@@ -143,9 +153,13 @@ alembic upgrade head
 # psql -U pitmind -d pitmind -c "\dt"
 ```
 
-<br/>
+</details>
 
-## Database Migrations
+
+
+<details>
+<summary><b>Database Migrations</b></summary>
+<br/>
 
 ### Creating a New Migration
 
@@ -187,9 +201,13 @@ alembic downgrade <revision_id>
 alembic downgrade base
 ```
 
-<br/>
+</details>
 
-## Verifying the Setup
+
+
+<details>
+<summary><b>Verifying the Setup</b></summary>
+<br/>
 
 ### Check Redis Connection
 
@@ -240,9 +258,13 @@ Expected response:
 }
 ```
 
-<br/>
+</details>
 
-## Graceful Degradation
+
+
+<details>
+<summary><b>Graceful Degradation</b></summary>
+<br/>
 
 The application is designed to continue functioning even if Redis or PostgreSQL are unavailable:
 
@@ -262,9 +284,13 @@ The application is designed to continue functioning even if Redis or PostgreSQL 
 - All data lost on restart
 - Suitable for development/testing
 
-<br/>
+</details>
 
-## Troubleshooting
+
+
+<details>
+<summary><b>Troubleshooting</b></summary>
+<br/>
 
 ### Redis Connection Issues
 
@@ -336,9 +362,13 @@ alembic upgrade head
 - Run migrations: `alembic upgrade head`
 - Check migration status: `alembic current`
 
-<br/>
+</details>
 
-## Production Considerations
+
+
+<details>
+<summary><b>Production Considerations</b></summary>
+<br/>
 
 ### Security
 
@@ -396,14 +426,20 @@ Monitor these metrics in production:
 
 Use the `/api/v1/metrics/health` endpoint for real-time monitoring.
 
-<br/>
+</details>
 
-## Additional Resources
+
+
+<details>
+<summary><b>Additional Resources</b></summary>
+<br/>
 
 - [Redis Documentation](https://redis.io/documentation)
 - [PostgreSQL Documentation](https://www.postgresql.org/docs/)
 - [Alembic Documentation](https://alembic.sqlalchemy.org/)
 - [SQLAlchemy Async Documentation](https://docs.sqlalchemy.org/en/20/orm/extensions/asyncio.html)
+
+</details>
 
 ---
 

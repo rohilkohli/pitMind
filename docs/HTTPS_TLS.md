@@ -16,9 +16,11 @@
 
 Complete guide for configuring HTTPS/TLS for pitMind in production environments.
 
-<br/>
 
-## Table of Contents
+
+<details>
+<summary><b>Table of Contents</b></summary>
+<br/>
 
 - [Overview](#overview)
 - [Certificate Management](#certificate-management)
@@ -28,9 +30,13 @@ Complete guide for configuring HTTPS/TLS for pitMind in production environments.
 - [Security Best Practices](#security-best-practices)
 - [Troubleshooting](#troubleshooting)
 
-<br/>
+</details>
 
-## Overview
+
+
+<details>
+<summary><b>Overview</b></summary>
+<br/>
 
 HTTPS/TLS is essential for production deployments to:
 - Encrypt data in transit
@@ -44,9 +50,13 @@ HTTPS/TLS is essential for production deployments to:
 **For Development**: Use self-signed certificates
 **For Enterprise**: Use your organization's CA-signed certificates
 
-<br/>
+</details>
 
-## Certificate Management
+
+
+<details>
+<summary><b>Certificate Management</b></summary>
+<br/>
 
 ### Option 1: Let's Encrypt (Recommended)
 
@@ -124,9 +134,13 @@ openssl req -new -newkey rsa:2048 -nodes \
 # Place in ./certs/ directory
 ```
 
-<br/>
+</details>
 
-## Nginx SSL Configuration
+
+
+<details>
+<summary><b>Nginx SSL Configuration</b></summary>
+<br/>
 
 ### Basic SSL Configuration
 
@@ -233,9 +247,13 @@ limit_req_zone $binary_remote_addr zone=ssl_limit:10m rate=10r/s;
 limit_req zone=ssl_limit burst=20 nodelay;
 ```
 
-<br/>
+</details>
 
-## Docker Compose SSL Setup
+
+
+<details>
+<summary><b>Docker Compose SSL Setup</b></summary>
+<br/>
 
 ### Production Docker Compose with SSL
 
@@ -340,9 +358,13 @@ DOMAIN=pitmind.example.com
 EMAIL=admin@example.com
 ```
 
-<br/>
+</details>
 
-## Load Balancer SSL Termination
+
+
+<details>
+<summary><b>Load Balancer SSL Termination</b></summary>
+<br/>
 
 ### AWS Application Load Balancer
 
@@ -416,9 +438,13 @@ server {
 }
 ```
 
-<br/>
+</details>
 
-## Security Best Practices
+
+
+<details>
+<summary><b>Security Best Practices</b></summary>
+<br/>
 
 ### 1. Certificate Security
 
@@ -479,9 +505,13 @@ curl -I https://pitmind.example.com
 # https://www.ssllabs.com/ssltest/
 ```
 
-<br/>
+</details>
 
-## Troubleshooting
+
+
+<details>
+<summary><b>Troubleshooting</b></summary>
+<br/>
 
 ### Common Issues
 
@@ -566,18 +596,26 @@ ssl_stapling_verify on;
 ssl_buffer_size 4k;
 ```
 
-<br/>
+</details>
 
-## Additional Resources
+
+
+<details>
+<summary><b>Additional Resources</b></summary>
+<br/>
 
 - [Mozilla SSL Configuration Generator](https://ssl-config.mozilla.org/)
 - [Let's Encrypt Documentation](https://letsencrypt.org/docs/)
 - [SSL Labs Server Test](https://www.ssllabs.com/ssltest/)
 - [OWASP TLS Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Transport_Layer_Protection_Cheat_Sheet.html)
 
-<br/>
+</details>
 
-## Next Steps
+
+
+<details>
+<summary><b>Next Steps</b></summary>
+<br/>
 
 1. Choose certificate management approach
 2. Configure Nginx with SSL
@@ -587,6 +625,8 @@ ssl_buffer_size 4k;
 6. Document certificate renewal process
 
 For production deployment, see [PRODUCTION_DEPLOYMENT.md](./PRODUCTION_DEPLOYMENT.md).
+
+</details>
 
 ---
 

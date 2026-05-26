@@ -16,9 +16,11 @@
 
 This document provides comprehensive information about testing the pitMind application, including test structure, running tests, writing new tests, and interpreting coverage reports.
 
-<br/>
 
-## Table of Contents
+
+<details>
+<summary><b>Table of Contents</b></summary>
+<br/>
 
 - [Overview](#overview)
 - [Test Structure](#test-structure)
@@ -28,9 +30,13 @@ This document provides comprehensive information about testing the pitMind appli
 - [CI/CD Integration](#cicd-integration)
 - [Best Practices](#best-practices)
 
-<br/>
+</details>
 
-## Overview
+
+
+<details>
+<summary><b>Overview</b></summary>
+<br/>
 
 pitMind uses a comprehensive testing strategy to ensure code quality and catch regressions:
 
@@ -47,9 +53,13 @@ pitMind uses a comprehensive testing strategy to ensure code quality and catch r
   - Backend: ~80% (170+ tests)
   - Frontend: To be restored
 
-<br/>
+</details>
 
-## Test Structure
+
+
+<details>
+<summary><b>Test Structure</b></summary>
+<br/>
 
 ### Backend Tests (`backend/tests/`)
 
@@ -80,9 +90,13 @@ frontend/src/
 └── utils/__tests__/              # Utility tests (to be created)
 ```
 
-<br/>
+</details>
 
-## Running Tests
+
+
+<details>
+<summary><b>Running Tests</b></summary>
+<br/>
 
 ### Backend Tests
 
@@ -161,9 +175,13 @@ npm run test:watch
 npm test -- StrategyTimeline.test.tsx
 ```
 
-<br/>
+</details>
 
-## Writing Tests
+
+
+<details>
+<summary><b>Writing Tests</b></summary>
+<br/>
 
 ### Backend Test Example
 
@@ -244,9 +262,13 @@ describe('StrategyTimeline', () => {
 });
 ```
 
-<br/>
+</details>
 
-## Coverage Reports
+
+
+<details>
+<summary><b>Coverage Reports</b></summary>
+<br/>
 
 ### Generating Coverage Reports
 
@@ -295,9 +317,13 @@ exclude_lines =
     if __name__ == .__main__.:
 ```
 
-<br/>
+</details>
 
-## CI/CD Integration
+
+
+<details>
+<summary><b>CI/CD Integration</b></summary>
+<br/>
 
 ### GitHub Actions
 
@@ -321,9 +347,13 @@ pre-commit install
 pre-commit run --all-files
 ```
 
-<br/>
+</details>
 
-## Best Practices
+
+
+<details>
+<summary><b>Best Practices</b></summary>
+<br/>
 
 ### General Guidelines
 
@@ -436,9 +466,13 @@ async def test_complete_flow(client, mock_redis, mock_db):
     assert "recommendation" in response.json()
 ```
 
-<br/>
+</details>
 
-## Troubleshooting
+
+
+<details>
+<summary><b>Troubleshooting</b></summary>
+<br/>
 
 ### Common Issues
 
@@ -488,9 +522,13 @@ pytest tests/ --pdb
 pytest tests/ -l
 ```
 
-<br/>
+</details>
 
-## Test Metrics
+
+
+<details>
+<summary><b>Test Metrics</b></summary>
+<br/>
 
 ### Current Coverage (Backend)
 
@@ -509,9 +547,13 @@ pytest tests/ -l
 - **Integration Tests**: <30 seconds
 - **All Tests**: <1 minute
 
-<br/>
+</details>
 
-## Resources
+
+
+<details>
+<summary><b>Resources</b></summary>
+<br/>
 
 - [pytest Documentation](https://docs.pytest.org/)
 - [pytest-asyncio](https://pytest-asyncio.readthedocs.io/)
@@ -519,9 +561,13 @@ pytest tests/ -l
 - [React Testing Library](https://testing-library.com/react)
 - [Coverage.py](https://coverage.readthedocs.io/)
 
-<br/>
+</details>
 
-## Contributing
+
+
+<details>
+<summary><b>Contributing</b></summary>
+<br/>
 
 When adding new features:
 
@@ -543,6 +589,8 @@ pytest tests/ -m "not slow"  # Quick smoke test
 **Maintained By**: pitMind Development Team
 
 # Made with Bob
+
+</details>
 
 ---
 

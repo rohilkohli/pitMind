@@ -14,13 +14,19 @@
 
 ---
 
-## Overview
+<details>
+<summary><b>Overview</b></summary>
+<br/>
 
 The pitMind project uses GitHub Actions for continuous integration and continuous deployment. This document describes the complete CI/CD pipeline architecture, workflows, and best practices.
 
-<br/>
+</details>
 
-## Table of Contents
+
+
+<details>
+<summary><b>Table of Contents</b></summary>
+<br/>
 
 - [Pipeline Architecture](#pipeline-architecture)
 - [Workflows](#workflows)
@@ -29,9 +35,13 @@ The pitMind project uses GitHub Actions for continuous integration and continuou
 - [Troubleshooting](#troubleshooting)
 - [Best Practices](#best-practices)
 
-<br/>
+</details>
 
-## Pipeline Architecture
+
+
+<details>
+<summary><b>Pipeline Architecture</b></summary>
+<br/>
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
@@ -79,9 +89,13 @@ The pitMind project uses GitHub Actions for continuous integration and continuou
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-<br/>
+</details>
 
-## Workflows
+
+
+<details>
+<summary><b>Workflows</b></summary>
+<br/>
 
 ### 1. CI Pipeline (`ci.yml`)
 
@@ -241,9 +255,13 @@ gh release create v1.0.0 --generate-notes
 - Auto-assigns to maintainers
 - Labels PRs appropriately
 
-<br/>
+</details>
 
-## Setup Instructions
+
+
+<details>
+<summary><b>Setup Instructions</b></summary>
+<br/>
 
 ### Prerequisites
 
@@ -308,9 +326,13 @@ gh release create v1.0.0 --generate-notes
    docker pull ghcr.io/USERNAME/pitmind/frontend:latest
    ```
 
-<br/>
+</details>
 
-## Deployment Process
+
+
+<details>
+<summary><b>Deployment Process</b></summary>
+<br/>
 
 ### Staging Deployment
 
@@ -371,9 +393,13 @@ For urgent fixes:
 
 5. Release workflow deploys to production
 
-<br/>
+</details>
 
-## Troubleshooting
+
+
+<details>
+<summary><b>Troubleshooting</b></summary>
+<br/>
 
 ### Common Issues
 
@@ -472,9 +498,13 @@ Enable debug logging:
 2. Add `ACTIONS_STEP_DEBUG` = `true`
 3. Re-run workflow
 
-<br/>
+</details>
 
-## Best Practices
+
+
+<details>
+<summary><b>Best Practices</b></summary>
+<br/>
 
 ### 1. Commit Messages
 
@@ -526,9 +556,13 @@ ci: update CI/CD
 - Monitor deployment health
 - Set up notifications
 
-<br/>
+</details>
 
-## Workflow Status
+
+
+<details>
+<summary><b>Workflow Status</b></summary>
+<br/>
 
 Check the status of all workflows:
 
@@ -543,18 +577,26 @@ gh run view RUN_ID
 gh run rerun RUN_ID
 ```
 
-<br/>
+</details>
 
-## Additional Resources
+
+
+<details>
+<summary><b>Additional Resources</b></summary>
+<br/>
 
 - [GitHub Actions Documentation](https://docs.github.com/en/actions)
 - [Docker Documentation](https://docs.docker.com/)
 - [Dependabot Documentation](https://docs.github.com/en/code-security/dependabot)
 - [CodeQL Documentation](https://codeql.github.com/docs/)
 
-<br/>
+</details>
 
-## Support
+
+
+<details>
+<summary><b>Support</b></summary>
+<br/>
 
 For issues or questions:
 - Create an issue in the repository
@@ -565,6 +607,8 @@ For issues or questions:
 
 **Last Updated:** 2026-05-20
 **Maintained By:** pitMind Development Team
+
+</details>
 
 ---
 

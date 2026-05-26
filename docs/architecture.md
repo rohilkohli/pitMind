@@ -18,9 +18,11 @@ PitMind is a full-stack AI race strategy platform built for Formula 1-style envi
 
 ---
 
-<br/>
 
-## High-Level Architecture
+
+<details>
+<summary><b>High-Level Architecture</b></summary>
+<br/>
 
 ```mermaid
 flowchart LR
@@ -55,9 +57,13 @@ flowchart LR
 
 ---
 
-<br/>
+</details>
 
-## Component Breakdown
+
+
+<details>
+<summary><b>Component Breakdown</b></summary>
+<br/>
 
 ### Frontend (`frontend/`)
 
@@ -102,9 +108,13 @@ flowchart LR
 
 ---
 
-<br/>
+</details>
 
-## IBM AI Pipeline (detailed)
+
+
+<details>
+<summary><b>IBM AI Pipeline (detailed)</b></summary>
+<br/>
 
 ```
 Telemetry JSON ──┐
@@ -140,9 +150,13 @@ PDF Upload ──► Docling Parser ──────────────�
 
 ---
 
-<br/>
+</details>
 
-## Data Flow — Strategy Recommendation
+
+
+<details>
+<summary><b>Data Flow — Strategy Recommendation</b></summary>
+<br/>
 
 ```
 1. Frontend POSTs TelemetryPayload to /api/v1/strategy/recommend
@@ -159,9 +173,13 @@ PDF Upload ──► Docling Parser ──────────────�
 6. UI renders: Strategy Oracle card, Confidence chart, Evidence drill-down
 ```
 
-<br/>
+</details>
 
-## Data Flow — Post-Race Debrief (Docling)
+
+
+<details>
+<summary><b>Data Flow — Post-Race Debrief (Docling)</b></summary>
+<br/>
 
 ```
 1. User uploads PDF to /api/v1/debrief/upload
@@ -178,9 +196,13 @@ PDF Upload ──► Docling Parser ──────────────�
 
 ---
 
-<br/>
+</details>
 
-## WebSocket Telemetry Streaming
+
+
+<details>
+<summary><b>WebSocket Telemetry Streaming</b></summary>
+<br/>
 
 ```
 Browser ──WS──► /api/v1/stream/telemetry?session_id=current_race
@@ -197,9 +219,13 @@ Browser ──WS──► /api/v1/stream/telemetry?session_id=current_race
 
 ---
 
-<br/>
+</details>
 
-## Infrastructure
+
+
+<details>
+<summary><b>Infrastructure</b></summary>
+<br/>
 
 | Service | Port | Purpose |
 |---|---|---|
@@ -208,6 +234,8 @@ Browser ──WS──► /api/v1/stream/telemetry?session_id=current_race
 | Redis | 6379 | Strategy response cache (TTL-based) |
 | PostgreSQL | 5432 | Audit log, strategy commits |
 | Firebase | Cloud | Auth + Realtime DB for live race state |
+
+</details>
 
 ---
 

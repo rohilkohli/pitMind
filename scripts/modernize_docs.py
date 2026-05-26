@@ -3,6 +3,32 @@ import re
 
 DOCS_DIR = r"e:\pitMind\docs"
 
+def make_interactive(content):
+    # Split the content by H2 headers "## "
+    parts = re.split(r'^(##\s+.+)$', content, flags=re.MULTILINE)
+    
+    if len(parts) <= 1:
+        return content # No H2 headers found
+        
+    new_content = parts[0] # Intro text before first H2
+    
+    for i in range(1, len(parts), 2):
+        header_text = parts[i].replace('## ', '').strip()
+        section_content = parts[i+1].strip()
+        
+        new_content += f"""
+
+<details>
+<summary><b>{header_text}</b></summary>
+<br/>
+
+{section_content}
+
+</details>
+
+"""
+    return new_content
+
 def apply_modern_styling(filepath):
     with open(filepath, 'r', encoding='utf-8') as f:
         content = f.read()
@@ -11,8 +37,11 @@ def apply_modern_styling(filepath):
     title_match = re.search(r'^#\s+(.+)$', content, re.MULTILINE)
     title = title_match.group(1) if title_match else os.path.basename(filepath).replace('.md', '').replace('_', ' ').title()
     
-    # Remove the original H1 so we can replace it with a modern header
+    # Remove the original H1
     content = re.sub(r'^#\s+(.+)$\n+', '', content, count=1, flags=re.MULTILINE)
+
+    # Make interactive
+    interactive_content = make_interactive(content)
 
     header = f"""<div align="center">
 
@@ -31,14 +60,6 @@ def apply_modern_styling(filepath):
 ---
 
 """
-
-    # Add back to top links before H2s
-    content = re.sub(r'\n(##\s+.+)', r'\n<br/>\n\n\1', content)
-
-    # Wrap code blocks in details if they are very long (basic heuristic)
-    # Actually, people like seeing code blocks directly. We will leave code blocks alone.
-    
-    # We will replace standard bullet points with slightly nicer formatting or just let markdown do its job.
     
     footer = """
 
@@ -50,11 +71,11 @@ def apply_modern_styling(filepath):
 </div>
 """
 
-    modern_content = header + content.strip() + footer
+    modern_content = header + interactive_content.strip() + footer
 
     with open(filepath, 'w', encoding='utf-8') as f:
         f.write(modern_content)
-    print(f"Modernized: {filepath}")
+    print(f"Modernized & Interactive: {filepath}")
 
 for filename in os.listdir(DOCS_DIR):
     if filename.endswith(".md"):

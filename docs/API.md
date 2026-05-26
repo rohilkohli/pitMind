@@ -14,7 +14,9 @@
 
 ---
 
-## PitMind API Documentation
+<details>
+<summary><b>PitMind API Documentation</b></summary>
+<br/>
 
 ### Base URL
 - Development: `http://localhost:8001`
@@ -266,6 +268,8 @@ Authorization: Bearer <firebase-id-token>
 ```
 
 For WebSocket connections, token can be included in query params or headers.
+
+</details>
 
 ---
 

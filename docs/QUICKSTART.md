@@ -16,18 +16,24 @@
 
 Get PitMind running locally in 5 minutes.
 
-<br/>
 
-## Prerequisites
+
+<details>
+<summary><b>Prerequisites</b></summary>
+<br/>
 
 - Docker & Docker Compose (recommended) **OR**
 - Python 3.12 + Node.js 20
 - Watsonx API key from IBM Cloud
 - Firebase project credentials
 
-<br/>
+</details>
 
-## 1. Clone & Configure
+
+
+<details>
+<summary><b>1. Clone & Configure</b></summary>
+<br/>
 
 ```bash
 git clone https://github.com/your-org/pitmind.git
@@ -35,9 +41,13 @@ cd pitmind
 cp .env.example .env
 ```
 
-<br/>
+</details>
 
-## 2. Fill in `.env`
+
+
+<details>
+<summary><b>2. Fill in `.env`</b></summary>
+<br/>
 
 Get credentials from:
 - **Watsonx**: IBM Cloud Console → watsonx.ai → Create project → Copy API key, project ID, URL
@@ -54,9 +64,13 @@ VITE_FIREBASE_API_KEY=your_firebase_key
 VITE_FIREBASE_DATABASE_URL=https://your-project.firebaseio.com
 ```
 
-<br/>
+</details>
 
-## 3a. Run with Docker (Recommended)
+
+
+<details>
+<summary><b>3a. Run with Docker (Recommended)</b></summary>
+<br/>
 
 ```bash
 docker compose up --build
@@ -70,9 +84,13 @@ pitmind-api-1  | Uvicorn running on http://0.0.0.0:8000
 
 Open **http://localhost:8080** in your browser.
 
-<br/>
+</details>
 
-## 3b. Run Locally (Python + Node)
+
+
+<details>
+<summary><b>3b. Run Locally (Python + Node)</b></summary>
+<br/>
 
 Backend:
 ```bash
@@ -92,9 +110,13 @@ npm run dev -- --host 127.0.0.1 --port 5173
 
 Open **http://localhost:5173** in your browser.
 
-<br/>
+</details>
 
-## First Steps
+
+
+<details>
+<summary><b>First Steps</b></summary>
+<br/>
 
 1. **Check API Health** (Backend only):
    ```bash
@@ -113,9 +135,13 @@ Open **http://localhost:5173** in your browser.
 4. **View Health Metrics**:
    - Dashboard → Health Console widget shows 8 system metrics
 
-<br/>
+</details>
 
-## File Structure
+
+
+<details>
+<summary><b>File Structure</b></summary>
+<br/>
 
 **Key Files:**
 - `backend/main.py` — FastAPI app, endpoints, WebSocket setup
@@ -131,9 +157,13 @@ Open **http://localhost:5173** in your browser.
 - `EventTimeline.tsx` — Race control events (Phase 1)
 - `ConfidenceDecompositionCard.tsx` — AI confidence breakdown (Phase 1)
 
-<br/>
+</details>
 
-## Common Tasks
+
+
+<details>
+<summary><b>Common Tasks</b></summary>
+<br/>
 
 ### Watch Frontend Rebuild
 ```bash
@@ -164,9 +194,13 @@ docker compose down -v  # Remove volumes
 docker compose up --build
 ```
 
-<br/>
+</details>
 
-## Troubleshooting
+
+
+<details>
+<summary><b>Troubleshooting</b></summary>
+<br/>
 
 **Can't connect to WebSocket?**
 - Backend not running: Check `curl http://localhost:8001/health` returns 200
@@ -186,9 +220,13 @@ docker compose up --build
 - Clear cache: `cd frontend && rm -rf dist node_modules && npm install && npm run build`
 - Check Node version: `node --version` (should be 20+)
 
-<br/>
+</details>
 
-## Next Steps
+
+
+<details>
+<summary><b>Next Steps</b></summary>
+<br/>
 
 1. **Explore the Code**
    - Start in `frontend/src/pages/Dashboard.tsx`
@@ -211,14 +249,20 @@ docker compose up --build
    - Kubernetes: See [docs/DEPLOYMENT.md](../docs/DEPLOYMENT.md)
    - CI/CD: GitHub Actions, GitLab CI, or Jenkins
 
-<br/>
+</details>
 
-## Support
+
+
+<details>
+<summary><b>Support</b></summary>
+<br/>
 
 - **Watsonx issues**: Check IBM Cloud documentation
 - **Firebase issues**: Check Firebase Console → Realtime Database → Rules
 - **Code questions**: Review inline comments in source files
 - **Architecture questions**: See [docs/architecture.md](../docs/architecture.md)
+
+</details>
 
 ---
 

@@ -16,9 +16,11 @@
 
 Comprehensive troubleshooting guide for pitMind deployment and operation issues.
 
-<br/>
 
-## Table of Contents
+
+<details>
+<summary><b>Table of Contents</b></summary>
+<br/>
 
 - [Common Issues](#common-issues)
 - [Debugging Guide](#debugging-guide)
@@ -26,9 +28,13 @@ Comprehensive troubleshooting guide for pitMind deployment and operation issues.
 - [Error Message Reference](#error-message-reference)
 - [Support Escalation](#support-escalation)
 
-<br/>
+</details>
 
-## Common Issues
+
+
+<details>
+<summary><b>Common Issues</b></summary>
+<br/>
 
 ### 1. Application Won't Start
 
@@ -430,9 +436,13 @@ const API_URL = window.location.protocol === 'https:'
   : 'http://localhost:8000';
 ```
 
-<br/>
+</details>
 
-## Debugging Guide
+
+
+<details>
+<summary><b>Debugging Guide</b></summary>
+<br/>
 
 ### Enable Debug Logging
 
@@ -493,9 +503,13 @@ SELECT pg_terminate_backend(pid);
 SELECT * FROM pg_locks WHERE NOT granted;
 ```
 
-<br/>
+</details>
 
-## Performance Troubleshooting
+
+
+<details>
+<summary><b>Performance Troubleshooting</b></summary>
+<br/>
 
 ### Identify Bottlenecks
 
@@ -542,9 +556,13 @@ FROM pg_stat_user_indexes
 WHERE idx_scan = 0;
 ```
 
-<br/>
+</details>
 
-## Error Message Reference
+
+
+<details>
+<summary><b>Error Message Reference</b></summary>
+<br/>
 
 ### Backend Errors
 
@@ -574,9 +592,13 @@ WHERE idx_scan = 0;
 | 503 | Service Unavailable | Database or cache down |
 | 504 | Gateway Timeout | Request timeout |
 
-<br/>
+</details>
 
-## Support Escalation
+
+
+<details>
+<summary><b>Support Escalation</b></summary>
+<br/>
 
 ### Level 1: Self-Service
 
@@ -665,23 +687,33 @@ netstat -tulpn | grep -E "8000|5432|6379"
 docker-compose logs backend | grep -i error | tail -50
 ```
 
-<br/>
+</details>
 
-## Additional Resources
+
+
+<details>
+<summary><b>Additional Resources</b></summary>
+<br/>
 
 - [Production Deployment Guide](./PRODUCTION_DEPLOYMENT.md)
 - [HTTPS/TLS Configuration](./HTTPS_TLS.md)
 - [Testing Guide](./TESTING.md)
 - [API Documentation](./API.md)
 
-<br/>
+</details>
 
-## Getting Help
+
+
+<details>
+<summary><b>Getting Help</b></summary>
+<br/>
 
 - **Documentation**: Check all docs in `/docs` directory
 - **GitHub Issues**: https://github.com/your-org/pitmind/issues
 - **Community**: Join our Discord/Slack
 - **Email**: support@example.com
+
+</details>
 
 ---
 

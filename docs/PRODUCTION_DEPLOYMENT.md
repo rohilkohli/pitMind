@@ -16,9 +16,11 @@
 
 Complete guide for deploying pitMind to production environments.
 
-<br/>
 
-## Table of Contents
+
+<details>
+<summary><b>Table of Contents</b></summary>
+<br/>
 
 - [Overview](#overview)
 - [Infrastructure Requirements](#infrastructure-requirements)
@@ -32,9 +34,13 @@ Complete guide for deploying pitMind to production environments.
 - [Security Hardening](#security-hardening)
 - [Post-Deployment Verification](#post-deployment-verification)
 
-<br/>
+</details>
 
-## Overview
+
+
+<details>
+<summary><b>Overview</b></summary>
+<br/>
 
 This guide covers production deployment of pitMind with high availability, security, and performance considerations.
 
@@ -67,9 +73,13 @@ This guide covers production deployment of pitMind with high availability, secur
 └────────────────┘         └────────────────┘
 ```
 
-<br/>
+</details>
 
-## Infrastructure Requirements
+
+
+<details>
+<summary><b>Infrastructure Requirements</b></summary>
+<br/>
 
 ### Minimum Requirements
 
@@ -117,9 +127,13 @@ This guide covers production deployment of pitMind with high availability, secur
 
 **CDN**: CloudFlare, AWS CloudFront, or similar
 
-<br/>
+</details>
 
-## Pre-Deployment Checklist
+
+
+<details>
+<summary><b>Pre-Deployment Checklist</b></summary>
+<br/>
 
 ### Security
 
@@ -159,9 +173,13 @@ This guide covers production deployment of pitMind with high availability, secur
 - [ ] Incident response plan defined
 - [ ] On-call rotation established
 
-<br/>
+</details>
 
-## Deployment Methods
+
+
+<details>
+<summary><b>Deployment Methods</b></summary>
+<br/>
 
 ### Method 1: Docker Compose (Small to Medium Scale)
 
@@ -408,9 +426,13 @@ eb status
 eb health
 ```
 
-<br/>
+</details>
 
-## Environment Configuration
+
+
+<details>
+<summary><b>Environment Configuration</b></summary>
+<br/>
 
 ### Production Environment Variables
 
@@ -469,9 +491,13 @@ LOG_FORMAT=json
 LOG_FILE=/var/log/pitmind/app.log
 ```
 
-<br/>
+</details>
 
-## Database Setup
+
+
+<details>
+<summary><b>Database Setup</b></summary>
+<br/>
 
 ### Initial Setup
 
@@ -514,9 +540,13 @@ ALTER SYSTEM SET effective_io_concurrency = 200;
 SELECT pg_reload_conf();
 ```
 
-<br/>
+</details>
 
-## Monitoring and Alerting
+
+
+<details>
+<summary><b>Monitoring and Alerting</b></summary>
+<br/>
 
 ### Health Check Endpoints
 
@@ -589,9 +619,13 @@ groups:
           summary: "High memory usage"
 ```
 
-<br/>
+</details>
 
-## Backup and Disaster Recovery
+
+
+<details>
+<summary><b>Backup and Disaster Recovery</b></summary>
+<br/>
 
 ### Database Backups
 
@@ -656,9 +690,13 @@ curl https://pitmind.example.com/health
 docker-compose exec backend python -m scripts.verify_data
 ```
 
-<br/>
+</details>
 
-## Scaling Strategies
+
+
+<details>
+<summary><b>Scaling Strategies</b></summary>
+<br/>
 
 ### Horizontal Scaling
 
@@ -722,9 +760,13 @@ spec:
         averageUtilization: 80
 ```
 
-<br/>
+</details>
 
-## Security Hardening
+
+
+<details>
+<summary><b>Security Hardening</b></summary>
+<br/>
 
 ### 1. Network Security
 
@@ -773,9 +815,13 @@ aws secretsmanager get-secret-value \
   --output text
 ```
 
-<br/>
+</details>
 
-## Post-Deployment Verification
+
+
+<details>
+<summary><b>Post-Deployment Verification</b></summary>
+<br/>
 
 ### Verification Checklist
 
@@ -818,9 +864,13 @@ docker-compose exec backend pytest tests/smoke/ -v
 locust -f tests/load/locustfile.py --host=https://pitmind.example.com
 ```
 
-<br/>
+</details>
 
-## Rollback Procedure
+
+
+<details>
+<summary><b>Rollback Procedure</b></summary>
+<br/>
 
 ```bash
 # 1. Identify last stable version
@@ -838,9 +888,13 @@ curl https://pitmind.example.com/health
 gunzip < /backups/pitmind/pitmind_20240520.sql.gz | psql -h localhost -U pitmind_user pitmind
 ```
 
-<br/>
+</details>
 
-## Maintenance Windows
+
+
+<details>
+<summary><b>Maintenance Windows</b></summary>
+<br/>
 
 ### Planned Maintenance
 
@@ -858,23 +912,33 @@ curl https://pitmind.example.com/health
 docker-compose exec backend python -m scripts.set_maintenance_mode --disable
 ```
 
-<br/>
+</details>
 
-## Support and Troubleshooting
+
+
+<details>
+<summary><b>Support and Troubleshooting</b></summary>
+<br/>
 
 For troubleshooting common issues, see [TROUBLESHOOTING.md](./TROUBLESHOOTING.md).
 
 For HTTPS/TLS configuration, see [HTTPS_TLS.md](./HTTPS_TLS.md).
 
-<br/>
+</details>
 
-## Additional Resources
+
+
+<details>
+<summary><b>Additional Resources</b></summary>
+<br/>
 
 - [Docker Documentation](https://docs.docker.com/)
 - [Kubernetes Documentation](https://kubernetes.io/docs/)
 - [PostgreSQL Performance Tuning](https://wiki.postgresql.org/wiki/Performance_Optimization)
 - [Redis Best Practices](https://redis.io/docs/manual/patterns/)
 - [FastAPI Deployment](https://fastapi.tiangolo.com/deployment/)
+
+</details>
 
 ---
 

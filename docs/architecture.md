@@ -1,8 +1,24 @@
-# PitMind — System Architecture
+<div align="center">
+
+# 📖 PitMind — System Architecture
+**PitMind Documentation**
+
+[![PitMind Platform](https://img.shields.io/badge/PitMind-Platform-e10600.svg?style=for-the-badge)](#)
+[![Return to Home](https://img.shields.io/badge/Return_to_Home-15151e.svg?style=for-the-badge)](../README.md)
+
+</div>
+
+<br/>
+
+> **Overview:** This document outlines the core concepts, configurations, and technical specifications for the **PitMind — System Architecture** module within the PitMind AI ecosystem.
+
+---
 
 PitMind is a full-stack AI race strategy platform built for Formula 1-style environments. This document describes every layer of the system and how they connect.
 
 ---
+
+<br/>
 
 ## High-Level Architecture
 
@@ -38,6 +54,8 @@ flowchart LR
 ```
 
 ---
+
+<br/>
 
 ## Component Breakdown
 
@@ -84,6 +102,8 @@ flowchart LR
 
 ---
 
+<br/>
+
 ## IBM AI Pipeline (detailed)
 
 ```
@@ -120,6 +140,8 @@ PDF Upload ──► Docling Parser ──────────────�
 
 ---
 
+<br/>
+
 ## Data Flow — Strategy Recommendation
 
 ```
@@ -136,6 +158,8 @@ PDF Upload ──► Docling Parser ──────────────�
 5. Returns StrategyRecommendation JSON to UI
 6. UI renders: Strategy Oracle card, Confidence chart, Evidence drill-down
 ```
+
+<br/>
 
 ## Data Flow — Post-Race Debrief (Docling)
 
@@ -154,6 +178,8 @@ PDF Upload ──► Docling Parser ──────────────�
 
 ---
 
+<br/>
+
 ## WebSocket Telemetry Streaming
 
 ```
@@ -171,6 +197,8 @@ Browser ──WS──► /api/v1/stream/telemetry?session_id=current_race
 
 ---
 
+<br/>
+
 ## Infrastructure
 
 | Service | Port | Purpose |
@@ -180,3 +208,10 @@ Browser ──WS──► /api/v1/stream/telemetry?session_id=current_race
 | Redis | 6379 | Strategy response cache (TTL-based) |
 | PostgreSQL | 5432 | Audit log, strategy commits |
 | Firebase | Cloud | Auth + Realtime DB for live race state |
+
+---
+
+<div align="center">
+  <p>Built for the speed of Formula 1. Engineered for absolute transparency.</p>
+  <p><a href="../README.md">🏠 Back to Main README</a></p>
+</div>

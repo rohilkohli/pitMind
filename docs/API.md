@@ -1,3 +1,19 @@
+<div align="center">
+
+# 📖 Api
+**PitMind Documentation**
+
+[![PitMind Platform](https://img.shields.io/badge/PitMind-Platform-e10600.svg?style=for-the-badge)](#)
+[![Return to Home](https://img.shields.io/badge/Return_to_Home-15151e.svg?style=for-the-badge)](../README.md)
+
+</div>
+
+<br/>
+
+> **Overview:** This document outlines the core concepts, configurations, and technical specifications for the **Api** module within the PitMind AI ecosystem.
+
+---
+
 ## PitMind API Documentation
 
 ### Base URL
@@ -250,3 +266,10 @@ Authorization: Bearer <firebase-id-token>
 ```
 
 For WebSocket connections, token can be included in query params or headers.
+
+---
+
+<div align="center">
+  <p>Built for the speed of Formula 1. Engineered for absolute transparency.</p>
+  <p><a href="../README.md">🏠 Back to Main README</a></p>
+</div>

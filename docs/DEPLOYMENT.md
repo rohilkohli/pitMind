@@ -1,4 +1,18 @@
-# PitMind Deployment Guide
+<div align="center">
+
+# 📖 PitMind Deployment Guide
+**PitMind Documentation**
+
+[![PitMind Platform](https://img.shields.io/badge/PitMind-Platform-e10600.svg?style=for-the-badge)](#)
+[![Return to Home](https://img.shields.io/badge/Return_to_Home-15151e.svg?style=for-the-badge)](../README.md)
+
+</div>
+
+<br/>
+
+> **Overview:** This document outlines the core concepts, configurations, and technical specifications for the **PitMind Deployment Guide** module within the PitMind AI ecosystem.
+
+---
 
 ## Quick Start with Docker
 
@@ -58,6 +72,8 @@ BACKEND_CORS_ORIGINS=http://localhost:5173,http://localhost:8080,http://0.0.0.0:
 # Rate Limiting
 RATE_LIMIT_PER_MINUTE=60
 ```
+
+<br/>
 
 ## Production Deployment
 
@@ -182,6 +198,8 @@ kubectl apply -f kubernetes.yaml
 kubectl get services -n pitmind
 ```
 
+<br/>
+
 ## Performance Optimization
 
 ### Frontend (Vite)
@@ -218,6 +236,8 @@ Optimizations in place:
 - Redis cache for health metrics (optional)
 - In-memory cache for AI model responses
 
+<br/>
+
 ## Monitoring & Logging
 
 ### Health Checks
@@ -252,6 +272,8 @@ Implement monitoring for:
 - Database connection pool
 - Memory and CPU usage
 
+<br/>
+
 ## Troubleshooting
 
 ### WebSocket Connection Fails
@@ -275,6 +297,8 @@ Check:
 2. Project and space IDs correct
 3. Network access to watsonx URL
 
+<br/>
+
 ## Database Migrations
 
 For future database changes:
@@ -285,12 +309,16 @@ alembic revision --autogenerate -m "migration_description"
 alembic upgrade head
 ```
 
+<br/>
+
 ## Backup Strategy
 
 For production:
 1. **Firebase**: Google handles backups automatically
 2. **Application Code**: Git repository with tags for releases
 3. **Configuration**: Keep .env files in secure vault (HashiCorp Vault, AWS Secrets Manager)
+
+<br/>
 
 ## Zero-Downtime Deployment
 
@@ -311,3 +339,10 @@ docker-compose up -d --scale api=2 --scale web=2
 docker-compose down
 docker-compose up -d
 ```
+
+---
+
+<div align="center">
+  <p>Built for the speed of Formula 1. Engineered for absolute transparency.</p>
+  <p><a href="../README.md">🏠 Back to Main README</a></p>
+</div>

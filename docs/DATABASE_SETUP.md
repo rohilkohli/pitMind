@@ -1,6 +1,22 @@
-# Database Setup and Migration Guide
+<div align="center">
+
+# 📖 Database Setup and Migration Guide
+**PitMind Documentation**
+
+[![PitMind Platform](https://img.shields.io/badge/PitMind-Platform-e10600.svg?style=for-the-badge)](#)
+[![Return to Home](https://img.shields.io/badge/Return_to_Home-15151e.svg?style=for-the-badge)](../README.md)
+
+</div>
+
+<br/>
+
+> **Overview:** This document outlines the core concepts, configurations, and technical specifications for the **Database Setup and Migration Guide** module within the PitMind AI ecosystem.
+
+---
 
 This guide covers setting up Redis and PostgreSQL for the pitMind project, including running migrations and troubleshooting.
+
+<br/>
 
 ## Overview
 
@@ -10,6 +26,8 @@ The pitMind project uses:
 - **Alembic** for database migrations
 
 Both services support **graceful degradation** - the application will continue to function with reduced capabilities if either service is unavailable.
+
+<br/>
 
 ## Quick Start with Docker Compose
 
@@ -25,6 +43,8 @@ docker-compose ps
 # View logs
 docker-compose logs -f api
 ```
+
+<br/>
 
 ## Local Development Setup
 
@@ -123,6 +143,8 @@ alembic upgrade head
 # psql -U pitmind -d pitmind -c "\dt"
 ```
 
+<br/>
+
 ## Database Migrations
 
 ### Creating a New Migration
@@ -164,6 +186,8 @@ alembic downgrade <revision_id>
 # Downgrade to base (drop all tables)
 alembic downgrade base
 ```
+
+<br/>
 
 ## Verifying the Setup
 
@@ -216,6 +240,8 @@ Expected response:
 }
 ```
 
+<br/>
+
 ## Graceful Degradation
 
 The application is designed to continue functioning even if Redis or PostgreSQL are unavailable:
@@ -235,6 +261,8 @@ The application is designed to continue functioning even if Redis or PostgreSQL 
 - Application runs with in-memory storage only
 - All data lost on restart
 - Suitable for development/testing
+
+<br/>
 
 ## Troubleshooting
 
@@ -308,6 +336,8 @@ alembic upgrade head
 - Run migrations: `alembic upgrade head`
 - Check migration status: `alembic current`
 
+<br/>
+
 ## Production Considerations
 
 ### Security
@@ -366,9 +396,18 @@ Monitor these metrics in production:
 
 Use the `/api/v1/metrics/health` endpoint for real-time monitoring.
 
+<br/>
+
 ## Additional Resources
 
 - [Redis Documentation](https://redis.io/documentation)
 - [PostgreSQL Documentation](https://www.postgresql.org/docs/)
 - [Alembic Documentation](https://alembic.sqlalchemy.org/)
 - [SQLAlchemy Async Documentation](https://docs.sqlalchemy.org/en/20/orm/extensions/asyncio.html)
+
+---
+
+<div align="center">
+  <p>Built for the speed of Formula 1. Engineered for absolute transparency.</p>
+  <p><a href="../README.md">🏠 Back to Main README</a></p>
+</div>

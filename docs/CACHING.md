@@ -1,8 +1,24 @@
-# PitMind Caching Architecture
+<div align="center">
+
+# 📖 PitMind Caching Architecture
+**PitMind Documentation**
+
+[![PitMind Platform](https://img.shields.io/badge/PitMind-Platform-e10600.svg?style=for-the-badge)](#)
+[![Return to Home](https://img.shields.io/badge/Return_to_Home-15151e.svg?style=for-the-badge)](../README.md)
+
+</div>
+
+<br/>
+
+> **Overview:** This document outlines the core concepts, configurations, and technical specifications for the **PitMind Caching Architecture** module within the PitMind AI ecosystem.
+
+---
 
 ## Overview
 
 PitMind implements a comprehensive Redis-backed caching layer to optimize AI response times, reduce API costs, and improve user experience. The caching system is designed to be transparent, intelligent, and resilient.
+
+<br/>
 
 ## Architecture
 
@@ -23,6 +39,8 @@ PitMind implements a comprehensive Redis-backed caching layer to optimize AI res
    - AI Provider (Granite) - caches AI responses
    - Strategy Engine - caches heuristic scoring
    - Health Endpoints - exposes cache metrics
+
+<br/>
 
 ## Cache Key Strategy
 
@@ -65,6 +83,8 @@ Rounding is applied to ensure minor variations don't break cache hits:
 - Fuel: 1 decimal place
 - Gaps: 2 decimal places
 
+<br/>
+
 ## TTL Configuration
 
 Different cache types have different Time-To-Live (TTL) values:
@@ -90,6 +110,8 @@ CACHE_TTL_SESSION=3600
 CACHE_TTL_HEALTH=60
 CACHE_MAX_SIZE=1000
 ```
+
+<br/>
 
 ## Cache Invalidation
 
@@ -158,6 +180,8 @@ Supported conditions:
 - `race_end`
 - `session_change`
 
+<br/>
+
 ## Cache Warming
 
 Pre-warm cache before race sessions to reduce latency:
@@ -174,6 +198,8 @@ POST /api/v1/strategy/cache/warm
   "session_id": "session_123"
 }
 ```
+
+<br/>
 
 ## Monitoring
 
@@ -242,6 +268,8 @@ Response:
 }
 ```
 
+<br/>
+
 ## Performance Impact
 
 ### Expected Improvements
@@ -259,6 +287,8 @@ With caching enabled:
 | Strategy Recommendation | 2.5s | 0.3s | 88% faster |
 | Heuristic Scoring | 0.5s | 0.05s | 90% faster |
 | AI Explanation | 3.0s | 0.2s | 93% faster |
+
+<br/>
 
 ## Best Practices
 
@@ -303,6 +333,8 @@ if cached is None:
     result = await compute_strategy(payload)
 ```
 
+<br/>
+
 ## Troubleshooting
 
 ### Low Hit Rate
@@ -345,6 +377,8 @@ if cached is None:
 1. Add invalidation for new race conditions
 2. Reduce TTL for frequently changing data
 3. Use manual invalidation when needed
+
+<br/>
 
 ## API Reference
 
@@ -398,6 +432,8 @@ GET /api/v1/strategy/cache/invalidation-log?limit=50
 POST /api/v1/strategy/cache/reset-stats
 ```
 
+<br/>
+
 ## Development
 
 ### Testing Cache Behavior
@@ -436,6 +472,8 @@ docker run -d -p 6379:6379 redis:7-alpine
 docker-compose up redis
 ```
 
+<br/>
+
 ## Future Enhancements
 
 1. **Distributed Caching**: Multi-region Redis clusters
@@ -444,6 +482,15 @@ docker-compose up redis
 4. **Cache Compression**: Reduce memory footprint
 5. **Cache Analytics**: Detailed usage patterns and optimization suggestions
 
+<br/>
+
 ## Made with Bob
 
 For questions or issues, refer to the main [README.md](../README.md) or open an issue on GitHub.
+
+---
+
+<div align="center">
+  <p>Built for the speed of Formula 1. Engineered for absolute transparency.</p>
+  <p><a href="../README.md">🏠 Back to Main README</a></p>
+</div>

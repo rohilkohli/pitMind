@@ -1,6 +1,22 @@
-# Troubleshooting Guide
+<div align="center">
+
+# 📖 Troubleshooting Guide
+**PitMind Documentation**
+
+[![PitMind Platform](https://img.shields.io/badge/PitMind-Platform-e10600.svg?style=for-the-badge)](#)
+[![Return to Home](https://img.shields.io/badge/Return_to_Home-15151e.svg?style=for-the-badge)](../README.md)
+
+</div>
+
+<br/>
+
+> **Overview:** This document outlines the core concepts, configurations, and technical specifications for the **Troubleshooting Guide** module within the PitMind AI ecosystem.
+
+---
 
 Comprehensive troubleshooting guide for pitMind deployment and operation issues.
+
+<br/>
 
 ## Table of Contents
 
@@ -9,6 +25,8 @@ Comprehensive troubleshooting guide for pitMind deployment and operation issues.
 - [Performance Troubleshooting](#performance-troubleshooting)
 - [Error Message Reference](#error-message-reference)
 - [Support Escalation](#support-escalation)
+
+<br/>
 
 ## Common Issues
 
@@ -412,6 +430,8 @@ const API_URL = window.location.protocol === 'https:'
   : 'http://localhost:8000';
 ```
 
+<br/>
+
 ## Debugging Guide
 
 ### Enable Debug Logging
@@ -473,6 +493,8 @@ SELECT pg_terminate_backend(pid);
 SELECT * FROM pg_locks WHERE NOT granted;
 ```
 
+<br/>
+
 ## Performance Troubleshooting
 
 ### Identify Bottlenecks
@@ -520,6 +542,8 @@ FROM pg_stat_user_indexes
 WHERE idx_scan = 0;
 ```
 
+<br/>
+
 ## Error Message Reference
 
 ### Backend Errors
@@ -549,6 +573,8 @@ WHERE idx_scan = 0;
 | 502 | Bad Gateway | Backend unavailable |
 | 503 | Service Unavailable | Database or cache down |
 | 504 | Gateway Timeout | Request timeout |
+
+<br/>
 
 ## Support Escalation
 
@@ -639,6 +665,8 @@ netstat -tulpn | grep -E "8000|5432|6379"
 docker-compose logs backend | grep -i error | tail -50
 ```
 
+<br/>
+
 ## Additional Resources
 
 - [Production Deployment Guide](./PRODUCTION_DEPLOYMENT.md)
@@ -646,9 +674,18 @@ docker-compose logs backend | grep -i error | tail -50
 - [Testing Guide](./TESTING.md)
 - [API Documentation](./API.md)
 
+<br/>
+
 ## Getting Help
 
 - **Documentation**: Check all docs in `/docs` directory
 - **GitHub Issues**: https://github.com/your-org/pitmind/issues
 - **Community**: Join our Discord/Slack
 - **Email**: support@example.com
+
+---
+
+<div align="center">
+  <p>Built for the speed of Formula 1. Engineered for absolute transparency.</p>
+  <p><a href="../README.md">🏠 Back to Main README</a></p>
+</div>

@@ -1,6 +1,22 @@
-# Testing Guide for pitMind
+<div align="center">
+
+# 📖 Testing Guide for pitMind
+**PitMind Documentation**
+
+[![PitMind Platform](https://img.shields.io/badge/PitMind-Platform-e10600.svg?style=for-the-badge)](#)
+[![Return to Home](https://img.shields.io/badge/Return_to_Home-15151e.svg?style=for-the-badge)](../README.md)
+
+</div>
+
+<br/>
+
+> **Overview:** This document outlines the core concepts, configurations, and technical specifications for the **Testing Guide for pitMind** module within the PitMind AI ecosystem.
+
+---
 
 This document provides comprehensive information about testing the pitMind application, including test structure, running tests, writing new tests, and interpreting coverage reports.
+
+<br/>
 
 ## Table of Contents
 
@@ -11,6 +27,8 @@ This document provides comprehensive information about testing the pitMind appli
 - [Coverage Reports](#coverage-reports)
 - [CI/CD Integration](#cicd-integration)
 - [Best Practices](#best-practices)
+
+<br/>
 
 ## Overview
 
@@ -28,6 +46,8 @@ pitMind uses a comprehensive testing strategy to ensure code quality and catch r
 - **Current Status**: 
   - Backend: ~80% (170+ tests)
   - Frontend: To be restored
+
+<br/>
 
 ## Test Structure
 
@@ -59,6 +79,8 @@ frontend/src/
 ├── hooks/__tests__/              # Hook tests (to be created)
 └── utils/__tests__/              # Utility tests (to be created)
 ```
+
+<br/>
 
 ## Running Tests
 
@@ -138,6 +160,8 @@ npm run test:watch
 # Run specific test file
 npm test -- StrategyTimeline.test.tsx
 ```
+
+<br/>
 
 ## Writing Tests
 
@@ -220,6 +244,8 @@ describe('StrategyTimeline', () => {
 });
 ```
 
+<br/>
+
 ## Coverage Reports
 
 ### Generating Coverage Reports
@@ -269,6 +295,8 @@ exclude_lines =
     if __name__ == .__main__.:
 ```
 
+<br/>
+
 ## CI/CD Integration
 
 ### GitHub Actions
@@ -292,6 +320,8 @@ pre-commit install
 # Run manually
 pre-commit run --all-files
 ```
+
+<br/>
 
 ## Best Practices
 
@@ -406,6 +436,8 @@ async def test_complete_flow(client, mock_redis, mock_db):
     assert "recommendation" in response.json()
 ```
 
+<br/>
+
 ## Troubleshooting
 
 ### Common Issues
@@ -456,6 +488,8 @@ pytest tests/ --pdb
 pytest tests/ -l
 ```
 
+<br/>
+
 ## Test Metrics
 
 ### Current Coverage (Backend)
@@ -475,6 +509,8 @@ pytest tests/ -l
 - **Integration Tests**: <30 seconds
 - **All Tests**: <1 minute
 
+<br/>
+
 ## Resources
 
 - [pytest Documentation](https://docs.pytest.org/)
@@ -482,6 +518,8 @@ pytest tests/ -l
 - [Vitest Documentation](https://vitest.dev/)
 - [React Testing Library](https://testing-library.com/react)
 - [Coverage.py](https://coverage.readthedocs.io/)
+
+<br/>
 
 ## Contributing
 
@@ -505,3 +543,10 @@ pytest tests/ -m "not slow"  # Quick smoke test
 **Maintained By**: pitMind Development Team
 
 # Made with Bob
+
+---
+
+<div align="center">
+  <p>Built for the speed of Formula 1. Engineered for absolute transparency.</p>
+  <p><a href="../README.md">🏠 Back to Main README</a></p>
+</div>

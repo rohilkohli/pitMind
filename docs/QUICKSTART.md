@@ -1,6 +1,22 @@
-# Quick Start Guide
+<div align="center">
+
+# 📖 Quick Start Guide
+**PitMind Documentation**
+
+[![PitMind Platform](https://img.shields.io/badge/PitMind-Platform-e10600.svg?style=for-the-badge)](#)
+[![Return to Home](https://img.shields.io/badge/Return_to_Home-15151e.svg?style=for-the-badge)](../README.md)
+
+</div>
+
+<br/>
+
+> **Overview:** This document outlines the core concepts, configurations, and technical specifications for the **Quick Start Guide** module within the PitMind AI ecosystem.
+
+---
 
 Get PitMind running locally in 5 minutes.
+
+<br/>
 
 ## Prerequisites
 
@@ -9,6 +25,8 @@ Get PitMind running locally in 5 minutes.
 - Watsonx API key from IBM Cloud
 - Firebase project credentials
 
+<br/>
+
 ## 1. Clone & Configure
 
 ```bash
@@ -16,6 +34,8 @@ git clone https://github.com/your-org/pitmind.git
 cd pitmind
 cp .env.example .env
 ```
+
+<br/>
 
 ## 2. Fill in `.env`
 
@@ -34,6 +54,8 @@ VITE_FIREBASE_API_KEY=your_firebase_key
 VITE_FIREBASE_DATABASE_URL=https://your-project.firebaseio.com
 ```
 
+<br/>
+
 ## 3a. Run with Docker (Recommended)
 
 ```bash
@@ -47,6 +69,8 @@ pitmind-api-1  | Uvicorn running on http://0.0.0.0:8000
 ```
 
 Open **http://localhost:8080** in your browser.
+
+<br/>
 
 ## 3b. Run Locally (Python + Node)
 
@@ -68,6 +92,8 @@ npm run dev -- --host 127.0.0.1 --port 5173
 
 Open **http://localhost:5173** in your browser.
 
+<br/>
+
 ## First Steps
 
 1. **Check API Health** (Backend only):
@@ -87,6 +113,8 @@ Open **http://localhost:5173** in your browser.
 4. **View Health Metrics**:
    - Dashboard → Health Console widget shows 8 system metrics
 
+<br/>
+
 ## File Structure
 
 **Key Files:**
@@ -102,6 +130,8 @@ Open **http://localhost:5173** in your browser.
 - `BranchingSimulator.tsx` — Pit scenario planning (Phase 2)
 - `EventTimeline.tsx` — Race control events (Phase 1)
 - `ConfidenceDecompositionCard.tsx` — AI confidence breakdown (Phase 1)
+
+<br/>
 
 ## Common Tasks
 
@@ -134,6 +164,8 @@ docker compose down -v  # Remove volumes
 docker compose up --build
 ```
 
+<br/>
+
 ## Troubleshooting
 
 **Can't connect to WebSocket?**
@@ -153,6 +185,8 @@ docker compose up --build
 **Build fails with TypeScript errors?**
 - Clear cache: `cd frontend && rm -rf dist node_modules && npm install && npm run build`
 - Check Node version: `node --version` (should be 20+)
+
+<br/>
 
 ## Next Steps
 
@@ -177,9 +211,18 @@ docker compose up --build
    - Kubernetes: See [docs/DEPLOYMENT.md](../docs/DEPLOYMENT.md)
    - CI/CD: GitHub Actions, GitLab CI, or Jenkins
 
+<br/>
+
 ## Support
 
 - **Watsonx issues**: Check IBM Cloud documentation
 - **Firebase issues**: Check Firebase Console → Realtime Database → Rules
 - **Code questions**: Review inline comments in source files
 - **Architecture questions**: See [docs/architecture.md](../docs/architecture.md)
+
+---
+
+<div align="center">
+  <p>Built for the speed of Formula 1. Engineered for absolute transparency.</p>
+  <p><a href="../README.md">🏠 Back to Main README</a></p>
+</div>

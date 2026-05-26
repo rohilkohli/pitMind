@@ -1,4 +1,18 @@
-# 🏎️ PitMind — Detailed Project Summary
+<div align="center">
+
+# 📖 🏎️ PitMind — Detailed Project Summary
+**PitMind Documentation**
+
+[![PitMind Platform](https://img.shields.io/badge/PitMind-Platform-e10600.svg?style=for-the-badge)](#)
+[![Return to Home](https://img.shields.io/badge/Return_to_Home-15151e.svg?style=for-the-badge)](../README.md)
+
+</div>
+
+<br/>
+
+> **Overview:** This document outlines the core concepts, configurations, and technical specifications for the **🏎️ PitMind — Detailed Project Summary** module within the PitMind AI ecosystem.
+
+---
 
 ## Project Overview
 
@@ -9,6 +23,8 @@
 Race engineers must synthesize hundreds of telemetry signals per lap (tyre degradation, fuel loads, gaps, sector deltas, weather) while the clock is merciless. Traditional tools output opaque scores that burn trust. PitMind provides **quantitative triggers tied to human-readable prose**, allowing engineers to defend every pit-wall decision under pressure.
 
 ---
+
+<br/>
 
 ## Technology Stack
 
@@ -50,6 +66,8 @@ Race engineers must synthesize hundreds of telemetry signals per lap (tyre degra
 
 ---
 
+<br/>
+
 ## Architecture & Data Flow
 
 ```
@@ -85,6 +103,8 @@ Response back to Frontend
 ```
 
 ---
+
+<br/>
 
 ## Key Features & Components
 
@@ -129,6 +149,8 @@ Response back to Frontend
 
 ---
 
+<br/>
+
 ## Design Language (Formula 1 Styling)
 
 ### Color Palette
@@ -162,6 +184,8 @@ Response back to Frontend
 - Data-focused layouts that communicate speed & precision
 
 ---
+
+<br/>
 
 ## AI/ML Integration
 
@@ -208,6 +232,8 @@ Metrics calculated:
 
 ---
 
+<br/>
+
 ## Data Models
 
 ### Core Models (`backend/models/`)
@@ -226,6 +252,8 @@ Metrics calculated:
 - **StreamConnectionState**: Latency, packet loss, uptime tracking
 
 ---
+
+<br/>
 
 ## Security & Best Practices
 
@@ -256,6 +284,8 @@ Metrics calculated:
 - Suitable for HTTPS termination via load balancer
 
 ---
+
+<br/>
 
 ## Project Structure
 
@@ -312,6 +342,8 @@ pitMind/
 
 ---
 
+<br/>
+
 ## Current Status ✅
 
 ### Running Locally
@@ -338,6 +370,8 @@ pitMind/
 - **Phase 3**: Stream Hardening & Health Monitoring (✅ Complete)
 
 ---
+
+<br/>
 
 ## Deployment Options
 
@@ -369,6 +403,8 @@ cd frontend && npm install && npm run dev
 
 ---
 
+<br/>
+
 ## Key Innovation: Explainability-First Design
 
 Unlike black-box strategy tools, PitMind:
@@ -380,6 +416,8 @@ Unlike black-box strategy tools, PitMind:
 5. **Audits Decisions** — Decision log captures pit-wall calls & reasoning
 
 ---
+
+<br/>
 
 ## Dependencies & Licenses
 
@@ -395,6 +433,8 @@ Unlike black-box strategy tools, PitMind:
 
 ---
 
+<br/>
+
 ## Next Steps / Future Enhancements
 
 - [ ] Live FastF1 data integration (real F1 sessions)
@@ -409,6 +449,8 @@ Unlike black-box strategy tools, PitMind:
 
 ---
 
+<br/>
+
 ## Summary
 
 **PitMind is a sophisticated full-stack application that bridges the gap between real-time data and human decision-making under pressure, making AI racing strategy trustworthy through explainability.** 🏁
@@ -421,3 +463,10 @@ The project successfully combines:
 - Official Formula 1 design language & aesthetics
 
 Perfect for race engineers who need to make high-stakes strategic decisions with confidence and transparency.
+
+---
+
+<div align="center">
+  <p>Built for the speed of Formula 1. Engineered for absolute transparency.</p>
+  <p><a href="../README.md">🏠 Back to Main README</a></p>
+</div>

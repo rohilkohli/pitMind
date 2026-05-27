@@ -124,7 +124,7 @@ async def granite_generate(
             done, pending = await asyncio.wait(
                 provider_tasks,
                 return_when=asyncio.FIRST_COMPLETED,
-                timeout=10.0  # Overall timeout for all providers
+                timeout=45.0  # Overall timeout for all providers
             )
             
             # Cancel pending tasks
@@ -151,7 +151,7 @@ async def granite_generate(
                     logger.warning("Provider task failed", exc_info=e)
                     
         except asyncio.TimeoutError:
-            logger.warning("All AI providers timed out", timeout_seconds=10.0)
+            logger.warning("All AI providers timed out", timeout_seconds=45.0)
         except Exception as e:
             logger.error("Error in parallel provider execution", exc_info=e)
 
@@ -177,7 +177,7 @@ async def _call_provider_with_timeout(
     system: str,
     user: str,
     max_tokens: int,
-    timeout: float = 5.0
+    timeout: float = 30.0
 ) -> dict[str, Any]:
     """
     Call an AI provider with timeout handling.

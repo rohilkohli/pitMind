@@ -415,13 +415,13 @@ export function Landing() {
           ))}
         </div>
 
-        <div className="pm-panel" style={{ flex: 1 }}>
+        <div className="pm-panel" style={{ flex: 1, display: "flex", flexDirection: "column" }}>
           <div className="pm-panel-header">
             <div className="pm-panel-title">RECENT DECISIONS</div>
           </div>
-          <div style={{ padding: "0 20px 20px 20px" }}>
+          <div style={{ flex: 1, overflowY: "auto", paddingRight: 8 }}>
             <Suspense fallback={<div className="skeleton-row" style={{ height: 120 }} />}>
-              <DecisionLog onExportSession={() => {}} />
+              <DecisionLog onExportSession={() => {}} showHeader={false} />
             </Suspense>
           </div>
         </div>

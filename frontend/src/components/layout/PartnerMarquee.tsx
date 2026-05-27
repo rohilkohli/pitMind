@@ -41,17 +41,39 @@ const categories = [
 
 interface MarqueeRowProps {
   logos: string[];
-  direction?: "left" | "right";
-  duration?: number;
   opacity?: number;
 }
 
-const MarqueeRow: React.FC<MarqueeRowProps> = ({ logos,  opacity = 0.5 }) => {
+const MarqueeRow: React.FC<MarqueeRowProps> = ({ logos, opacity = 0.5 }) => {
+  // Duplicate logos for seamless infinite loop
+  const displayLogos = [...logos, ...logos];
+
   return (
-    <div className="pm-marquee-container">
-      <div className="pm-marquee-track pm-static-track">
-        {/* Render logos once since it's static */}
-        {logos.map((src, i) => (
+    <div className="pm-marquee-container" style={{ overflow: "hidden", width: "100%" }}>
+      <style>{`
+        @keyframes pm-marquee-scroll {
+          0% { transform: translateX(0); }
+          100% { transform: translateX(-50%); }
+        }
+        .pm-marquee-track-animated {
+          display: flex;
+          width: max-content;
+          animation: pm-marquee-scroll 30s linear infinite;
+        }
+        .pm-marquee-track-animated:hover {
+          animation-play-state: paused;
+        }
+        .pm-marquee-logo {
+          height: 50px;
+          margin: 0 40px;
+          transition: opacity 0.3s;
+        }
+        .pm-marquee-logo:hover {
+          opacity: 1 !important;
+        }
+      `}</style>
+      <div className="pm-marquee-track-animated">
+        {displayLogos.map((src, i) => (
           <img 
             key={`${src}-${i}`} 
             src={src} 
@@ -66,25 +88,18 @@ const MarqueeRow: React.FC<MarqueeRowProps> = ({ logos,  opacity = 0.5 }) => {
 };
 
 export const PartnerMarquee: React.FC = () => {
+  const allLogos = categories.flatMap(cat => cat.logos);
+
   return (
     <div className="pm-partner-marquee-section">
       <div className="pm-partner-marquee-header">
         <div style={{ fontFamily: "'Orbitron', sans-serif", fontSize: 24, fontWeight: 900, textTransform: "uppercase", letterSpacing: "-0.02em" }}>OUR PARTNERS</div>
-        <div 
-          onClick={() => alert("Full partner directory coming soon!")}
-          style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: 14, color: "var(--text-secondary)", letterSpacing: "0.15em", textTransform: "uppercase", cursor: "pointer", transition: "color 0.2s" }} 
-          className="hover-white"
-        >
-          View all
-        </div>
       </div>
       
       <div style={{ display: "flex", flexDirection: "column" }}>
-        {categories.map((cat, idx) => (
-          <div key={cat.title} className="pm-marquee-wrapper" style={{ background: idx % 2 === 0 ? "var(--carbon-light)" : "var(--carbon)", borderBottom: "1px solid var(--border)", padding: "40px 80px" }}>
-            <MarqueeRow logos={cat.logos} opacity={0.7} />
-          </div>
-        ))}
+        <div className="pm-marquee-wrapper" style={{ background: "var(--carbon-light)", borderBottom: "1px solid var(--border)", padding: "16px 0" }}>
+          <MarqueeRow logos={allLogos} opacity={0.7} />
+        </div>
       </div>
     </div>
   );

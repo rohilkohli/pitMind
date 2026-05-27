@@ -30,8 +30,43 @@ Experience PitMind running live on **IBM Cloud Code Engine**:
 ### 📸 Project Walkthrough
 
 <div align="center">
-  <img src="https://raw.githubusercontent.com/rohilkohli/pitMind/main/docs/screenshots/dashboard_preview.gif" alt="PitMind Live Dashboard" width="800" />
-  <p><i>(Above: The Live Time Trace & AI Strategy Engine in action. Add your screen recording GIF here!)</i></p>
+  <h4>Authentication Portal</h4>
+  <img src="https://raw.githubusercontent.com/rohilkohli/pitMind/main/docs/screenshots/login_page.png" alt="PitMind Login Portal" width="800" />
+</div>
+
+<br/>
+
+<div align="center">
+  <h4>Live Engineer Dashboard</h4>
+  <img src="https://raw.githubusercontent.com/rohilkohli/pitMind/main/docs/screenshots/race_live_engineer_mode.png" alt="PitMind Live Dashboard" width="800" />
+</div>
+
+<br/>
+
+<div align="center">
+  <table>
+    <tr>
+      <td align="center">
+        <b>⏳ Pre-Race Countdown</b><br/>
+        <img src="https://raw.githubusercontent.com/rohilkohli/pitMind/main/docs/screenshots/pre_race_countdown.png" alt="Pre-Race Countdown" width="400"/>
+      </td>
+      <td align="center">
+        <b>🏁 Live Fan Mode</b><br/>
+        <img src="https://raw.githubusercontent.com/rohilkohli/pitMind/main/docs/screenshots/race_live_fan_mode.png" alt="Fan Mode" width="400"/>
+      </td>
+    </tr>
+    <tr>
+      <td align="center">
+        <b>🧠 Strategy Console</b><br/>
+        <img src="https://raw.githubusercontent.com/rohilkohli/pitMind/main/docs/screenshots/strategy_page.png" alt="Strategy Page" width="400"/>
+      </td>
+      <td align="center">
+        <b>📡 Raw Telemetry Stream</b><br/>
+        <img src="https://raw.githubusercontent.com/rohilkohli/pitMind/main/docs/screenshots/telemetry_page.png" alt="Telemetry Page" width="400"/>
+      </td>
+    </tr>
+  </table>
+  <p><i>(Above: Exploring the Live Time Trace & AI Strategy Engine across dynamic UI modes)</i></p>
 </div>
 
 ---
@@ -176,6 +211,12 @@ We have modernized all documentation. Explore the `docs/` directory for deep div
 | 🏗️ **[Architecture Details](./docs/architecture.md)** | System design, data flow, and component boundaries. |
 | 🎨 **[F1 Styling Guide](./docs/F1_STYLING.md)** | UI tokens, fonts, and CSS architecture for the glassmorphic theme. |
 | 🚢 **[Deployment Guide](./docs/DEPLOYMENT.md)** | Moving PitMind to Production on IBM Code Engine. |
+
+---
+
+<div align="center">
+  <img src="https://raw.githubusercontent.com/rohilkohli/pitMind/main/docs/screenshots/partner_sponosors.png" alt="Partner Sponsors" width="600" />
+</div>
 
 ---
 

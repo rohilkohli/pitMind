@@ -27,6 +27,22 @@ Get PitMind running locally in 5 minutes.
 - Watsonx API key from IBM Cloud
 - Firebase project credentials
 
+<br/>
+
+### Local Architecture
+
+```mermaid
+graph LR
+    A[Frontend React Vite] <-->|REST / WS| B[Backend FastAPI]
+    B <-->|PostgreSQL| C[(Database)]
+    B <-->|Redis| D[(Cache)]
+    B <-->|Watsonx API| E[IBM Cloud]
+    
+    style A fill:#0a0a0b,stroke:#EF3340,stroke-width:2px,color:#fff
+    style B fill:#121214,stroke:#2a2a2f,color:#fff
+    style E fill:#EF3340,stroke:#EF3340,color:#fff
+```
+
 </details>
 
 

@@ -28,6 +28,32 @@ Comprehensive troubleshooting guide for pitMind deployment and operation issues.
 - [Error Message Reference](#error-message-reference)
 - [Support Escalation](#support-escalation)
 
+<br/>
+
+### Escalation Path
+
+```mermaid
+graph TD
+    A[Issue Detected] --> B{Check Error Code}
+    B -->|Database| C[Check PostgreSQL Logs]
+    B -->|Cache| D[Check Redis Stats]
+    B -->|AI Provider| E[Check Watsonx Key/Quota]
+    B -->|Unknown| F[View Backend Logs]
+    
+    C --> G{Resolved?}
+    D --> G
+    E --> G
+    F --> G
+    
+    G -- Yes --> H((Success))
+    G -- No --> I[Generate Support Bundle]
+    I --> J[Escalate to Level 2]
+    
+    style A fill:#0a0a0b,stroke:#EF3340,stroke-width:2px,color:#fff
+    style H fill:#121214,stroke:#4ade80,color:#fff
+    style J fill:#EF3340,stroke:#EF3340,color:#fff
+```
+
 </details>
 
 

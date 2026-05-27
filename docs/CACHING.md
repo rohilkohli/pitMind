@@ -46,6 +46,27 @@ PitMind implements a comprehensive Redis-backed caching layer to optimize AI res
    - Strategy Engine - caches heuristic scoring
    - Health Endpoints - exposes cache metrics
 
+<br/>
+
+### Data Flow
+
+```mermaid
+graph TD
+    A[Incoming Request] --> B{Cache Hit?}
+    B -- Yes --> C[Return Cached Data]
+    B -- No --> D[Compute Strategy / Generate AI]
+    D --> E[Store in Redis]
+    E --> F[Return Fresh Data]
+    
+    G[Race Event: Safety Car] --> H[Cache Invalidator]
+    H --> I[Purge Stale Keys]
+    
+    style A fill:#0a0a0b,stroke:#EF3340,stroke-width:2px,color:#fff
+    style C fill:#121214,stroke:#2a2a2f,color:#fff
+    style F fill:#121214,stroke:#2a2a2f,color:#fff
+    style E fill:#EF3340,stroke:#EF3340,color:#fff
+```
+
 </details>
 
 

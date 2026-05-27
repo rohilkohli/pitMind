@@ -8,8 +8,9 @@
 [![License](https://img.shields.io/badge/License-Educational-blue.svg?style=for-the-badge&color=15151e)](LICENSE)
 [![Python](https://img.shields.io/badge/Python-3.12-3776AB.svg?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
 [![React](https://img.shields.io/badge/React-19.0-61DAFB.svg?style=for-the-badge&logo=react&logoColor=black)](https://react.dev/)
+[![Live Status](https://img.shields.io/badge/Status-Live_on_IBM_Cloud-0062FF.svg?style=for-the-badge&logo=ibm&logoColor=white)](https://pitmind-frontend.2adms9tj6nke.eu-de.codeengine.appdomain.cloud)
 
-[Features](#-key-features) • [Quickstart](#-quickstart) • [Architecture](#-architecture) • [Documentation](./docs)
+[Live Demo](#-live-demo) • [Features](#-key-features) • [Quickstart](#-quickstart) • [Architecture](#-architecture) • [Documentation](./docs)
 
 </div>
 
@@ -19,15 +20,31 @@
 
 ---
 
+## 🔴 Live Demo
+
+Experience PitMind running live on **IBM Cloud Code Engine**:
+
+🚀 **[Launch PitMind Frontend Dashboard](https://pitmind-frontend.2adms9tj6nke.eu-de.codeengine.appdomain.cloud)**  
+⚡ **[Explore PitMind Backend API (Swagger UI)](https://pitmind-backend.2adms9tj6nke.eu-de.codeengine.appdomain.cloud/docs)**  
+
+### 📸 Project Walkthrough
+
+<div align="center">
+  <img src="https://raw.githubusercontent.com/rohilkohli/pitMind/main/docs/screenshots/dashboard_preview.gif" alt="PitMind Live Dashboard" width="800" />
+  <p><i>(Above: The Live Time Trace & AI Strategy Engine in action. Add your screen recording GIF here!)</i></p>
+</div>
+
+---
+
 ## ✨ Key Features
 
-<details>
+<details open>
 <summary><b>🧠 Strategy Oracle (IBM Granite)</b></summary>
 <br/>
-Converts heuristic pit scoring into natural-language strategy narrations using IBM Granite (Watsonx.ai).
+Converts heuristic pit scoring into natural-language strategy narrations using IBM Granite (Watsonx.ai). Get split-second strategic recommendations based on tyre degradation, track temperature, and competitor pacing.
 </details>
 
-<details>
+<details open>
 <summary><b>📊 Confidence Decomposition</b></summary>
 <br/>
 Breaks down AI confidence into 4 transparent, explainable dimensions (Data Quality, Model Certainty, Stability, Regret Bound) so race engineers never have to blindly trust a "black box."
@@ -36,7 +53,7 @@ Breaks down AI confidence into 4 transparent, explainable dimensions (Data Quali
 <details>
 <summary><b>💬 Copilot Chat</b></summary>
 <br/>
-Real-time race engineer Q&A grounded in live telemetry. Ask "Why did we pit early?" and get data-backed answers immediately.
+Real-time race engineer Q&A grounded in live telemetry. Ask "Why did we pit early?" and get data-backed answers immediately from the context-aware LLM.
 </details>
 
 <details>
@@ -48,7 +65,7 @@ Translates complex pit-wall data into plain-English AI commentary for non-techni
 <details>
 <summary><b>🔴 Live WebSocket Telemetry</b></summary>
 <br/>
-High-performance React dashboard fed by a real-time WebSocket stream simulating live race states and track events.
+High-performance React dashboard fed by a real-time WebSocket stream simulating live race states and track events with zero-latency updates.
 </details>
 
 ---
@@ -58,9 +75,18 @@ High-performance React dashboard fed by a real-time WebSocket stream simulating 
 <div align="center">
   <table>
     <tr>
-      <td align="center" width="33%"><b>Frontend</b><br/>React 19 • Vite • TailwindCSS<br/>Glassmorphic UI</td>
-      <td align="center" width="33%"><b>Backend</b><br/>FastAPI • Python 3.12<br/>WebSocket Streams</td>
-      <td align="center" width="33%"><b>AI & Data</b><br/>IBM Granite (Watsonx.ai)<br/>Langflow • FastF1</td>
+      <td align="center" width="33%">
+        <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/react/react-original.svg" height="40" alt="React" />
+        <br/><b>Frontend</b><br/>React 19 • Vite • TailwindCSS<br/>Glassmorphic UI
+      </td>
+      <td align="center" width="33%">
+        <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/fastapi/fastapi-original.svg" height="40" alt="FastAPI" />
+        <br/><b>Backend</b><br/>FastAPI • Python 3.12<br/>WebSocket Streams
+      </td>
+      <td align="center" width="33%">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/5/51/IBM_logo.svg" height="40" alt="IBM" />
+        <br/><b>AI & Data</b><br/>IBM Granite (Watsonx.ai)<br/>Langflow • FastF1
+      </td>
     </tr>
   </table>
 </div>
@@ -143,11 +169,13 @@ graph LR
 
 We have modernized all documentation. Explore the `docs/` directory for deep dives:
 
-- 🚀 **[Quickstart Guide](./docs/QUICKSTART.md)** — Detailed setup instructions.
-- 🔌 **[API Reference](./docs/API.md)** — REST & WebSocket endpoints.
-- 🏗️ **[Architecture Details](./docs/architecture.md)** — System design and data flow.
-- 🎨 **[F1 Styling Guide](./docs/F1_STYLING.md)** — UI tokens, fonts, and CSS architecture.
-- 🚢 **[Deployment Guide](./docs/DEPLOYMENT.md)** — Moving PitMind to Production.
+| Document | Description |
+|----------|-------------|
+| 🚀 **[Quickstart Guide](./docs/QUICKSTART.md)** | Detailed local and Docker setup instructions. |
+| 🔌 **[API Reference](./docs/API.md)** | REST & WebSocket endpoints and schemas. |
+| 🏗️ **[Architecture Details](./docs/architecture.md)** | System design, data flow, and component boundaries. |
+| 🎨 **[F1 Styling Guide](./docs/F1_STYLING.md)** | UI tokens, fonts, and CSS architecture for the glassmorphic theme. |
+| 🚢 **[Deployment Guide](./docs/DEPLOYMENT.md)** | Moving PitMind to Production on IBM Code Engine. |
 
 ---
 
@@ -155,3 +183,4 @@ We have modernized all documentation. Explore the `docs/` directory for deep div
   <p>Built for the speed of Formula 1. Engineered for absolute transparency.</p>
   <p><b>License:</b> Educational | <b>Version:</b> 1.0.0</p>
 </div>
+

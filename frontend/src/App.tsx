@@ -226,11 +226,14 @@ function CustomCursor() {
 }
 
 export default function App() {
+  const apiBase = import.meta.env.VITE_API_BASE_URL;
   const defaultWsUrl =
     import.meta.env.VITE_WS_URL ||
-    (window.location.protocol === "https:" ? "wss://" : "ws://") +
-      window.location.host +
-      "/api/v1/stream/telemetry";
+    (apiBase
+      ? apiBase.replace(/^http/, "ws") + "/api/v1/stream/telemetry"
+      : (window.location.protocol === "https:" ? "wss://" : "ws://") +
+        window.location.host +
+        "/api/v1/stream/telemetry");
 
   return (
     <BrowserRouter>

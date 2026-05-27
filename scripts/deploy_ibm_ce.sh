@@ -20,7 +20,7 @@ FRONTEND_IMAGE="${REGISTRY}/${ICR_NS}/pitmind-frontend:latest"
 
 # Backend env vars
 WATSONX_URL="https://eu-de.ml.cloud.ibm.com"
-WATSONX_PROJECT_ID="ed5162de-730e-4699-86e6-8693db495405"
+WATSONX_PROJECT_ID="e789fe82-1589-4560-a62e-bcf040fefb73"
 WATSONX_MODEL_ID="ibm/granite-3-1-8b-instruct"
 HF_MODEL_ID="ibm-granite/granite-3.1-8b-instruct"
 RATE_LIMIT_PER_MINUTE="120"

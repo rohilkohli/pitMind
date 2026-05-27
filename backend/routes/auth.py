@@ -27,13 +27,23 @@ async def verify_token(authorization: str = Header(None)) -> str:
     if os.getenv("ENVIRONMENT") == "development" and token.startswith("dev_"):
         return token.replace("Bearer ", "")
         
-    if firebase_auth is None:
-        logger.warning("Firebase auth not configured; using mock UID for development")
-        raise HTTPException(status_code=401, detail="Firebase authentication not configured")
-        
     try:
-        decoded = firebase_auth.verify_id_token(token)
-        return decoded["uid"]
+        from config import get_settings
+        settings = get_settings()
+        
+        jwks_url = "https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com"
+        jwks_client = jwt.PyJWKClient(jwks_url)
+        signing_key = jwks_client.get_signing_key_from_jwt(token)
+        
+        decoded = jwt.decode(
+            token,
+            signing_key.key,
+            algorithms=["RS256"],
+            audience=settings.firebase_project_id,
+            issuer=f"https://securetoken.google.com/{settings.firebase_project_id}",
+            options={"verify_exp": True, "verify_iat": True}
+        )
+        return decoded.get("uid") or decoded.get("user_id") or decoded.get("sub")
     except Exception as e:
         logger.warning(f"Token verification failed: {e}")
         

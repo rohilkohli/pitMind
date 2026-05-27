@@ -22,6 +22,7 @@ FRONTEND_IMAGE="${REGISTRY}/${ICR_NS}/pitmind-frontend:latest"
 WATSONX_URL="https://us-south.ml.cloud.ibm.com"
 WATSONX_PROJECT_ID="e789fe82-1589-4560-a62e-bcf040fefb73"
 WATSONX_MODEL_ID="ibm/granite-3-1-8b-instruct"
+WATSONX_API_KEY="2QDJ7CSeef6f6R3sQ2MxFjISRn3ubii9BVBr1CKodrTq"
 HF_MODEL_ID="ibm-granite/granite-3.1-8b-instruct"
 RATE_LIMIT_PER_MINUTE="120"
 
@@ -139,6 +140,7 @@ if ibmcloud ce app get --name pitmind-backend &>/dev/null; then
     --env WATSONX_URL="$WATSONX_URL" \
     --env WATSONX_PROJECT_ID="$WATSONX_PROJECT_ID" \
     --env WATSONX_MODEL_ID="$WATSONX_MODEL_ID" \
+    --env WATSONX_API_KEY="$WATSONX_API_KEY" \
     --env HF_MODEL_ID="$HF_MODEL_ID" \
     --env RATE_LIMIT_PER_MINUTE="$RATE_LIMIT_PER_MINUTE" \
     --env ENVIRONMENT="production" \
@@ -157,6 +159,7 @@ else
     --env WATSONX_URL="$WATSONX_URL" \
     --env WATSONX_PROJECT_ID="$WATSONX_PROJECT_ID" \
     --env WATSONX_MODEL_ID="$WATSONX_MODEL_ID" \
+    --env WATSONX_API_KEY="$WATSONX_API_KEY" \
     --env HF_MODEL_ID="$HF_MODEL_ID" \
     --env RATE_LIMIT_PER_MINUTE="$RATE_LIMIT_PER_MINUTE" \
     --env ENVIRONMENT="production" \

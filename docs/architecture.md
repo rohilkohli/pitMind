@@ -99,12 +99,15 @@ sequenceDiagram
     participant UI as React Frontend
     participant API as FastAPI Backend
     participant Score as Heuristic Engine
+    participant LF as Langflow (Optional)
     participant Granite as IBM Granite
     
     UI->>API: POST /strategy/recommend (telemetry)
     API->>Score: calculate_pit_urgency()
     Score-->>API: returns raw scores
-    API->>Granite: build_prompt(scores, telemetry)
+    API->>LF: merge external signals (if configured)
+    LF-->>API: enriched context (or skip)
+    API->>Granite: build_prompt(scores, context)
     Granite-->>API: Natural language narration
     API-->>UI: StrategyRecommendation JSON
 ```
@@ -126,6 +129,48 @@ sequenceDiagram
    - Granite assumes the role of "Senior Chief Race Strategist"
    - Generates 5-section technical debrief
 4. Response returned with `source_note` showing Docling provenance (page counts, table counts).
+</details>
+
+<details>
+<summary><b>Langflow Pipeline Orchestration</b></summary>
+<br/>
+
+Langflow is integrated as an **optional visual pipeline orchestration layer** in the strategy pipeline. When configured, it runs as Step 2b between heuristic scoring and Granite narration.
+
+**Integration Points:**
+- **Entry point:** `services/langflow_client.py` → `run_strategy_flow(payload)`
+- **Called by:** `services/pipeline.py` → `run_strategy_pipeline()` — Step 2b in the pipeline
+- **API endpoint:** `POST /api/v1/run/{flow_id}` on the configured Langflow instance
+- **Payload sent:** Circuit name, driver, lap count, last lap telemetry snapshot
+- **Failure mode:** Graceful degradation — if Langflow is unconfigured or unavailable, the pipeline skips this step and continues to Granite narration
+
+**Configuration (`.env`):**
+```
+LANGFLOW_API_URL=https://your-langflow-instance.com
+LANGFLOW_FLOW_ID=your-flow-uuid
+LANGFLOW_API_KEY=your-api-key
+```
+
+> [!TIP]
+> Langflow enables non-technical team members to visually design and modify AI pipeline workflows (e.g., adding weather data enrichment, competitor feed integration) without touching backend code.
+
+</details>
+
+<details>
+<summary><b>Confidence Decomposition</b></summary>
+<br/>
+
+Every strategy recommendation includes a **Confidence Decomposition** — breaking AI confidence into 4 transparent, auditable dimensions:
+
+| Dimension | What It Measures | How It's Computed |
+|---|---|---|
+| **Data Quality** | Completeness of telemetry input | Ratio of valid lap times to total laps, scaled 20–100% |
+| **Model Certainty** | Granite's confidence in its narration | Extracted from LLM response's `confidence` field |
+| **Stability** | Score consistency across similar inputs | Based on pit urgency threshold bands (≥62 = stable) |
+| **Regret Bound** | Maximum expected decision regret | `(100 - confidence) / 100`, bounded 0–1 |
+
+This decomposition ensures race engineers never have to blindly trust a single confidence number — they can inspect *which dimension* is weak and adjust their decision accordingly.
+
 </details>
 
 ---

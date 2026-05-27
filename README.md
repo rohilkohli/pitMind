@@ -20,6 +20,20 @@
 
 ---
 
+## 🎯 Problem Statement
+
+Formula 1 is one of the most **data-intensive sports on the planet**. During a single Grand Prix, a team's pit wall processes thousands of telemetry data points per second — tyre degradation curves, fuel loads, gap deltas, sector splits, weather forecasts, and competitor positioning — all feeding into split-second decisions that decide races.
+
+Yet the tools available to race engineers are fragmented, opaque, and inaccessible:
+
+- **Strategy calls are "black box"** — engineers see a recommendation but not *why* the AI reached that conclusion, eroding trust in critical moments.
+- **Fan audiences are excluded** — the same data that drives pit-wall decisions is locked behind jargon and proprietary dashboards, leaving fans unable to understand the strategic chess match unfolding on track.
+- **Post-race debriefs are manual** — teams spend hours converting raw PDFs and telemetry dumps into structured strategic insights.
+
+**PitMind solves this** by building an AI-powered race strategy copilot that makes every decision *transparent, explainable, and accessible* — for engineers, strategists, and fans alike.
+
+---
+
 ## 🔴 Live Demo
 
 Experience PitMind running live on **IBM Cloud Code Engine**:
@@ -105,6 +119,47 @@ High-performance React dashboard fed by a real-time WebSocket stream simulating 
 
 ---
 
+## 🧠 IBM Technology Deep Dive
+
+PitMind integrates **three IBM AI-supported technologies** as core components of the system:
+
+### 1. IBM Granite via Watsonx.ai — Strategy Narration Engine
+
+> **Role:** Core AI backbone — converts heuristic pit-stop scores into natural-language strategy explanations.
+
+- **Model:** `ibm/granite-3-1-8b-instruct` via Watsonx.ai text generation API
+- **How it's used:**
+  - The heuristic engine computes raw strategy scores (pit urgency, safety car probability, overtake risk)
+  - These scores are passed to Granite with structured prompts requesting JSON-schema-compliant responses
+  - Granite generates explainable narrations with `recommendation`, `evidence`, `confidence`, `assumptions`, and `alternative` fields
+  - A **Confidence Decomposition** system breaks AI output into 4 transparent dimensions (Data Quality, Model Certainty, Stability, Regret Bound)
+- **Key design choice:** Granite *explains* pre-computed math rather than *inventing* strategy, ensuring accuracy while leveraging LLM strengths in natural language
+- **Files:** [`services/granite.py`](./backend/services/granite.py) · [`services/pipeline.py`](./backend/services/pipeline.py) · [`services/strategy_engine.py`](./backend/services/strategy_engine.py)
+
+### 2. Docling — PDF Document Intelligence
+
+> **Role:** Transforms race PDF reports (FIA documents, team debriefs, strategy recaps) into structured Markdown for AI analysis.
+
+- **How it's used:**
+  - Users upload PDF files to the `/api/v1/debrief/upload` endpoint
+  - Docling's `DocumentConverter` performs layout-aware parsing, preserving tables, figures, and document structure
+  - The extracted Markdown is piped to Granite, which generates a 5-section post-race strategic debrief
+  - Response includes **Docling provenance metadata**: page count, table count, figure count, and Docling version for full traceability
+- **Files:** [`routes/commentary.py`](./backend/routes/commentary.py) (see `_try_docling_pdf()`)
+
+### 3. Langflow — Visual Pipeline Orchestration
+
+> **Role:** Optional visual pipeline layer for orchestrating multi-step AI workflows and external signal integration.
+
+- **How it's used:**
+  - The strategy pipeline calls Langflow's HTTP API (`/api/v1/run/{flow_id}`) as an optional orchestration step
+  - When configured, Langflow can merge external signals (weather APIs, competitor feeds, historical data) into the strategy context before Granite narration
+  - The pipeline gracefully degrades if Langflow is unconfigured — core strategy scoring continues without it
+  - Configurable via environment variables: `LANGFLOW_API_URL`, `LANGFLOW_FLOW_ID`, `LANGFLOW_API_KEY`
+- **Files:** [`services/langflow_client.py`](./backend/services/langflow_client.py) · [`services/pipeline.py`](./backend/services/pipeline.py)
+
+---
+
 ## 🛠️ Technology Stack
 
 <div align="center">
@@ -120,7 +175,7 @@ High-performance React dashboard fed by a real-time WebSocket stream simulating 
       </td>
       <td align="center" width="33%">
         <img src="https://upload.wikimedia.org/wikipedia/commons/5/51/IBM_logo.svg" height="40" alt="IBM" />
-        <br/><b>AI & Data</b><br/>IBM Granite (Watsonx.ai)<br/>Langflow • FastF1
+        <br/><b>AI & Data</b><br/>IBM Granite (Watsonx.ai)<br/>Docling • Langflow • FastF1
       </td>
     </tr>
   </table>
@@ -186,9 +241,11 @@ graph LR
         Scorer[Heuristic Scorer]
     end
 
-    subgraph IBM Cloud
+    subgraph IBM AI Layer
         Granite[IBM Granite LLM]
         Watsonx[Watsonx.ai]
+        Docling[Docling PDF AI]
+        LF[Langflow Pipeline]
     end
 
     UI <-->|Live Telemetry| WS
@@ -196,7 +253,26 @@ graph LR
     API --> Scorer
     Scorer --> Granite
     Granite --> Watsonx
+    API -->|PDF Upload| Docling
+    API -->|Pipeline Orchestration| LF
+    LF --> Granite
 ```
+
+---
+
+## 🏁 Why This Matters
+
+Car racing sits at the intersection of **human intuition and machine intelligence**. The fastest teams are the ones that can process enormous volumes of data and translate them into clear, actionable decisions in real time.
+
+PitMind demonstrates how AI can transform the racing experience at every level:
+
+| Stakeholder | Without PitMind | With PitMind |
+|---|---|---|
+| **Race Engineers** | Black-box strategy tools → guesswork under pressure | Transparent AI with confidence decomposition → informed, trust-backed decisions |
+| **Team Strategists** | Manual PDF debriefs → hours of post-race analysis | Docling-powered instant debriefs → structured insights in seconds |
+| **Fans** | Complex telemetry dashboards → excluded from strategy depth | AI-narrated Fan Mode → anyone can understand why a team pitted on lap 23 |
+
+> **The core insight:** AI in racing isn't just about going faster — it's about making the *decision-making process* faster, more transparent, and more inclusive. PitMind brings that vision to life with IBM's open-source AI stack.
 
 ---
 

@@ -404,7 +404,6 @@ export function Login() {
                     "linear-gradient(90deg, rgba(255,255,255,0.025) 0%, rgba(255,255,255,0.01) 100%)",
                   backdropFilter: "blur(8px)",
                   border: "1px solid rgba(255,255,255,0.06)",
-                  borderLeft: "3px solid var(--f1-red)",
                   transition: "background 0.25s, box-shadow 0.25s",
                   cursor: "default",
                   animationDelay: `${i * 0.1}s`,

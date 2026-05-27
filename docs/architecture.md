@@ -1,7 +1,7 @@
 <div align="center">
 
-# 📖 PitMind — System Architecture
-**PitMind Documentation**
+# 🏗️ PitMind System Architecture
+**Deep Dive into the Technical Design**
 
 [![PitMind Platform](https://img.shields.io/badge/PitMind-Platform-e10600.svg?style=for-the-badge)](#)
 [![Return to Home](https://img.shields.io/badge/Return_to_Home-15151e.svg?style=for-the-badge)](../README.md)
@@ -10,42 +10,35 @@
 
 <br/>
 
-> **Overview:** This document outlines the core concepts, configurations, and technical specifications for the **PitMind — System Architecture** module within the PitMind AI ecosystem.
+> [!NOTE]
+> PitMind is a full-stack AI race strategy platform built for Formula 1-style environments. This document describes every layer of the system, data flows, and how the IBM AI integrations connect.
 
 ---
 
-PitMind is a full-stack AI race strategy platform built for Formula 1-style environments. This document describes every layer of the system and how they connect.
-
----
-
-
-
-<details>
-<summary><b>High-Level Architecture</b></summary>
+<details open>
+<summary><b>High-Level Architecture Diagram</b></summary>
 <br/>
 
 ```mermaid
 flowchart LR
-  subgraph Browser["Browser (React + Firebase)"]
+  subgraph Browser["🌐 Browser (React + Firebase)"]
     UI["React UI Shell\n(Dashboard / Fan Mode / Strategy)"]
     FB_RT["Firebase Realtime DB\n(live race state)"]
-    GA["Google Analytics"]
   end
 
-  subgraph Compose["Docker Compose"]
-    NGINX["Nginx\n(static bundle + reverse proxy)"]
+  subgraph Backend["⚙️ Backend Core"]
     API["FastAPI Backend\n(routes / models / services)"]
     REDIS["Redis Cache\n(strategy TTL cache)"]
     PG["PostgreSQL\n(audit log persistence)"]
   end
 
-  subgraph IBM["IBM AI Layer"]
-    GRANITE["IBM Granite\n(Watsonx.ai / HuggingFace / Replicate)"]
+  subgraph IBM["🧠 IBM AI Layer"]
+    GRANITE["IBM Granite\n(Watsonx.ai)"]
     LF["Langflow\n(visual pipeline orchestration)"]
     DOCLING["Docling\n(PDF document AI)"]
   end
 
-  UI -- REST/WS --> NGINX --> API
+  UI -- REST/WS --> API
   FB_RT <--> UI
   API -- Firebase Admin Auth --> FB_RT
   API -- cache read/write --> REDIS
@@ -54,187 +47,110 @@ flowchart LR
   API -- optional flow call --> LF --> GRANITE
   API -- PDF bytes --> DOCLING --> API
 ```
+</details>
 
 ---
 
-</details>
-
-
+## 🧩 Component Breakdown
 
 <details>
-<summary><b>Component Breakdown</b></summary>
+<summary><b>Frontend Directory (<code>frontend/</code>)</b></summary>
 <br/>
 
-### Frontend (`frontend/`)
+The frontend is a Vite + React application utilizing a glassmorphic design system to mimic an F1 pit-wall telemetry screen.
 
 | Component | Purpose |
 |---|---|
 | `pages/Dashboard.tsx` | Engineer console — 3-column resizable/draggable layout |
 | `pages/FanMode.tsx` | Public fan view — battle cards, standings, AI narratives |
-| `pages/Strategy.tsx` | Strategic planning workspace |
-| `pages/Telemetry.tsx` | Raw telemetry charting |
-| `pages/Landing.tsx` | Marketing/hero page |
-| `components/dashboard/StrategyTimeline.tsx` | Strategy reasoning trace + commit flow |
 | `components/dashboard/ConfidenceDecompositionCard.tsx` | Explainability — breaks AI confidence into 4 dimensions |
-| `components/dashboard/PostRaceDebrief.tsx` | PDF upload → Docling parse → Granite debrief |
-| `components/dashboard/LiveSystemFeed.tsx` | Real-time race control messages via WebSocket |
-| `components/dashboard/DecisionLog.tsx` | Annotatable strategy decision audit trail |
 | `components/dashboard/StreamHealthMonitor.tsx` | WebSocket health + latency |
 | `hooks/useFirebaseRaceState.ts` | Firebase Realtime DB subscription for live race state |
-| `hooks/useTelemetry.ts` | Local telemetry state management |
-| `services/api.ts` | Type-safe REST API client |
 | `contexts/RoleContext.tsx` | Engineer / Strategist / Commentator role switching |
+</details>
 
-### Backend (`backend/`)
+<details>
+<summary><b>Backend Directory (<code>backend/</code>)</b></summary>
+<br/>
+
+The backend is a high-performance Python FastAPI server built for concurrency and streaming.
 
 | Module | Purpose |
 |---|---|
 | `main.py` | FastAPI app — CORS, middleware, WebSocket streaming, health |
-| `routes/strategy.py` | `/api/v1/strategy/*` — recommend, commit, audit, cache |
-| `routes/commentary.py` | `/api/v1/chat/*`, `/api/v1/debrief/upload` — Granite chat + Docling debrief |
-| `routes/fan.py` | `/api/v1/fan/*` — fan predictions, status |
-| `routes/auth.py` | Firebase ID token verification |
-| `services/granite.py` | IBM Granite client — parallel Watsonx / HuggingFace / Replicate providers with cache |
-| `services/langflow_client.py` | Optional Langflow HTTP flow runner |
-| `services/pipeline.py` | Orchestrator — telemetry → Langflow → Granite → StrategyRecommendation |
-| `services/strategy_engine.py` | Heuristic pit urgency / compound / undercut scoring |
+| `routes/strategy.py` | Strategy scoring endpoints and Granite narration requests |
+| `routes/commentary.py` | Granite chat + Docling PDF debrief upload |
+| `services/granite.py` | IBM Granite client with intelligent caching |
+| `services/strategy_engine.py` | Mathematical heuristic pit urgency / compound scoring |
 | `services/sanitize.py` | Upload validation, CSV/JSON parsing, byte-cap enforcement |
-| `services/fastf1_service.py` | FastF1 session telemetry fetcher |
 | `services/cache_manager.py` | Redis + in-memory fallback caching with TTL |
-| `services/cache_invalidator.py` | Event-driven cache invalidation (safety car, pit stop, etc.) |
-| `models/strategy.py` | Pydantic models — StrategyRecommendation, ConfidenceDecomposition |
-| `models/race_state.py` | TelemetryPayload, LapPoint |
-| `models/audit_log.py` | SQLAlchemy AuditLog ORM model |
+</details>
 
 ---
 
-</details>
+## 🧠 IBM AI Pipeline Data Flow
 
-
-
-<details>
-<summary><b>IBM AI Pipeline (detailed)</b></summary>
+<details open>
+<summary><b>Strategy Recommendation Flow</b></summary>
 <br/>
 
-```
-Telemetry JSON ──┐
-                 ├─► Sanitize/Normalize ──► Heuristic Scorer ──┐
-PDF Upload ──► Docling Parser ──────────────────────────────────┤
-                                                                 ├─► Context Merger
-                                                                 │
-                                                          ┌──────┘
-                                                          │
-                                                   Prompt Builder
-                                                          │
-                                               IBM Granite (Watsonx.ai)
-                                                          │
-                              ┌───────────────────────────┼───────────────────┐
-                              │                           │                   │
-                    Confidence Decomposer          Fan Narrative          Audit Log
-                     (data_quality,                  Adapter             (PostgreSQL)
-                      model_certainty,
-                      stability,
-                      regret_bound)
-                              │
-                    StrategyRecommendation
-                    (JSON response to UI)
+```mermaid
+sequenceDiagram
+    participant UI as React Frontend
+    participant API as FastAPI Backend
+    participant Score as Heuristic Engine
+    participant Granite as IBM Granite
+    
+    UI->>API: POST /strategy/recommend (telemetry)
+    API->>Score: calculate_pit_urgency()
+    Score-->>API: returns raw scores
+    API->>Granite: build_prompt(scores, telemetry)
+    Granite-->>API: Natural language narration
+    API-->>UI: StrategyRecommendation JSON
 ```
 
-### IBM Tool Usage
+> [!IMPORTANT]
+> The raw heuristic scores are calculated *before* being sent to IBM Granite. Granite is explicitly instructed to explain the mathematical recommendation, rather than guessing the math itself, ensuring absolute accuracy.
 
-| Tool | How Used | Where |
-|---|---|---|
-| **IBM Granite** | Strategy narration, chat Q&A, debrief generation, driver comparison summaries | `services/granite.py` — supports Watsonx, HuggingFace Inference API, Replicate |
-| **Langflow** | Visual pipeline orchestration — 10-stage flow from telemetry to structured output | `langflow-flows/pitmind_strategy_pipeline.json`, `services/langflow_client.py` |
-| **Docling** | PDF race report parsing — extracts tables, figures, section headings into markdown | `routes/commentary.py → _try_docling_pdf()` |
+</details>
+
+<details>
+<summary><b>Post-Race Debrief (Docling) Flow</b></summary>
+<br/>
+
+1. User uploads PDF to `/api/v1/debrief/upload`
+2. `_try_docling_pdf(raw)` called:
+   - Uses IBM's `DocumentConverter` for Docling layout analysis
+   - Exports high-fidelity Markdown, preserving tables and structure
+3. `debrief_from_text(markdown_text)` called:
+   - Granite assumes the role of "Senior Chief Race Strategist"
+   - Generates 5-section technical debrief
+4. Response returned with `source_note` showing Docling provenance (page counts, table counts).
+</details>
 
 ---
 
-</details>
-
-
+## 📡 Live Telemetry Infrastructure
 
 <details>
-<summary><b>Data Flow — Strategy Recommendation</b></summary>
+<summary><b>WebSocket Streaming Architecture</b></summary>
 <br/>
 
-```
-1. Frontend POSTs TelemetryPayload to /api/v1/strategy/recommend
-2. FastAPI authenticates via Firebase ID token
-3. pipeline.run_strategy_pipeline():
-   a. Calls langflow_client.run_strategy_flow() [optional, if LANGFLOW_API_URL set]
-   b. Calls strategy_engine.build_recommendation() — heuristic scores
-   c. Assembles Granite prompt with scores + Langflow signals
-   d. Calls granite.granite_generate() — parallel Watsonx/HuggingFace/Replicate
-   e. Merges Granite JSON into StrategyRecommendation
-   f. Computes ConfidenceDecomposition
-4. Saves AuditLog to PostgreSQL
-5. Returns StrategyRecommendation JSON to UI
-6. UI renders: Strategy Oracle card, Confidence chart, Evidence drill-down
+```mermaid
+flowchart TD
+    Client["Browser (WebSocket Client)"]
+    API["FastAPI /stream/telemetry"]
+    CM["ConnectionManager (In-Memory/Redis)"]
+    
+    Client -- "Heartbeat Ping (30s)" --> API
+    API -- "Heartbeat Pong" --> Client
+    
+    CM -- "1Hz Broadcast" --> API
+    API -- "Live Telemetry JSON" --> Client
 ```
 
-</details>
-
-
-
-<details>
-<summary><b>Data Flow — Post-Race Debrief (Docling)</b></summary>
-<br/>
-
-```
-1. User uploads PDF to /api/v1/debrief/upload
-2. _try_docling_pdf(raw) called:
-   a. DocumentConverter().convert(path) — Docling layout analysis
-   b. doc.export_to_markdown() — structure-preserving extraction
-   c. Counts: pages, tables, figures
-   d. Returns (markdown_text, metadata)
-3. pipeline.debrief_from_text(markdown_text) called:
-   a. Granite system prompt: Senior Chief Race Strategist role
-   b. Generates 5-section debrief: Pace, Tyres, Strategy Calls, Risk, Forward Actions
-4. DebriefResponse returned with source_note showing Docling provenance
-```
-
----
-
-</details>
-
-
-
-<details>
-<summary><b>WebSocket Telemetry Streaming</b></summary>
-<br/>
-
-```
-Browser ──WS──► /api/v1/stream/telemetry?session_id=current_race
-                        │
-                ConnectionManager (session registry)
-                        │
-                ┌───────┴───────┐
-                │               │
-          receive_handler   broadcast_handler
-          (ping/pong)       (1Hz telemetry tick)
-                │               │
-             client          Redis (connection tracking)
-```
-
----
-
-</details>
-
-
-
-<details>
-<summary><b>Infrastructure</b></summary>
-<br/>
-
-| Service | Port | Purpose |
-|---|---|---|
-| Nginx | 8080 | Static bundle serving + `/api` proxy |
-| FastAPI | 8001 | REST API + WebSocket |
-| Redis | 6379 | Strategy response cache (TTL-based) |
-| PostgreSQL | 5432 | Audit log, strategy commits |
-| Firebase | Cloud | Auth + Realtime DB for live race state |
-
+> [!TIP]
+> The `StreamHealthMonitor` in the React frontend tracks packet latency and connection stability. If a disconnect occurs, the client automatically initiates an exponential backoff retry up to 10 times.
 </details>
 
 ---

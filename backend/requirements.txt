@@ -22,4 +22,4 @@ alembic>=1.13.0
 # fastf1==3.4.4
 
 # PDF / document parsing for post-race debrief (Docling)
-docling>=2.0.0
+# docling>=2.0.0

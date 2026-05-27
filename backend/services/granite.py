@@ -516,7 +516,7 @@ def _local_fallback_response(system: str, user: str) -> str:
 
     preview = cleaned[:420]
     return (
-        "AI provider is not configured, so PitMind is running in secure local fallback mode. "
+        "AI provider is currently unreachable or timed out. PitMind is running in secure local fallback mode. "
         "Based on your latest chat context, prioritize tyre wear trend, lap-time delta, and gap evolution "
         "before committing a pit call. "
         f"Context preview: {preview}"

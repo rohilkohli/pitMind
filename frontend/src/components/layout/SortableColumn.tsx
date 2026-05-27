@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useRef } from "react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { GripHorizontal } from "lucide-react";
@@ -12,6 +12,7 @@ export function SortableColumn({ id, children }: SortableColumnProps) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id,
   });
+  const handleRef = useRef<HTMLDivElement>(null);
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -22,9 +23,15 @@ export function SortableColumn({ id, children }: SortableColumnProps) {
   };
 
   return (
-    <div ref={setNodeRef} style={style} className="group">
-      {/* Drag Handle */}
+    <div
+      ref={setNodeRef}
+      style={style}
+      onMouseEnter={() => { if (handleRef.current) handleRef.current.style.opacity = '1'; }}
+      onMouseLeave={() => { if (handleRef.current) handleRef.current.style.opacity = '0'; }}
+    >
+      {/* Drag Handle — only visible on column hover */}
       <div
+        ref={handleRef}
         {...attributes}
         {...listeners}
         style={{
@@ -44,8 +51,16 @@ export function SortableColumn({ id, children }: SortableColumnProps) {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
+          pointerEvents: "none",  // don't intercept clicks until hovered
         }}
-        className="group-hover:opacity-100"
+        onMouseEnter={(e) => {
+          e.currentTarget.style.opacity = '1';
+          e.currentTarget.style.pointerEvents = 'all';
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.opacity = '0';
+          e.currentTarget.style.pointerEvents = 'none';
+        }}
       >
         <GripHorizontal size={14} />
       </div>

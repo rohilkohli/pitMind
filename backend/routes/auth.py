@@ -23,12 +23,12 @@ async def verify_token(authorization: str = Header(None)) -> str:
     if not token:
         raise HTTPException(status_code=401, detail="Authorization header malformed")
     
-    # In development without Firebase, allow mock token for testing
+    # Only in non-production, allow dev testing
+    if os.getenv("ENVIRONMENT") == "development" and token.startswith("dev_"):
+        return token.replace("Bearer ", "")
+        
     if firebase_auth is None:
         logger.warning("Firebase auth not configured; using mock UID for development")
-        # Only in non-production, allow dev testing
-        if os.getenv("ENVIRONMENT") == "development" and token.startswith("dev_"):
-            return token.replace("Bearer ", "")
         raise HTTPException(status_code=401, detail="Firebase authentication not configured")
         
     try:

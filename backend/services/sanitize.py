@@ -32,7 +32,7 @@ def telemetry_from_records(records: list[dict[str, Any]]) -> TelemetryPayload:
 
     laps: list[LapPoint] = []
     for row in records:
-        compound_raw = _clean_str(row.get("tyre_compound") or row.get("Compound"), 32).upper()
+        compound_raw = _clean_str(row.get("tyre_compound") or row.get("Compound") or row.get("compound"), 32).upper()
         compound = compound_raw if compound_raw in _ALLOWED_COMPOUNDS else (
             compound_raw[:16] if compound_raw else None
         )
@@ -55,15 +55,15 @@ def telemetry_from_records(records: list[dict[str, Any]]) -> TelemetryPayload:
         laps.append(
             LapPoint(
                 lap=lap,
-                lap_time_s=num("lap_time_s") or num("LapTime"),
-                sector1_s=num("sector1_s") or num("Sector1Time"),
-                sector2_s=num("sector2_s") or num("Sector2Time"),
-                sector3_s=num("sector3_s") or num("Sector3Time"),
-                tyre_wear_pct=num("tyre_wear_pct", 0, 100),
+                lap_time_s=num("lap_time_s") or num("LapTime") or num("lap_time"),
+                sector1_s=num("sector1_s") or num("Sector1Time") or num("sector1"),
+                sector2_s=num("sector2_s") or num("Sector2Time") or num("sector2"),
+                sector3_s=num("sector3_s") or num("Sector3Time") or num("sector3"),
+                tyre_wear_pct=num("tyre_wear_pct", 0, 100) or num("tyre_wear", 0, 100) or num("tyre_wear_pct"),
                 tyre_compound=compound,
-                fuel_kg=num("fuel_kg", 0, 200),
-                gap_ahead_s=num("gap_ahead_s"),
-                gap_behind_s=num("gap_behind_s"),
+                fuel_kg=num("fuel_kg", 0, 200) or num("fuel_load", 0, 200),
+                gap_ahead_s=num("gap_ahead_s") or num("gap_to_leader"),
+                gap_behind_s=num("gap_behind_s") or num("gap_to_car_behind"),
             )
         )
 

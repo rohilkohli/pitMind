@@ -59,8 +59,9 @@ function buildHeaders(token?: string, includeContentType = true): Record<string,
   if (includeContentType) {
     headers["Content-Type"] = "application/json";
   }
-  if (token) {
-    headers["Authorization"] = `Bearer ${token}`;
+  const authToken = token || (import.meta.env.DEV ? "dev_mock" : undefined);
+  if (authToken) {
+    headers["Authorization"] = `Bearer ${authToken}`;
   }
   return headers;
 }

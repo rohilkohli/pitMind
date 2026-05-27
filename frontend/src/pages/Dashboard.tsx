@@ -298,7 +298,7 @@ export function Dashboard() {
         {/* Decision Log — top of left panel */}
         <MinimizablePanel
           id="dashboard__weather-module"
-          header={<></>}
+          header={<div className="pm-panel-title">DECISION LOG</div>}
           headerStyle={{ padding: '10px 16px', borderBottom: '1px solid var(--border)' }}
           className="pm-panel"
           style={{ flex: "0 0 auto", maxHeight: '38vh', overflow: 'hidden' }}
@@ -312,7 +312,7 @@ export function Dashboard() {
         {/* Driver Standings */}
         <MinimizablePanel
           id="dashboard__driver-standings"
-          header={<></>}
+          header={<div className="pm-panel-title">DRIVER STANDINGS</div>}
           headerStyle={{ padding: '10px 16px', borderBottom: '1px solid var(--border)' }}
           className="pm-panel"
           style={{ flex: "0 0 auto" }}
@@ -324,7 +324,7 @@ export function Dashboard() {
         {/* Live System Feed */}
         <MinimizablePanel
           id="dashboard__team-radio-feed"
-          header={<></>}
+          header={<div className="pm-panel-title">LIVE SYSTEM FEED</div>}
           headerStyle={{ padding: '10px 16px', borderBottom: '1px solid var(--border)' }}
           className="pm-panel"
           style={{ flex: "0 0 auto", minHeight: 48 }}
@@ -338,7 +338,7 @@ export function Dashboard() {
         {/* Health Console */}
         <MinimizablePanel
           id="dashboard__session-info"
-          header={<></>}
+          header={<div className="pm-panel-title">SYSTEM HEALTH</div>}
           headerStyle={{ padding: '10px 16px', borderBottom: '1px solid var(--border)' }}
           className="pm-panel"
           style={{ flex: "0 0 auto" }}
@@ -356,165 +356,172 @@ export function Dashboard() {
   const renderCenterColumn = () => (
     <div style={{ display: "flex", flexDirection: "column", gap: 1, height: "100%", minHeight: 0, overflow: "hidden", background: "var(--border)" }}>
       <div style={{ flex: 1, minHeight: 0, overflowY: "auto", display: "flex", flexDirection: "column", gap: 1, scrollbarGutter: "stable" }}>
-      <MinimizablePanel
-        id="dashboard__gap-chart"
-        header={
-          <>
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <div className="relative overflow-hidden group">
-                <input
-                  type="file"
-                  onChange={handleUploadTelemetry}
-                  style={{ position: "absolute", inset: 0, opacity: 0, cursor: "pointer", zIndex: 10 }}
-                  accept=".csv,.json"
-                />
-                <button
-                  disabled={isUploading}
+        <MinimizablePanel
+          id="dashboard__gap-chart"
+          header={
+            <>
+              <div className="pm-panel-title">LAP TIME TRACE</div>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginLeft: 'auto' }}>
+                <div className="relative overflow-hidden group" style={{ position: 'relative' }}>
+                  <input
+                    type="file"
+                    onChange={handleUploadTelemetry}
+                    style={{ position: "absolute", inset: 0, opacity: 0, cursor: "pointer", zIndex: 10 }}
+                    accept=".csv,.json"
+                  />
+                  <button
+                    disabled={isUploading}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 6,
+                      padding: "4px 10px",
+                      border: "1px solid var(--border-active)",
+                      background: "var(--f1-red-dim)",
+                      color: "var(--f1-red)",
+                      fontFamily: "'Barlow Condensed', sans-serif",
+                      fontSize: 10,
+                      fontWeight: 700,
+                      letterSpacing: "0.15em",
+                      textTransform: "uppercase",
+                      cursor: "pointer",
+                      clipPath: "polygon(4px 0, 100% 0, calc(100% - 4px) 100%, 0 100%)",
+                    }}
+                  >
+                    {isUploading ? <Loader2 style={{ width: 10, height: 10 }} className="animate-spin" /> : <Upload style={{ width: 10, height: 10 }} />}
+                    {isUploading ? "Ingesting..." : "Ingest Data"}
+                  </button>
+                </div>
+                <span
                   style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 6,
-                    padding: "4px 10px",
-                    border: "1px solid var(--border-active)",
-                    background: "var(--f1-red-dim)",
-                    color: "var(--f1-red)",
-                    fontFamily: "'Barlow Condensed', sans-serif",
+                    fontFamily: "'Orbitron', sans-serif",
                     fontSize: 10,
                     fontWeight: 700,
-                    letterSpacing: "0.15em",
-                    textTransform: "uppercase",
-                    cursor: "pointer",
-                    clipPath: "polygon(4px 0, 100% 0, calc(100% - 4px) 100%, 0 100%)",
+                    color: "var(--f1-red)",
+                    background: "var(--f1-red-dim)",
+                    border: "1px solid var(--border-active)",
+                    padding: "2px 8px",
                   }}
                 >
-                  {isUploading ? <Loader2 style={{ width: 10, height: 10 }} className="animate-spin" /> : <Upload style={{ width: 10, height: 10 }} />}
-                  {isUploading ? "Ingesting..." : "Ingest Data"}
+                  {localPayload.driver}
+                </span>
+                <span
+                  style={{
+                    fontFamily: "'IBM Plex Mono', monospace",
+                    fontSize: 10,
+                    color: "var(--text-secondary)",
+                    background: "rgba(255,255,255,0.04)",
+                    border: "1px solid var(--border)",
+                    padding: "2px 8px",
+                  }}
+                >
+                  LAPS: {localPayload.laps.length}
+                </span>
+                <button
+                  onClick={() => handleExportTelemetry('csv')}
+                  style={{ color: "var(--text-secondary)", background: "none", border: "none", cursor: "pointer", padding: 4 }}
+                  title="Export CSV"
+                >
+                  <Download style={{ width: 14, height: 14 }} />
                 </button>
               </div>
-              <span
-                style={{
-                  fontFamily: "'Orbitron', sans-serif",
-                  fontSize: 10,
-                  fontWeight: 700,
-                  color: "var(--f1-red)",
-                  background: "var(--f1-red-dim)",
-                  border: "1px solid var(--border-active)",
-                  padding: "2px 8px",
-                }}
-              >
-                {localPayload.driver}
-              </span>
-              <span
-                style={{
-                  fontFamily: "'IBM Plex Mono', monospace",
-                  fontSize: 10,
-                  color: "var(--text-secondary)",
-                  background: "rgba(255,255,255,0.04)",
-                  border: "1px solid var(--border)",
-                  padding: "2px 8px",
-                }}
-              >
-                LAPS: {localPayload.laps.length}
-              </span>
-              <button
-                onClick={() => handleExportTelemetry('csv')}
-                style={{ color: "var(--text-secondary)", background: "none", border: "none", cursor: "pointer", padding: 4 }}
-                title="Export CSV"
-              >
-                <Download style={{ width: 14, height: 14 }} />
-              </button>
-            </div>
-          </>
-        }
-        headerStyle={{ padding: '10px 16px', borderBottom: '1px solid var(--border)' }}
-        className="pm-panel"
-        style={{ flex: "0 0 auto", minHeight: 48 }}
-        animationDuration={350}
-      >
-        <Suspense fallback={<div style={{ height: 300, display: "flex", alignItems: "center", justifyContent: "center" }}><Loader2 className="animate-spin" style={{ color: "var(--f1-red)", width: 24, height: 24 }} /></div>}>
-          <LapChart data={localPayload.laps} />
-        </Suspense>
-      </MinimizablePanel>
-
-      <MinimizablePanel
-        id="dashboard__race-control-messages"
-        header={<></>}
-        headerStyle={{ padding: '10px 16px', borderBottom: '1px solid var(--border)' }}
-        className="pm-panel"
-        style={{ flex: "0 0 auto", position: "relative", overflow: "hidden" }}
-        defaultCollapsed={false}
-        persist={false}
-      >
-        <div
-          style={{
-            position: "absolute",
-            inset: 0,
-            background: "radial-gradient(circle at 50% 50%, rgba(232,0,45,0.05), transparent 70%)",
-            animation: "subtle-glow 3s infinite ease-in-out",
-            pointerEvents: "none",
-          }}
-        />
-
-        <div className="pm-throttle-bar" style={{ marginBottom: 12, position: "relative", zIndex: 1 }}>
-          <div className="pm-throttle-fill" />
-        </div>
-
-        <div style={{ position: "relative", zIndex: 1 }}>
-          <p style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 11, color: "var(--text-secondary)", lineHeight: 1.6, marginBottom: 16, fontStyle: "italic" }}>
-            Predictive model analyzing tyre degradation, fuel delta, and safety car probability.
-          </p>
-
-          {recoError && (
-            <div style={{ padding: "8px 12px", border: "1px solid var(--border-active)", background: "var(--f1-red-dim)", marginBottom: 12 }}>
-              <span style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 10, color: "var(--f1-red)" }}>{recoError}</span>
-            </div>
-          )}
-
-          {reco && (
-            <div style={{ padding: "14px", background: "var(--f1-red-dim)", border: "1px solid var(--border-active)", marginBottom: 16, borderLeft: "3px solid var(--f1-red)" }}>
-              <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: 10, fontWeight: 700, letterSpacing: "0.25em", textTransform: "uppercase", color: "var(--text-secondary)", marginBottom: 6 }}>Generated Directive</div>
-              <div style={{ fontFamily: "'Orbitron', sans-serif", fontSize: 22, fontWeight: 900, color: "var(--text-primary)", textTransform: "uppercase", letterSpacing: "-0.02em", lineHeight: 1 }}>{reco.action}</div>
-            </div>
-          )}
-
-          <button
-            onClick={onRecommend}
-            disabled={recoLoading}
-            className="pm-btn-primary"
-            style={{ marginBottom: 10 }}
-          >
-            {recoLoading ? "Processing Inference..." : "Execute Command"}
-          </button>
-          <div style={{ textAlign: "center", fontFamily: "'IBM Plex Mono', monospace", fontSize: 10, color: "var(--text-secondary)", letterSpacing: "0.15em", textTransform: "uppercase" }}>
-            AI READY — GRANITE v1.3 — IBM WATSONX
-          </div>
-        </div>
-      </MinimizablePanel>
-
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 1, background: "var(--border)" }}>
-        <MinimizablePanel
-          id="dashboard__pit-stop-history"
-          header={<></>}
+            </>
+          }
           headerStyle={{ padding: '10px 16px', borderBottom: '1px solid var(--border)' }}
           className="pm-panel"
-          style={{ minHeight: 48 }}
+          style={{ flex: "0 0 auto", minHeight: 350 }}
+          animationDuration={350}
         >
-          <Suspense fallback={<div className="skeleton-row" style={{ height: 320 }} />}>
-            <FastF1Loader onDataLoaded={(data) => setLocalPayload(data)} />
+          <Suspense fallback={<div style={{ height: 300, display: "flex", alignItems: "center", justifyContent: "center" }}><Loader2 className="animate-spin" style={{ color: "var(--f1-red)", width: 24, height: 24 }} /></div>}>
+            <LapChart 
+              data={localPayload.laps.map(lap => ({ 
+                lap: lap.lap, 
+                [localPayload.driver || 'VER']: lap.lap_time_s 
+              }))} 
+              showTitle={false} 
+            />
           </Suspense>
         </MinimizablePanel>
 
         <MinimizablePanel
-          id="dashboard__live-timing"
-          header={<></>}
+          id="dashboard__race-control-messages"
+          header={<div className="pm-panel-title">STRATEGY ENGINE</div>}
           headerStyle={{ padding: '10px 16px', borderBottom: '1px solid var(--border)' }}
           className="pm-panel"
-          style={{ minHeight: 48 }}
-          bodyStyle={{ overflowY: 'auto', maxHeight: 280 }}
+          style={{ flex: "0 0 auto", position: "relative", overflow: "hidden" }}
+          defaultCollapsed={false}
+          persist={false}
         >
-          <EventTimeline />
+          <div
+            style={{
+              position: "absolute",
+              inset: 0,
+              background: "radial-gradient(circle at 50% 50%, rgba(232,0,45,0.05), transparent 70%)",
+              animation: "subtle-glow 3s infinite ease-in-out",
+              pointerEvents: "none",
+            }}
+          />
+
+          <div className="pm-throttle-bar" style={{ marginBottom: 12, position: "relative", zIndex: 1 }}>
+            <div className="pm-throttle-fill" />
+          </div>
+
+          <div style={{ position: "relative", zIndex: 1 }}>
+            <p style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 11, color: "var(--text-secondary)", lineHeight: 1.6, marginBottom: 16, fontStyle: "italic" }}>
+              Predictive model analyzing tyre degradation, fuel delta, and safety car probability.
+            </p>
+
+            {recoError && (
+              <div style={{ padding: "8px 12px", border: "1px solid var(--border-active)", background: "var(--f1-red-dim)", marginBottom: 12 }}>
+                <span style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 10, color: "var(--f1-red)" }}>{recoError}</span>
+              </div>
+            )}
+
+            {reco && (
+              <div style={{ padding: "14px", background: "var(--f1-red-dim)", border: "1px solid var(--border-active)", marginBottom: 16, borderLeft: "3px solid var(--f1-red)" }}>
+                <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: 10, fontWeight: 700, letterSpacing: "0.25em", textTransform: "uppercase", color: "var(--text-secondary)", marginBottom: 6 }}>Generated Directive</div>
+                <div style={{ fontFamily: "'Orbitron', sans-serif", fontSize: 22, fontWeight: 900, color: "var(--text-primary)", textTransform: "uppercase", letterSpacing: "-0.02em", lineHeight: 1 }}>{reco.action}</div>
+              </div>
+            )}
+
+            <button
+              onClick={onRecommend}
+              disabled={recoLoading}
+              className="pm-btn-primary"
+              style={{ marginBottom: 10 }}
+            >
+              {recoLoading ? "Processing Inference..." : "Execute Command"}
+            </button>
+            <div style={{ textAlign: "center", fontFamily: "'IBM Plex Mono', monospace", fontSize: 10, color: "var(--text-secondary)", letterSpacing: "0.15em", textTransform: "uppercase" }}>
+              AI READY — GRANITE v1.3 — IBM WATSONX
+            </div>
+          </div>
         </MinimizablePanel>
-      </div>
+
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 1, background: "var(--border)" }}>
+          <MinimizablePanel
+            id="dashboard__pit-stop-history"
+            header={<div className="pm-panel-title">FASTF1 LOADER</div>}
+            headerStyle={{ padding: '10px 16px', borderBottom: '1px solid var(--border)' }}
+            className="pm-panel"
+            style={{ minHeight: 48 }}
+          >
+            <Suspense fallback={<div className="skeleton-row" style={{ height: 320 }} />}>
+              <FastF1Loader onDataLoaded={(data) => setLocalPayload(data)} />
+            </Suspense>
+          </MinimizablePanel>
+
+          <MinimizablePanel
+            id="dashboard__live-timing"
+            header={<div className="pm-panel-title">EVENT TIMELINE</div>}
+            headerStyle={{ padding: '10px 16px', borderBottom: '1px solid var(--border)' }}
+            className="pm-panel"
+            style={{ minHeight: 48 }}
+            bodyStyle={{ overflowY: 'auto', maxHeight: 280 }}
+          >
+            <EventTimeline />
+          </MinimizablePanel>
+        </div>
       </div>
     </div>
   );
@@ -526,7 +533,12 @@ export function Dashboard() {
       {/* PitMind Assistant Chat — TOP, takes most of the space */}
       <MinimizablePanel
         id="dashboard__race-control-chat"
-        header={<></>}
+        header={
+          <>
+            <div className="pm-panel-title">AI STRATEGY ORACLE</div>
+            <span className="pm-panel-badge pm-badge-ok" style={{ marginLeft: 'auto' }}>◆ GRANITE</span>
+          </>
+        }
         headerStyle={{ padding: '10px 16px', borderBottom: '1px solid var(--border)' }}
         className="pm-panel"
         style={{ flex: "1 1 0", minHeight: 280, overflow: 'hidden' }}
@@ -591,7 +603,7 @@ export function Dashboard() {
       {/* Confidence Breakdown — BOTTOM */}
       <MinimizablePanel
         id="dashboard__fastest-laps"
-        header={<></>}
+        header={<div className="pm-panel-title">CONFIDENCE BREAKDOWN</div>}
         headerStyle={{ padding: '10px 16px', borderBottom: '1px solid var(--border)' }}
         className="pm-panel"
         style={{ flex: "0 0 auto", maxHeight: '32vh', overflow: 'hidden' }}

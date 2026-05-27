@@ -91,8 +91,8 @@ export const MinimizablePanel: React.FC<MinimizablePanelProps> = ({
         role="region"
         aria-labelledby={`${id}-header`}
         style={{
-          maxHeight: isCollapsed ? '0px' : '9999px',
-          overflow: isCollapsed ? 'hidden' : 'visible',
+          maxHeight: isCollapsed ? '0px' : '100000px',
+          overflow: 'hidden',
           transition: `max-height ${dur}ms cubic-bezier(0.4, 0, 0.2, 1), opacity ${opacityDur}ms ease`,
           opacity: isCollapsed ? 0 : 1,
           flex: isCollapsed ? '0 0 0px' : '1 1 auto',
@@ -108,7 +108,7 @@ export const MinimizablePanel: React.FC<MinimizablePanelProps> = ({
             flexDirection: 'column',
             flex: '1 1 auto',
             minHeight: 0,
-            overflow: 'clip',
+            overflow: 'hidden',
             ...bodyStyle,
           }}
         >

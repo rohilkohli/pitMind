@@ -140,8 +140,8 @@ async def run_strategy_pipeline(payload: TelemetryPayload) -> StrategyRecommenda
 
     system = (
         "You are PitMind, an F1 race engineer copilot. Return ONLY JSON with keys "
-        "summary, evidence, confidence, assumptions, alternative. Summary must be 1-3 sentences, "
-        "confidence is 0-100, evidence/assumptions are string arrays. Use plausible motorsport reasoning."
+        "summary, evidence, confidence, assumptions, alternative. Keep the summary extremely concise, clean, and informative (1-2 short sentences max). "
+        "confidence is 0-100, evidence/assumptions are short string arrays (max 2 items each, bullet-point style). Use precise motorsport reasoning."
     )
     user = (
         f"Telemetry summary for {payload.driver} at {payload.circuit}: {context}. "
@@ -181,7 +181,7 @@ async def run_strategy_pipeline(payload: TelemetryPayload) -> StrategyRecommenda
 
 
 async def compare_narrative(summary_a: str, summary_b: str) -> str:
-    system = "You are PitMind. Compare two drivers' stint narratives for engineers. Under 200 words."
+    system = "You are PitMind. Compare two drivers' stint narratives for engineers. Be extremely concise, clean, and informative. Use short bullet points. Maximum 50 words."
     user = f"Driver A:\n{summary_a}\n\nDriver B:\n{summary_b}"
     return (await granite.granite_generate(system, user)).strip()
 
@@ -200,7 +200,7 @@ async def debrief_from_text(doc_text: str) -> str:
         "## 3. CRITICAL STRATEGY CALLS\n"
         "## 4. RISK & INCIDENT ASSESSMENT\n"
         "## 5. FORWARD-LOOKING ACTIONS (NEXT RACE)\n\n"
-        "Keep the tone professional, objective, and data-driven. Limit to 300 words."
+        "Keep the tone professional, objective, and data-driven. Be extremely concise and informative. Use brief bullet points instead of long paragraphs. Limit to 150 words total."
     )
     user = f"SESSION DATA EXCERPT:\n{doc_text[:15000]}"
     return (await granite.granite_generate(system, user)).strip()

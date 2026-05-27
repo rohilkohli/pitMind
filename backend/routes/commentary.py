@@ -55,8 +55,8 @@ async def chat_explain(
     uid: str = Depends(verify_token),
 ) -> ChatResponse:
     system = (
-        "You are PitMind Granite assistant: concise motorsport strategy explanations only. "
-        "Refuse unrelated topics."
+        "You are PitMind Granite assistant. Provide extremely clean, short, and informative motorsport strategy explanations. "
+        "Use brief bullet points where helpful. Refuse unrelated topics. Maximum 3 sentences."
     )
     if len(body.messages) > MAX_CHAT_MESSAGES:
         raise HTTPException(status_code=400, detail=f"Too many messages; max {MAX_CHAT_MESSAGES}.")

@@ -9,6 +9,7 @@
 [![Python](https://img.shields.io/badge/Python-3.12-3776AB.svg?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
 [![React](https://img.shields.io/badge/React-19.0-61DAFB.svg?style=for-the-badge&logo=react&logoColor=black)](https://react.dev/)
 [![Live Status](https://img.shields.io/badge/Status-Live_on_IBM_Cloud-0062FF.svg?style=for-the-badge&logo=ibm&logoColor=white)](https://pitmind-frontend.2adms9tj6nke.eu-de.codeengine.appdomain.cloud)
+[![YouTube](https://img.shields.io/badge/YouTube-Video_Pitch-FF0000?style=for-the-badge&logo=youtube&logoColor=white)](https://www.youtube.com/watch?v=ulcNTG_oc8g)
 
 [Live Demo](#-live-demo) • [Features](#-key-features) • [Quickstart](#-quickstart) • [Architecture](#-architecture) • [Documentation](./docs)
 
@@ -40,6 +41,7 @@ Experience PitMind running live on **IBM Cloud Code Engine**:
 
 🚀 **[Launch PitMind Frontend Dashboard](https://pitmind-frontend.2adms9tj6nke.eu-de.codeengine.appdomain.cloud)**  
 ⚡ **[Explore PitMind Backend API (Swagger UI)](https://pitmind-backend.2adms9tj6nke.eu-de.codeengine.appdomain.cloud/docs)**  
+🎥 **[Watch the 3-Minute Video Pitch on YouTube](https://www.youtube.com/watch?v=ulcNTG_oc8g)**
 
 ### 📸 Project Walkthrough
 

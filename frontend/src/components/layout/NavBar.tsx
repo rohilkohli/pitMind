@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import { useOptionalAuthUser } from "../../hooks/useOptionalAuthUser";
 import { Link, useLocation } from "react-router-dom";
+import { auth } from "../../lib/firebase";
 
 export function NavBar() {
   const { user } = useOptionalAuthUser();
@@ -76,20 +77,38 @@ export function NavBar() {
         </div>
 
         {user ? (
-          <Link
-            to={isEngineer ? "/fan" : "/dashboard"}
-            className="pm-login-btn"
-            style={{
-              clipPath: "polygon(8px 0, 100% 0, calc(100% - 8px) 100%, 0 100%)",
-              fontFamily: "'Barlow Condensed', sans-serif",
-              fontWeight: 700,
-              fontSize: "10px",
-              letterSpacing: "0.15em",
-              borderRadius: 0,
-            }}
-          >
-            {isEngineer ? "FAN MODE" : "ENGINEER"}
-          </Link>
+          <>
+            <Link
+              to={isEngineer ? "/fan" : "/dashboard"}
+              className="pm-login-btn"
+              style={{
+                clipPath: "polygon(8px 0, 100% 0, calc(100% - 8px) 100%, 0 100%)",
+                fontFamily: "'Barlow Condensed', sans-serif",
+                fontWeight: 700,
+                fontSize: "10px",
+                letterSpacing: "0.15em",
+                borderRadius: 0,
+              }}
+            >
+              {isEngineer ? "FAN MODE" : "ENGINEER"}
+            </Link>
+            <button
+              onClick={() => auth.signOut()}
+              className="pm-login-btn"
+              style={{
+                clipPath: "polygon(8px 0, 100% 0, calc(100% - 8px) 100%, 0 100%)",
+                fontFamily: "'Barlow Condensed', sans-serif",
+                fontWeight: 700,
+                fontSize: "10px",
+                letterSpacing: "0.15em",
+                borderRadius: 0,
+                background: "var(--carbon)",
+                border: "1px solid var(--border)",
+              }}
+            >
+              LOG OUT
+            </button>
+          </>
         ) : (
           <Link
             to="/login"

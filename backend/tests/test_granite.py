@@ -1,4 +1,14 @@
-import pytest
+import json
+
+from backend.services.granite import (
+    _normalize_strategy_json,
+    _extract_json_object,
+    _repair_strategy_payload,
+    _coerce_strategy_payload,
+    _local_fallback_response,
+)
+
+
 def test_repair_strategy_payload_basic():
     content = "The strategy is looking good."
     system = "You are a race strategist."
@@ -53,15 +63,6 @@ def test_repair_strategy_payload_truncation():
     assert result["recommendation"] == "A" * 160
     assert result["prose"] == "A" * 200
     assert result["assumptions"] == ["B" * 200]
-
-import json
-from backend.services.granite import (
-    _normalize_strategy_json,
-    _extract_json_object,
-    _repair_strategy_payload,
-    _coerce_strategy_payload,
-    _local_fallback_response,
-)
 
 def test_local_fallback_response_normal():
     system = "You are an AI."

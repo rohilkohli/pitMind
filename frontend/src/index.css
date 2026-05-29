@@ -25,13 +25,11 @@
   --text-primary: #f0f0f5;
   --text-secondary: #9a9aa3;
   --text-mono: #a0f0c0;
-  --border: rgba(255, 255, 255, 0.10);
+  --border: rgba(255, 255, 255, 0.1);
   --border-active: rgba(232, 0, 45, 0.5);
 
   /* Layout tokens */
   --topbar-height: 52px;
-
-
 
   /* Tyre Compounds */
   --tyre-soft: #e8002d;
@@ -157,21 +155,20 @@ h6 {
   z-index: 500;
   height: 52px;
   /* Premium layered glass */
-  background:
-    linear-gradient(
-      180deg,
-      rgba(255, 255, 255, 0.07) 0%,
-      rgba(17, 17, 22, 0.72) 30%,
-      rgba(10, 10, 14, 0.60) 100%
-    );
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.07) 0%,
+    rgba(17, 17, 22, 0.72) 30%,
+    rgba(10, 10, 14, 0.6) 100%
+  );
   backdrop-filter: blur(40px) saturate(200%) brightness(1.08);
   -webkit-backdrop-filter: blur(40px) saturate(200%) brightness(1.08);
   border-bottom: 1px solid rgba(255, 255, 255, 0.13);
   box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.10) inset,
+    0 1px 0 rgba(255, 255, 255, 0.1) inset,
     0 -1px 0 rgba(0, 0, 0, 0.5) inset,
     0 16px 48px rgba(0, 0, 0, 0.55),
-    0 4px 12px rgba(0, 0, 0, 0.40),
+    0 4px 12px rgba(0, 0, 0, 0.4),
     0 0 80px rgba(232, 0, 45, 0.06);
   display: flex;
   align-items: center;
@@ -184,13 +181,12 @@ h6 {
   content: "";
   position: absolute;
   inset: 0;
-  background:
-    linear-gradient(
-      105deg,
-      transparent 35%,
-      rgba(255, 255, 255, 0.045) 50%,
-      transparent 65%
-    );
+  background: linear-gradient(
+    105deg,
+    transparent 35%,
+    rgba(255, 255, 255, 0.045) 50%,
+    transparent 65%
+  );
   animation: glass-sweep 6s ease-in-out infinite;
   pointer-events: none;
   z-index: 0;
@@ -206,7 +202,9 @@ h6 {
   height: 2px;
   background: linear-gradient(90deg, var(--f1-red), rgba(232, 0, 45, 0.6));
   transition: width 2s ease;
-  box-shadow: 0 0 14px var(--f1-red), 0 0 30px rgba(232, 0, 45, 0.4);
+  box-shadow:
+    0 0 14px var(--f1-red),
+    0 0 30px rgba(232, 0, 45, 0.4);
   z-index: 1;
 }
 
@@ -218,21 +216,20 @@ h6 {
 
 .pm-mission-bar {
   /* Premium glass — stronger than nav since it's secondary */
-  background:
-    linear-gradient(
-      180deg,
-      rgba(255, 255, 255, 0.055) 0%,
-      rgba(14, 14, 20, 0.78) 28%,
-      rgba(8, 8, 12, 0.68) 100%
-    );
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.055) 0%,
+    rgba(14, 14, 20, 0.78) 28%,
+    rgba(8, 8, 12, 0.68) 100%
+  );
   backdrop-filter: blur(44px) saturate(210%) brightness(1.06);
   -webkit-backdrop-filter: blur(44px) saturate(210%) brightness(1.06);
   border-top: 1px solid rgba(255, 255, 255, 0.12);
   border-bottom: 1px solid rgba(255, 255, 255, 0.07);
   box-shadow:
     0 1px 0 rgba(255, 255, 255, 0.09) inset,
-    0 -1px 0 rgba(0, 0, 0, 0.60) inset,
-    0 20px 60px rgba(0, 0, 0, 0.50),
+    0 -1px 0 rgba(0, 0, 0, 0.6) inset,
+    0 20px 60px rgba(0, 0, 0, 0.5),
     0 8px 24px rgba(0, 0, 0, 0.35),
     0 0 60px rgba(232, 0, 45, 0.05),
     inset 0 0 40px rgba(255, 255, 255, 0.018);
@@ -245,13 +242,12 @@ h6 {
   position: absolute;
   inset: 0;
   /* Top-edge bright glass reflection */
-  background:
-    linear-gradient(
-      180deg,
-      rgba(255, 255, 255, 0.08) 0%,
-      rgba(255, 255, 255, 0.01) 40%,
-      transparent 100%
-    );
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.08) 0%,
+    rgba(255, 255, 255, 0.01) 40%,
+    transparent 100%
+  );
   pointer-events: none;
   z-index: 0;
 }
@@ -261,13 +257,12 @@ h6 {
   content: "";
   position: absolute;
   inset: 0;
-  background:
-    linear-gradient(
-      110deg,
-      transparent 30%,
-      rgba(255, 255, 255, 0.035) 50%,
-      transparent 70%
-    );
+  background: linear-gradient(
+    110deg,
+    transparent 30%,
+    rgba(255, 255, 255, 0.035) 50%,
+    transparent 70%
+  );
   animation: glass-sweep 8s ease-in-out infinite 1s;
   pointer-events: none;
   z-index: 0;
@@ -416,13 +411,12 @@ h6 {
 }
 /* Frosted glass card variant for strategy/analysis surfaces */
 .pm-panel.pm-glass-card {
-  background:
-    linear-gradient(
-      180deg,
-      rgba(255, 255, 255, 0.07) 0%,
-      rgba(14, 14, 20, 0.74) 28%,
-      rgba(8, 8, 12, 0.62) 100%
-    );
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.07) 0%,
+    rgba(14, 14, 20, 0.74) 28%,
+    rgba(8, 8, 12, 0.62) 100%
+  );
   backdrop-filter: blur(22px) saturate(180%) brightness(1.08);
   -webkit-backdrop-filter: blur(22px) saturate(180%) brightness(1.08);
   box-shadow:
@@ -436,13 +430,12 @@ h6 {
   content: "";
   position: absolute;
   inset: 0;
-  background:
-    linear-gradient(
-      180deg,
-      rgba(255, 255, 255, 0.07) 0%,
-      rgba(255, 255, 255, 0.01) 35%,
-      transparent 100%
-    );
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.07) 0%,
+    rgba(255, 255, 255, 0.01) 35%,
+    transparent 100%
+  );
   pointer-events: none;
   z-index: 0;
 }
@@ -474,8 +467,12 @@ h6 {
 }
 
 /* Tabular numerics for data alignment */
-.pm-kpi-value, .pm-health-val, .pm-pos, .pm-driver-gap,
-.pm-confidence-badge, .font-race {
+.pm-kpi-value,
+.pm-health-val,
+.pm-pos,
+.pm-driver-gap,
+.pm-confidence-badge,
+.font-race {
   font-variant-numeric: tabular-nums;
 }
 .pm-panel-title::before {
@@ -856,7 +853,9 @@ h6 {
 .pm-chat-input:focus {
   border-color: var(--f1-red);
   background: rgba(15, 15, 20, 0.9);
-  box-shadow: 0 0 0 1px rgba(232, 0, 45, 0.3) inset, 0 0 20px rgba(232, 0, 45, 0.1);
+  box-shadow:
+    0 0 0 1px rgba(232, 0, 45, 0.3) inset,
+    0 0 20px rgba(232, 0, 45, 0.1);
 }
 .pm-chat-input::placeholder {
   color: rgba(255, 255, 255, 0.3);
@@ -1058,10 +1057,10 @@ h6 {
   border: 1px solid rgba(100, 120, 255, 0.3);
 }
 .pm-badge-granite {
-  background: rgba(232, 0, 45, 0.10);
+  background: rgba(232, 0, 45, 0.1);
   color: var(--f1-red);
   border: 1px solid rgba(232, 0, 45, 0.28);
-  box-shadow: 0 0 14px rgba(232, 0, 45, 0.10);
+  box-shadow: 0 0 14px rgba(232, 0, 45, 0.1);
 }
 .pm-badge-ok {
   background: rgba(57, 255, 20, 0.08);
@@ -1784,20 +1783,19 @@ button,
 
 /* ── BOTTOM NAV (MOBILE) ─────────────────────────────────────────────────── */
 .pm-bottom-nav {
-  background:
-    linear-gradient(
-      0deg,
-      rgba(255, 255, 255, 0.06) 0%,
-      rgba(14, 14, 20, 0.82) 30%,
-      rgba(8, 8, 12, 0.72) 100%
-    );
+  background: linear-gradient(
+    0deg,
+    rgba(255, 255, 255, 0.06) 0%,
+    rgba(14, 14, 20, 0.82) 30%,
+    rgba(8, 8, 12, 0.72) 100%
+  );
   backdrop-filter: blur(40px) saturate(200%) brightness(1.06);
   -webkit-backdrop-filter: blur(40px) saturate(200%) brightness(1.06);
   border-top: 1px solid rgba(255, 255, 255, 0.12);
   box-shadow:
     0 -1px 0 rgba(255, 255, 255, 0.09) inset,
-    0 -12px 40px rgba(0, 0, 0, 0.50),
-    0 -4px 12px rgba(0, 0, 0, 0.30),
+    0 -12px 40px rgba(0, 0, 0, 0.5),
+    0 -4px 12px rgba(0, 0, 0, 0.3),
     0 0 50px rgba(232, 0, 45, 0.04);
   isolation: isolate;
   position: relative;

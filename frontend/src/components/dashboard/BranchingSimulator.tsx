@@ -115,8 +115,10 @@ const MOCK_SCENARIOS: PitScenario[] = [
 ];
 
 function confidenceColor(c: number) {
-  if (c >= 0.8) return { bg: "rgba(57,255,20,0.08)", border: "var(--neon-green)", text: "var(--neon-green)" };
-  if (c >= 0.65) return { bg: "rgba(255,152,0,0.08)", border: "var(--amber)", text: "var(--amber)" };
+  if (c >= 0.8)
+    return { bg: "rgba(57,255,20,0.08)", border: "var(--neon-green)", text: "var(--neon-green)" };
+  if (c >= 0.65)
+    return { bg: "rgba(255,152,0,0.08)", border: "var(--amber)", text: "var(--amber)" };
   return { bg: "rgba(225,6,0,0.08)", border: "var(--f1-red)", text: "var(--f1-red)" };
 }
 
@@ -165,33 +167,83 @@ export const BranchingSimulator: React.FC<BranchingSimulatorProps> = ({
                 position: "relative",
                 overflow: "hidden",
               }}
-              onMouseEnter={e => {
+              onMouseEnter={(e) => {
                 if (!isSelected) {
                   (e.currentTarget as HTMLDivElement).style.borderColor = "rgba(225,6,0,0.45)";
-                  (e.currentTarget as HTMLDivElement).style.boxShadow = "inset 0 1px 0 rgba(255,255,255,0.06), 0 8px 24px rgba(0,0,0,0.5)";
+                  (e.currentTarget as HTMLDivElement).style.boxShadow =
+                    "inset 0 1px 0 rgba(255,255,255,0.06), 0 8px 24px rgba(0,0,0,0.5)";
                 }
               }}
-              onMouseLeave={e => {
+              onMouseLeave={(e) => {
                 if (!isSelected) {
                   (e.currentTarget as HTMLDivElement).style.borderColor = "rgba(255,255,255,0.08)";
-                  (e.currentTarget as HTMLDivElement).style.boxShadow = "inset 0 1px 0 rgba(255,255,255,0.04), 0 4px 16px rgba(0,0,0,0.4)";
+                  (e.currentTarget as HTMLDivElement).style.boxShadow =
+                    "inset 0 1px 0 rgba(255,255,255,0.04), 0 4px 16px rgba(0,0,0,0.4)";
                 }
               }}
             >
               {/* Subtle top highlight line */}
-              <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 1, background: isSelected ? "linear-gradient(90deg, transparent, var(--f1-red), transparent)" : "linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent)" }} />
+              <div
+                style={{
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  height: 1,
+                  background: isSelected
+                    ? "linear-gradient(90deg, transparent, var(--f1-red), transparent)"
+                    : "linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent)",
+                }}
+              />
 
               {/* Header row */}
-              <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 8 }}>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "flex-start",
+                  justifyContent: "space-between",
+                  gap: 8,
+                }}
+              >
                 <div>
-                  <div style={{ fontFamily: "'Orbitron', sans-serif", fontSize: 11, fontWeight: 700, color: "var(--text-primary)", textTransform: "uppercase", letterSpacing: "0.08em" }}>
+                  <div
+                    style={{
+                      fontFamily: "'Orbitron', sans-serif",
+                      fontSize: 11,
+                      fontWeight: 700,
+                      color: "var(--text-primary)",
+                      textTransform: "uppercase",
+                      letterSpacing: "0.08em",
+                    }}
+                  >
                     {scenario.label}
                   </div>
-                  <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: 10, color: "var(--text-secondary)", marginTop: 4, textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                  <div
+                    style={{
+                      fontFamily: "'Barlow Condensed', sans-serif",
+                      fontSize: 10,
+                      color: "var(--text-secondary)",
+                      marginTop: 4,
+                      textTransform: "uppercase",
+                      letterSpacing: "0.05em",
+                    }}
+                  >
                     {scenario.description}
                   </div>
                 </div>
-                <div style={{ padding: "3px 8px", borderRadius: 2, background: cc.bg, border: `1px solid ${cc.border}`, color: cc.text, fontFamily: "'Orbitron', sans-serif", fontSize: 12, fontWeight: 700, flexShrink: 0 }}>
+                <div
+                  style={{
+                    padding: "3px 8px",
+                    borderRadius: 2,
+                    background: cc.bg,
+                    border: `1px solid ${cc.border}`,
+                    color: cc.text,
+                    fontFamily: "'Orbitron', sans-serif",
+                    fontSize: 12,
+                    fontWeight: 700,
+                    flexShrink: 0,
+                  }}
+                >
                   {(scenario.confidence * 100).toFixed(0)}%
                 </div>
               </div>
@@ -206,20 +258,43 @@ export const BranchingSimulator: React.FC<BranchingSimulatorProps> = ({
                     colored: true,
                     positive: scenario.predictedGap <= 0,
                   },
-                  { label: "Lap Time", value: `${scenario.predictedLapTime.toFixed(1)}s`, colored: false },
-                ].map(m => (
-                  <div key={m.label} style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                    <span style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: 10, color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.1em" }}>
+                  {
+                    label: "Lap Time",
+                    value: `${scenario.predictedLapTime.toFixed(1)}s`,
+                    colored: false,
+                  },
+                ].map((m) => (
+                  <div
+                    key={m.label}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                    }}
+                  >
+                    <span
+                      style={{
+                        fontFamily: "'Barlow Condensed', sans-serif",
+                        fontSize: 10,
+                        color: "var(--text-secondary)",
+                        textTransform: "uppercase",
+                        letterSpacing: "0.1em",
+                      }}
+                    >
                       {m.label}
                     </span>
-                    <span style={{
-                      fontFamily: "'Orbitron', sans-serif",
-                      fontSize: 11,
-                      fontWeight: 700,
-                      color: m.colored
-                        ? (m.positive ? "var(--neon-green)" : "var(--f1-red)")
-                        : "var(--text-primary)",
-                    }}>
+                    <span
+                      style={{
+                        fontFamily: "'Orbitron', sans-serif",
+                        fontSize: 11,
+                        fontWeight: 700,
+                        color: m.colored
+                          ? m.positive
+                            ? "var(--neon-green)"
+                            : "var(--f1-red)"
+                          : "var(--text-primary)",
+                      }}
+                    >
                       {m.value}
                     </span>
                   </div>
@@ -228,9 +303,26 @@ export const BranchingSimulator: React.FC<BranchingSimulatorProps> = ({
 
               {/* Selected indicator */}
               {isSelected && (
-                <div style={{ display: "flex", alignItems: "center", gap: 6, paddingTop: 8, borderTop: "1px solid rgba(225,6,0,0.2)" }}>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 6,
+                    paddingTop: 8,
+                    borderTop: "1px solid rgba(225,6,0,0.2)",
+                  }}
+                >
                   <CheckCircle size={12} color="var(--f1-red)" />
-                  <span style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: 10, color: "var(--f1-red)", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em" }}>
+                  <span
+                    style={{
+                      fontFamily: "'Barlow Condensed', sans-serif",
+                      fontSize: 10,
+                      color: "var(--f1-red)",
+                      fontWeight: 700,
+                      textTransform: "uppercase",
+                      letterSpacing: "0.1em",
+                    }}
+                  >
                     Selected
                   </span>
                 </div>
@@ -242,17 +334,30 @@ export const BranchingSimulator: React.FC<BranchingSimulatorProps> = ({
 
       {/* Detailed scenario view */}
       {selectedScenario && (
-        <div style={{
-          border: "1px solid rgba(255,255,255,0.08)",
-          background: "linear-gradient(135deg, rgba(255,255,255,0.03) 0%, rgba(10,10,11,0.92) 100%)",
-          backdropFilter: "blur(16px)",
-          WebkitBackdropFilter: "blur(16px)",
-          padding: "20px",
-          boxShadow: "inset 0 1px 0 rgba(255,255,255,0.04), 0 8px 32px rgba(0,0,0,0.5)",
-          position: "relative",
-          overflow: "hidden",
-        }}>
-          <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 1, background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.06), transparent)" }} />
+        <div
+          style={{
+            border: "1px solid rgba(255,255,255,0.08)",
+            background:
+              "linear-gradient(135deg, rgba(255,255,255,0.03) 0%, rgba(10,10,11,0.92) 100%)",
+            backdropFilter: "blur(16px)",
+            WebkitBackdropFilter: "blur(16px)",
+            padding: "20px",
+            boxShadow: "inset 0 1px 0 rgba(255,255,255,0.04), 0 8px 32px rgba(0,0,0,0.5)",
+            position: "relative",
+            overflow: "hidden",
+          }}
+        >
+          <div
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              right: 0,
+              height: 1,
+              background:
+                "linear-gradient(90deg, transparent, rgba(255,255,255,0.06), transparent)",
+            }}
+          />
           <div className="grid gap-6 md:grid-cols-2">
             {/* Left: Pros & Cons */}
             <div className="space-y-4">
@@ -297,12 +402,19 @@ export const BranchingSimulator: React.FC<BranchingSimulatorProps> = ({
                 {selectedScenario.timeline.map((entry, idx) => (
                   <div
                     key={idx}
-                    style={{ padding: "10px 12px", border: "1px solid rgba(255,255,255,0.07)", background: "rgba(0,0,0,0.25)", backdropFilter: "blur(8px)" }}
+                    style={{
+                      padding: "10px 12px",
+                      border: "1px solid rgba(255,255,255,0.07)",
+                      background: "rgba(0,0,0,0.25)",
+                      backdropFilter: "blur(8px)",
+                    }}
                     className="text-xs text-white"
                   >
                     <div className="flex items-center justify-between mb-1">
                       <span className="font-semibold">Lap {entry.lap}</span>
-                      <span className={`font-mono ${entry.delta.includes("+") ? "text-red-400" : "text-emerald-400"}`}>
+                      <span
+                        className={`font-mono ${entry.delta.includes("+") ? "text-red-400" : "text-emerald-400"}`}
+                      >
                         {entry.delta}
                       </span>
                     </div>

@@ -20,7 +20,7 @@ export function exportToCsv(filename: string, rows: Record<string, unknown>[]) {
           if (typeof cell === "string" && cell.search(/("|,|\n)/g) >= 0) cell = `"${cell}"`;
           return cell;
         })
-        .join(separator)
+        .join(separator),
     ),
   ].join("\n");
 
@@ -38,7 +38,9 @@ export function exportToCsv(filename: string, rows: Record<string, unknown>[]) {
 }
 
 export function exportToJson(filename: string, data: object) {
-  const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json;charset=utf-8;" });
+  const blob = new Blob([JSON.stringify(data, null, 2)], {
+    type: "application/json;charset=utf-8;",
+  });
   const link = document.createElement("a");
   if (link.download !== undefined) {
     const url = URL.createObjectURL(blob);

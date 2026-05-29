@@ -130,8 +130,10 @@ function SpeedLinesCanvas() {
 
     // Pause when canvas is off-screen
     const observer = new IntersectionObserver(
-      ([entry]) => { isVisible = entry.isIntersecting; },
-      { threshold: 0 }
+      ([entry]) => {
+        isVisible = entry.isIntersecting;
+      },
+      { threshold: 0 },
     );
     observer.observe(canvas);
 
@@ -243,112 +245,112 @@ export default function App() {
 
       {/* App content above canvas */}
       <PanelStateProvider>
-      <div style={{ position: "relative", zIndex: 10, minHeight: "100vh" }}>
-        <Routes>
-          <Route
-            path="/login"
-            element={
-              <Suspense fallback={<PageLoader label="Loading login..." />}>
-                <Login />
-              </Suspense>
-            }
-          />
-
-          {/* Fan Mode is unauthenticated */}
-          <Route
-            path="/fan"
-            element={
-              <PageShell>
-                <Suspense fallback={<PageLoader label="Loading fan view..." />}>
-                  <FanMode />
+        <div style={{ position: "relative", zIndex: 10, minHeight: "100vh" }}>
+          <Routes>
+            <Route
+              path="/login"
+              element={
+                <Suspense fallback={<PageLoader label="Loading login..." />}>
+                  <Login />
                 </Suspense>
-              </PageShell>
-            }
-          />
+              }
+            />
 
-          {/* Dashboard is restricted to authenticated engineers */}
-          <Route
-            path="/dashboard"
-            element={
-              <RequireAuth>
-                <StreamProvider wsUrl={defaultWsUrl}>
-                  <RoleProvider>
-                    <PageShell>
-                      <Suspense fallback={<PageLoader label="Loading engineer console..." />}>
-                        <Dashboard />
-                      </Suspense>
-                    </PageShell>
-                  </RoleProvider>
-                </StreamProvider>
-              </RequireAuth>
-            }
-          />
+            {/* Fan Mode is unauthenticated */}
+            <Route
+              path="/fan"
+              element={
+                <PageShell>
+                  <Suspense fallback={<PageLoader label="Loading fan view..." />}>
+                    <FanMode />
+                  </Suspense>
+                </PageShell>
+              }
+            />
 
-          <Route
-            path="/strategy"
-            element={
-              <RequireAuth>
-                <StreamProvider wsUrl={defaultWsUrl}>
-                  <RoleProvider>
-                    <PageShell>
-                      <Suspense fallback={<PageLoader label="Loading Strategy Workspace..." />}>
-                        <Strategy />
-                      </Suspense>
-                    </PageShell>
-                  </RoleProvider>
-                </StreamProvider>
-              </RequireAuth>
-            }
-          />
+            {/* Dashboard is restricted to authenticated engineers */}
+            <Route
+              path="/dashboard"
+              element={
+                <RequireAuth>
+                  <StreamProvider wsUrl={defaultWsUrl}>
+                    <RoleProvider>
+                      <PageShell>
+                        <Suspense fallback={<PageLoader label="Loading engineer console..." />}>
+                          <Dashboard />
+                        </Suspense>
+                      </PageShell>
+                    </RoleProvider>
+                  </StreamProvider>
+                </RequireAuth>
+              }
+            />
 
-          <Route
-            path="/telemetry"
-            element={
-              <RequireAuth>
-                <StreamProvider wsUrl={defaultWsUrl}>
-                  <RoleProvider>
-                    <PageShell>
-                      <Suspense fallback={<PageLoader label="Loading Telemetry..." />}>
-                        <Telemetry />
-                      </Suspense>
-                    </PageShell>
-                  </RoleProvider>
-                </StreamProvider>
-              </RequireAuth>
-            }
-          />
+            <Route
+              path="/strategy"
+              element={
+                <RequireAuth>
+                  <StreamProvider wsUrl={defaultWsUrl}>
+                    <RoleProvider>
+                      <PageShell>
+                        <Suspense fallback={<PageLoader label="Loading Strategy Workspace..." />}>
+                          <Strategy />
+                        </Suspense>
+                      </PageShell>
+                    </RoleProvider>
+                  </StreamProvider>
+                </RequireAuth>
+              }
+            />
 
-          {/* Copilot is an alias for the Dashboard view in this version */}
-          <Route
-            path="/copilot"
-            element={
-              <RequireAuth>
-                <StreamProvider wsUrl={defaultWsUrl}>
-                  <RoleProvider>
-                    <PageShell>
-                      <Suspense fallback={<PageLoader label="Loading Copilot workspace..." />}>
-                        <Dashboard />
-                      </Suspense>
-                    </PageShell>
-                  </RoleProvider>
-                </StreamProvider>
-              </RequireAuth>
-            }
-          />
+            <Route
+              path="/telemetry"
+              element={
+                <RequireAuth>
+                  <StreamProvider wsUrl={defaultWsUrl}>
+                    <RoleProvider>
+                      <PageShell>
+                        <Suspense fallback={<PageLoader label="Loading Telemetry..." />}>
+                          <Telemetry />
+                        </Suspense>
+                      </PageShell>
+                    </RoleProvider>
+                  </StreamProvider>
+                </RequireAuth>
+              }
+            />
 
-          {/* Default route */}
-          <Route
-            path="/"
-            element={
-              <PageShell>
-                <Suspense fallback={<PageLoader label="Loading PitMind..." />}>
-                  <Landing />
-                </Suspense>
-              </PageShell>
-            }
-          />
-        </Routes>
-      </div>
+            {/* Copilot is an alias for the Dashboard view in this version */}
+            <Route
+              path="/copilot"
+              element={
+                <RequireAuth>
+                  <StreamProvider wsUrl={defaultWsUrl}>
+                    <RoleProvider>
+                      <PageShell>
+                        <Suspense fallback={<PageLoader label="Loading Copilot workspace..." />}>
+                          <Dashboard />
+                        </Suspense>
+                      </PageShell>
+                    </RoleProvider>
+                  </StreamProvider>
+                </RequireAuth>
+              }
+            />
+
+            {/* Default route */}
+            <Route
+              path="/"
+              element={
+                <PageShell>
+                  <Suspense fallback={<PageLoader label="Loading PitMind..." />}>
+                    <Landing />
+                  </Suspense>
+                </PageShell>
+              }
+            />
+          </Routes>
+        </div>
       </PanelStateProvider>
     </BrowserRouter>
   );

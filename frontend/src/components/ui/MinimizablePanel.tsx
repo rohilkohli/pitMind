@@ -1,19 +1,19 @@
-import React, { useEffect } from 'react';
-import { MinimizeIcon } from './MinimizeIcon';
-import { usePanelState } from '../../hooks/usePanelState';
+import React, { useEffect } from "react";
+import { MinimizeIcon } from "./MinimizeIcon";
+import { usePanelState } from "../../hooks/usePanelState";
 
 interface MinimizablePanelProps {
-  id: string;                          // unique ID for state persistence
-  header: React.ReactNode;             // the panel title / header bar content (WITHOUT the minimize button)
-  children: React.ReactNode;           // the panel body content
+  id: string; // unique ID for state persistence
+  header: React.ReactNode; // the panel title / header bar content (WITHOUT the minimize button)
+  children: React.ReactNode; // the panel body content
   defaultCollapsed?: boolean;
   persist?: boolean;
   headerClassName?: string;
   bodyClassName?: string;
   className?: string;
   onCollapseChange?: (isCollapsed: boolean) => void;
-  animationDuration?: number;          // ms, default 300
-  showToggle?: boolean;                // when false, hides the collapse chevron (default true)
+  animationDuration?: number; // ms, default 300
+  showToggle?: boolean; // when false, hides the collapse chevron (default true)
   // Style overrides
   headerStyle?: React.CSSProperties;
   bodyStyle?: React.CSSProperties;
@@ -26,9 +26,9 @@ export const MinimizablePanel: React.FC<MinimizablePanelProps> = ({
   children,
   defaultCollapsed = false,
   persist = true,
-  headerClassName = '',
-  bodyClassName = '',
-  className = '',
+  headerClassName = "",
+  bodyClassName = "",
+  className = "",
   onCollapseChange,
   animationDuration = 300,
   showToggle = true,
@@ -47,11 +47,11 @@ export const MinimizablePanel: React.FC<MinimizablePanelProps> = ({
 
   return (
     <div
-      className={`pitmind-minimizable-panel ${isCollapsed ? 'is-collapsed' : ''} ${className}`}
+      className={`pitmind-minimizable-panel ${isCollapsed ? "is-collapsed" : ""} ${className}`}
       style={{
-        display: 'flex',
-        flexDirection: 'column',
-        overflow: 'hidden',
+        display: "flex",
+        flexDirection: "column",
+        overflow: "hidden",
         ...style,
       }}
     >
@@ -61,29 +61,23 @@ export const MinimizablePanel: React.FC<MinimizablePanelProps> = ({
         className={`pitmind-panel-header ${headerClassName}`}
         onClick={isCollapsed ? toggle : undefined}
         style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
           flexShrink: 0,
-          cursor: isCollapsed ? 'pointer' : 'default',
-          userSelect: 'none',
-          gap: '8px',
+          cursor: isCollapsed ? "pointer" : "default",
+          userSelect: "none",
+          gap: "8px",
           ...headerStyle,
         }}
       >
         {/* Left side: whatever the panel passes as its header */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1, minWidth: 0 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "8px", flex: 1, minWidth: 0 }}>
           {header}
         </div>
 
         {/* Right side: minimize button (hidden when showToggle=false) */}
-        {showToggle && (
-          <MinimizeIcon
-            isCollapsed={isCollapsed}
-            onToggle={toggle}
-            size={14}
-          />
-        )}
+        {showToggle && <MinimizeIcon isCollapsed={isCollapsed} onToggle={toggle} size={14} />}
       </div>
 
       {/* Body — collapses smoothly */}
@@ -91,24 +85,24 @@ export const MinimizablePanel: React.FC<MinimizablePanelProps> = ({
         role="region"
         aria-labelledby={`${id}-header`}
         style={{
-          maxHeight: isCollapsed ? '0px' : '100000px',
-          overflow: 'hidden',
+          maxHeight: isCollapsed ? "0px" : "100000px",
+          overflow: "hidden",
           transition: `max-height ${dur}ms cubic-bezier(0.4, 0, 0.2, 1), opacity ${opacityDur}ms ease`,
           opacity: isCollapsed ? 0 : 1,
-          flex: isCollapsed ? '0 0 0px' : '1 1 auto',
+          flex: isCollapsed ? "0 0 0px" : "1 1 auto",
           minHeight: 0,
-          display: 'flex',
-          flexDirection: 'column',
+          display: "flex",
+          flexDirection: "column",
         }}
       >
         <div
           className={`pitmind-panel-body ${bodyClassName}`}
           style={{
-            display: 'flex',
-            flexDirection: 'column',
-            flex: '1 1 auto',
+            display: "flex",
+            flexDirection: "column",
+            flex: "1 1 auto",
             minHeight: 0,
-            overflow: 'hidden',
+            overflow: "hidden",
             ...bodyStyle,
           }}
         >

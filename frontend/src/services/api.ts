@@ -157,7 +157,6 @@ export async function postCommitStrategy(
   return handleResponse<StrategyCommitResponse>(response);
 }
 
-
 // ============================================================================
 // Chat & Commentary API Functions
 // ============================================================================
@@ -210,7 +209,6 @@ export async function uploadDebrief(file: File, token?: string): Promise<Debrief
 // ============================================================================
 // Fan Engagement API Functions
 // ============================================================================
-
 
 /**
  * Submit fan prediction for what-if scenario

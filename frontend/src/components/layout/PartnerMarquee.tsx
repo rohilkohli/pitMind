@@ -9,7 +9,7 @@ const categories = [
       "https://cdn.simpleicons.org/redbull/white",
       "https://cdn.simpleicons.org/astonmartin/white",
       "https://cdn.simpleicons.org/renault/white",
-    ]
+    ],
   },
   {
     title: "TECHNOLOGY & DATA",
@@ -17,7 +17,7 @@ const categories = [
       "https://cdn.simpleicons.org/lenovo/white",
       "https://cdn.simpleicons.org/google/white",
       "https://cdn.simpleicons.org/apple/white",
-    ]
+    ],
   },
   {
     title: "FINANCE & LOGISTICS",
@@ -27,7 +27,7 @@ const categories = [
       "https://cdn.simpleicons.org/americanexpress/white",
       "https://cdn.simpleicons.org/visa/white",
       "https://cdn.simpleicons.org/mastercard/white",
-    ]
+    ],
   },
   {
     title: "LIFESTYLE & ENTERTAINMENT",
@@ -35,8 +35,8 @@ const categories = [
       "https://cdn.simpleicons.org/paramountplus/white",
       "https://cdn.simpleicons.org/puma/white",
       "https://cdn.simpleicons.org/mcdonalds/white",
-    ]
-  }
+    ],
+  },
 ];
 
 interface MarqueeRowProps {
@@ -74,11 +74,11 @@ const MarqueeRow: React.FC<MarqueeRowProps> = ({ logos, opacity = 0.5 }) => {
       `}</style>
       <div className="pm-marquee-track-animated">
         {displayLogos.map((src, i) => (
-          <img 
-            key={`${src}-${i}`} 
-            src={src} 
-            alt="Partner Logo" 
-            className="pm-marquee-logo" 
+          <img
+            key={`${src}-${i}`}
+            src={src}
+            alt="Partner Logo"
+            className="pm-marquee-logo"
             style={{ opacity }}
           />
         ))}
@@ -88,16 +88,33 @@ const MarqueeRow: React.FC<MarqueeRowProps> = ({ logos, opacity = 0.5 }) => {
 };
 
 export const PartnerMarquee: React.FC = () => {
-  const allLogos = categories.flatMap(cat => cat.logos);
+  const allLogos = categories.flatMap((cat) => cat.logos);
 
   return (
     <div className="pm-partner-marquee-section">
       <div className="pm-partner-marquee-header">
-        <div style={{ fontFamily: "'Orbitron', sans-serif", fontSize: 24, fontWeight: 900, textTransform: "uppercase", letterSpacing: "-0.02em" }}>OUR PARTNERS</div>
+        <div
+          style={{
+            fontFamily: "'Orbitron', sans-serif",
+            fontSize: 24,
+            fontWeight: 900,
+            textTransform: "uppercase",
+            letterSpacing: "-0.02em",
+          }}
+        >
+          OUR PARTNERS
+        </div>
       </div>
-      
+
       <div style={{ display: "flex", flexDirection: "column" }}>
-        <div className="pm-marquee-wrapper" style={{ background: "var(--carbon-light)", borderBottom: "1px solid var(--border)", padding: "16px 0" }}>
+        <div
+          className="pm-marquee-wrapper"
+          style={{
+            background: "var(--carbon-light)",
+            borderBottom: "1px solid var(--border)",
+            padding: "16px 0",
+          }}
+        >
           <MarqueeRow logos={allLogos} opacity={0.7} />
         </div>
       </div>

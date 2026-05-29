@@ -12,7 +12,10 @@ from sqlalchemy import String, DateTime, JSON, Integer, Enum as SQLEnum
 from sqlalchemy.orm import Mapped, mapped_column
 import enum
 
-from models.database import Base
+try:
+    from .database import Base
+except ImportError:
+    from models.database import Base
 
 
 class SessionStatus(str, enum.Enum):

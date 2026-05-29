@@ -1,6 +1,6 @@
 import pytest
 from unittest.mock import patch, AsyncMock
-from backend.services.cache_invalidator import get_cache_invalidator, CacheInvalidator, RaceCondition, InvalidationStrategy
+from backend.services.cache_invalidator import get_cache_invalidator, CacheInvalidator, RaceCondition
 
 @pytest.fixture
 def invalidator():
@@ -102,8 +102,6 @@ async def test_invalidate_selective_with_driver(invalidator):
         )
         assert result == 2
 
-@pytest.mark.asyncio
-@pytest.mark.asyncio
 @pytest.mark.asyncio
 async def test_cache_invalidator_integration():
     """Integration test without deep Redis mocks."""

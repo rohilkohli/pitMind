@@ -1,10 +1,9 @@
 import pytest
-import sys
 import pandas as pd
-from unittest.mock import AsyncMock, patch, MagicMock
+from unittest.mock import patch, MagicMock
 
 from backend.services.fastf1_service import is_fastf1_available, fetch_session_telemetry
-from backend.models.race_state import TelemetryPayload, LapPoint
+from backend.models.race_state import TelemetryPayload
 
 @pytest.fixture
 def mock_fastf1_module():

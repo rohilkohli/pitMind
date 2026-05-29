@@ -126,7 +126,6 @@ export const HealthConsole: React.FC<HealthConsoleProps> = () => {
     health.ai,
   ];
 
-
   const getLatencyColor = (latency: number) => {
     if (latency < 200) return "var(--neon-green)";
     if (latency < 500) return "var(--amber)";

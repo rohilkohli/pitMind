@@ -59,8 +59,8 @@ export const RoleSwitcher: React.FC<RoleSwitcherProps> = ({ currentRole, onRoleC
       if (!buttonRef.current) return;
       const rect = buttonRef.current.getBoundingClientRect();
       setDropdownPos({
-        top: rect.bottom + 8,                   // 8px gap below button
-        right: window.innerWidth - rect.right,  // right-aligned to button
+        top: rect.bottom + 8, // 8px gap below button
+        right: window.innerWidth - rect.right, // right-aligned to button
       });
     };
 
@@ -74,87 +74,86 @@ export const RoleSwitcher: React.FC<RoleSwitcherProps> = ({ currentRole, onRoleC
   };
 
   // Portal contents — rendered into document.body to escape all stacking contexts
-  const portal =
-    isOpen
-      ? ReactDOM.createPortal(
-          <>
-            {/* Invisible backdrop — click-outside to close */}
-            <div
-              style={{
-                position: "fixed",
-                inset: 0,
-                zIndex: 999998,
-              }}
-              onClick={() => setIsOpen(false)}
-              aria-hidden="true"
-            />
+  const portal = isOpen
+    ? ReactDOM.createPortal(
+        <>
+          {/* Invisible backdrop — click-outside to close */}
+          <div
+            style={{
+              position: "fixed",
+              inset: 0,
+              zIndex: 999998,
+            }}
+            onClick={() => setIsOpen(false)}
+            aria-hidden="true"
+          />
 
-            {/* Dropdown panel — always on top */}
+          {/* Dropdown panel — always on top */}
+          <div
+            role="menu"
+            aria-label="Select role"
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              position: "fixed",
+              top: dropdownPos.top,
+              right: dropdownPos.right,
+              width: 384,
+              zIndex: 999999,
+              animation: "slideInDown 0.15s ease",
+            }}
+          >
             <div
-              role="menu"
-              aria-label="Select role"
-              onClick={(e) => e.stopPropagation()}
+              className="pm-panel p-5 space-y-3"
               style={{
-                position: "fixed",
-                top: dropdownPos.top,
-                right: dropdownPos.right,
-                width: 384,
-                zIndex: 999999,
-                animation: "slideInDown 0.15s ease",
+                background: "var(--carbon-mid)",
+                boxShadow: "0 8px 40px rgba(0,0,0,0.75), 0 0 0 1px var(--border)",
               }}
             >
-              <div
-                className="pm-panel p-5 space-y-3"
-                style={{
-                  background: "var(--carbon-mid)",
-                  boxShadow: "0 8px 40px rgba(0,0,0,0.75), 0 0 0 1px var(--border)",
-                }}
-              >
-                {Object.values(ROLES).map((role) => (
-                  <button
-                    key={role.id}
-                    role="menuitem"
-                    onClick={() => {
-                      onRoleChange(role.id);
-                      setIsOpen(false);
-                    }}
-                    className={`w-full p-4 border transition-colors text-left pm-panel ${
-                      currentRole === role.id
-                        ? "border-[var(--f1-red)] bg-[var(--f1-red-dim)]"
-                        : "border-[var(--border)] bg-[var(--carbon-light)] hover:border-[var(--f1-red)]"
-                    }`}
-                  >
-                    <div className="flex items-start gap-3">
-                      <div className={`mt-1 transition-colors duration-200 ${role.accent}`}>
-                        {role.icon}
-                      </div>
-                      <div className="flex-1">
-                        <h3 className="font-label text-lg font-bold text-[var(--text-primary)] uppercase tracking-wide">
-                          {role.label}
-                        </h3>
-                        <p className="font-tele text-[10px] text-[var(--text-secondary)] mt-1">
-                          {role.description}
-                        </p>
-                        <div className="mt-3 flex flex-wrap gap-2">
-                          {role.focus.map((item, idx) => (
-                            <span
-                              key={idx}
-                              className="font-tele text-[9px] px-2 py-1 bg-[var(--carbon-mid)] border border-[var(--border)] text-[var(--text-secondary)] uppercase tracking-widest"
-                            >
-                              {item}
-                            </span>
-                          ))}
-                        </div>
+              {Object.values(ROLES).map((role) => (
+                <button
+                  key={role.id}
+                  role="menuitem"
+                  onClick={() => {
+                    onRoleChange(role.id);
+                    setIsOpen(false);
+                  }}
+                  className={`w-full p-4 border transition-colors text-left pm-panel ${
+                    currentRole === role.id
+                      ? "border-[var(--f1-red)] bg-[var(--f1-red-dim)]"
+                      : "border-[var(--border)] bg-[var(--carbon-light)] hover:border-[var(--f1-red)]"
+                  }`}
+                >
+                  <div className="flex items-start gap-3">
+                    <div className={`mt-1 transition-colors duration-200 ${role.accent}`}>
+                      {role.icon}
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-label text-lg font-bold text-[var(--text-primary)] uppercase tracking-wide">
+                        {role.label}
+                      </h3>
+                      <p className="font-tele text-[10px] text-[var(--text-secondary)] mt-1">
+                        {role.description}
+                      </p>
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        {role.focus.map((item, idx) => (
+                          <span
+                            key={idx}
+                            className="font-tele text-[9px] px-2 py-1 bg-[var(--carbon-mid)] border border-[var(--border)] text-[var(--text-secondary)] uppercase tracking-widest"
+                          >
+                            {item}
+                          </span>
+                        ))}
                       </div>
                     </div>
-                  </button>
-                ))}
-              </div>
+                  </div>
+                </button>
+              ))}
             </div>
-          </>,
-          document.body
-        )
-      : null;
+          </div>
+        </>,
+        document.body,
+      )
+    : null;
 
   return (
     <div className="relative" onKeyDown={handleKeyDown}>

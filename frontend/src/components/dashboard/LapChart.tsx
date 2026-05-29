@@ -88,22 +88,52 @@ export function LapChart({
             return (
               <div
                 key={p.dataKey as string}
-                style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, padding: "4px 0" }}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  gap: 16,
+                  padding: "4px 0",
+                }}
               >
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                   <div style={{ width: 3, height: 14, background: p.color, borderRadius: 1 }} />
                   <div>
-                    <span style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: 11, fontWeight: 700, color: "var(--text-primary)", textTransform: "uppercase", letterSpacing: "0.08em" }}>
+                    <span
+                      style={{
+                        fontFamily: "'Barlow Condensed', sans-serif",
+                        fontSize: 11,
+                        fontWeight: 700,
+                        color: "var(--text-primary)",
+                        textTransform: "uppercase",
+                        letterSpacing: "0.08em",
+                      }}
+                    >
                       {p.dataKey}
                     </span>
                     {driver && (
-                      <span style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: 9, color: "var(--text-secondary)", marginLeft: 4, textTransform: "uppercase" }}>
+                      <span
+                        style={{
+                          fontFamily: "'Barlow Condensed', sans-serif",
+                          fontSize: 9,
+                          color: "var(--text-secondary)",
+                          marginLeft: 4,
+                          textTransform: "uppercase",
+                        }}
+                      >
                         {driver.team}
                       </span>
                     )}
                   </div>
                 </div>
-                <span style={{ fontFamily: "'Orbitron', sans-serif", fontSize: 11, fontWeight: 700, color: "var(--text-primary)" }}>
+                <span
+                  style={{
+                    fontFamily: "'Orbitron', sans-serif",
+                    fontSize: 11,
+                    fontWeight: 700,
+                    color: "var(--text-primary)",
+                  }}
+                >
                   {typeof p.value === "number" ? p.value.toFixed(3) : p.value}s
                 </span>
               </div>
@@ -116,7 +146,9 @@ export function LapChart({
   };
 
   return (
-    <div className={`flex h-full min-h-0 flex-col overflow-hidden ${minimal ? "p-2" : fillHeight ? "p-4" : "p-6"}`}>
+    <div
+      className={`flex h-full min-h-0 flex-col overflow-hidden ${minimal ? "p-2" : fillHeight ? "p-4" : "p-6"}`}
+    >
       {!minimal && (
         <div className={fillHeight ? "mb-3" : "mb-6"} style={{ paddingLeft: 4 }}>
           {showTitle && (
@@ -126,7 +158,9 @@ export function LapChart({
           )}
 
           {/* Driver Filter Buttons */}
-          <div className={`flex flex-wrap gap-2 ${fillHeight ? "mb-2" : "mb-4"} ${showTitle ? "" : "pt-1"}`}>
+          <div
+            className={`flex flex-wrap gap-2 ${fillHeight ? "mb-2" : "mb-4"} ${showTitle ? "" : "pt-1"}`}
+          >
             {drivers.map((d) => {
               const isActive = selectedDrivers.includes(d.id);
               return (
@@ -134,7 +168,7 @@ export function LapChart({
                   key={d.id}
                   onClick={() =>
                     setSelectedDrivers((prev) =>
-                      prev.includes(d.id) ? prev.filter((id) => id !== d.id) : [...prev, d.id]
+                      prev.includes(d.id) ? prev.filter((id) => id !== d.id) : [...prev, d.id],
                     )
                   }
                   style={{
@@ -167,7 +201,9 @@ export function LapChart({
                     }}
                   />
                   {d.id}
-                  <span style={{ fontSize: 9, color: "var(--text-secondary)", fontWeight: 500 }}>{d.name}</span>
+                  <span style={{ fontSize: 9, color: "var(--text-secondary)", fontWeight: 500 }}>
+                    {d.name}
+                  </span>
                 </button>
               );
             })}
@@ -194,7 +230,16 @@ export function LapChart({
               >
                 Upload Telemetry to Begin
               </p>
-              <p style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: 10, color: "rgba(255,255,255,0.2)", marginTop: 4, letterSpacing: "0.15em", textTransform: "uppercase" }}>
+              <p
+                style={{
+                  fontFamily: "'Barlow Condensed', sans-serif",
+                  fontSize: 10,
+                  color: "rgba(255,255,255,0.2)",
+                  marginTop: 4,
+                  letterSpacing: "0.15em",
+                  textTransform: "uppercase",
+                }}
+              >
                 Live data will appear automatically
               </p>
             </div>
@@ -214,7 +259,14 @@ export function LapChart({
               <defs>
                 {/* Gradient backgrounds for each driver line */}
                 {drivers.map((d) => (
-                  <linearGradient key={d.id} id={`${chartUid}-stroke-${d.id}`} x1="0" y1="0" x2="1" y2="0">
+                  <linearGradient
+                    key={d.id}
+                    id={`${chartUid}-stroke-${d.id}`}
+                    x1="0"
+                    y1="0"
+                    x2="1"
+                    y2="0"
+                  >
                     <stop offset="0%" stopColor={d.color} stopOpacity={0.4} />
                     <stop offset="30%" stopColor={d.color} stopOpacity={0.9} />
                     <stop offset="70%" stopColor={d.color} stopOpacity={1} />
@@ -267,12 +319,21 @@ export function LapChart({
                 tickLine={false}
                 axisLine={{ stroke: "rgba(255,255,255,0.08)" }}
                 domain={[1, 57]}
-                tick={{ fontFamily: "'Barlow Condensed', sans-serif", fill: "var(--text-secondary)", letterSpacing: "0.08em" }}
+                tick={{
+                  fontFamily: "'Barlow Condensed', sans-serif",
+                  fill: "var(--text-secondary)",
+                  letterSpacing: "0.08em",
+                }}
                 label={{
                   value: "LAP",
                   position: "insideBottomRight",
                   offset: -4,
-                  style: { fontFamily: "'Barlow Condensed', sans-serif", fontSize: 9, fill: "rgba(255,255,255,0.2)", letterSpacing: "0.2em" },
+                  style: {
+                    fontFamily: "'Barlow Condensed', sans-serif",
+                    fontSize: 9,
+                    fill: "rgba(255,255,255,0.2)",
+                    letterSpacing: "0.2em",
+                  },
                 }}
               />
               <YAxis
@@ -285,10 +346,23 @@ export function LapChart({
                 reversed={true}
                 width={38}
                 tickMargin={8}
-                tick={{ fontFamily: "'Orbitron', sans-serif", fill: "var(--text-secondary)", fontSize: 8 }}
+                tick={{
+                  fontFamily: "'Orbitron', sans-serif",
+                  fill: "var(--text-secondary)",
+                  fontSize: 8,
+                }}
               />
 
-              {!isEmpty && <Tooltip content={<CustomTooltip />} cursor={{ stroke: "rgba(255,255,255,0.08)", strokeWidth: 1, strokeDasharray: "4 4" }} />}
+              {!isEmpty && (
+                <Tooltip
+                  content={<CustomTooltip />}
+                  cursor={{
+                    stroke: "rgba(255,255,255,0.08)",
+                    strokeWidth: 1,
+                    strokeDasharray: "4 4",
+                  }}
+                />
+              )}
 
               {/* Hovered lap reference line */}
               {hoveredLap && !isEmpty && (
@@ -302,9 +376,27 @@ export function LapChart({
 
               {isEmpty ? (
                 <>
-                  <Line type="monotone" dataKey="ghost1" stroke="rgba(255,255,255,0.04)" strokeWidth={1.5} dot={false} />
-                  <Line type="monotone" dataKey="ghost2" stroke="rgba(255,255,255,0.04)" strokeWidth={1.5} dot={false} />
-                  <Line type="monotone" dataKey="ghost3" stroke="rgba(255,255,255,0.04)" strokeWidth={1.5} dot={false} />
+                  <Line
+                    type="monotone"
+                    dataKey="ghost1"
+                    stroke="rgba(255,255,255,0.04)"
+                    strokeWidth={1.5}
+                    dot={false}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="ghost2"
+                    stroke="rgba(255,255,255,0.04)"
+                    strokeWidth={1.5}
+                    dot={false}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="ghost3"
+                    stroke="rgba(255,255,255,0.04)"
+                    strokeWidth={1.5}
+                    dot={false}
+                  />
                 </>
               ) : (
                 activeDrivers.map((d) => (
@@ -333,10 +425,54 @@ export function LapChart({
         </div>
 
         {/* Corner decorations */}
-        <div style={{ position: "absolute", top: 0, left: 0, width: 20, height: 20, borderTop: "1px solid rgba(225,6,0,0.3)", borderLeft: "1px solid rgba(225,6,0,0.3)", pointerEvents: "none" }} />
-        <div style={{ position: "absolute", top: 0, right: 0, width: 20, height: 20, borderTop: "1px solid rgba(225,6,0,0.3)", borderRight: "1px solid rgba(225,6,0,0.3)", pointerEvents: "none" }} />
-        <div style={{ position: "absolute", bottom: 0, left: 0, width: 20, height: 20, borderBottom: "1px solid rgba(225,6,0,0.3)", borderLeft: "1px solid rgba(225,6,0,0.3)", pointerEvents: "none" }} />
-        <div style={{ position: "absolute", bottom: 0, right: 0, width: 20, height: 20, borderBottom: "1px solid rgba(225,6,0,0.3)", borderRight: "1px solid rgba(225,6,0,0.3)", pointerEvents: "none" }} />
+        <div
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            width: 20,
+            height: 20,
+            borderTop: "1px solid rgba(225,6,0,0.3)",
+            borderLeft: "1px solid rgba(225,6,0,0.3)",
+            pointerEvents: "none",
+          }}
+        />
+        <div
+          style={{
+            position: "absolute",
+            top: 0,
+            right: 0,
+            width: 20,
+            height: 20,
+            borderTop: "1px solid rgba(225,6,0,0.3)",
+            borderRight: "1px solid rgba(225,6,0,0.3)",
+            pointerEvents: "none",
+          }}
+        />
+        <div
+          style={{
+            position: "absolute",
+            bottom: 0,
+            left: 0,
+            width: 20,
+            height: 20,
+            borderBottom: "1px solid rgba(225,6,0,0.3)",
+            borderLeft: "1px solid rgba(225,6,0,0.3)",
+            pointerEvents: "none",
+          }}
+        />
+        <div
+          style={{
+            position: "absolute",
+            bottom: 0,
+            right: 0,
+            width: 20,
+            height: 20,
+            borderBottom: "1px solid rgba(225,6,0,0.3)",
+            borderRight: "1px solid rgba(225,6,0,0.3)",
+            pointerEvents: "none",
+          }}
+        />
       </div>
     </div>
   );

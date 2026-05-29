@@ -57,14 +57,17 @@ export function Telemetry() {
   const missionRef = useRef<HTMLDivElement>(null);
   const [missionH, setMissionH] = useState(0);
 
-  const onSeparatorMouseDown = useCallback((e: React.MouseEvent) => {
-    e.preventDefault();
-    dragging.current = true;
-    startX.current = e.clientX;
-    startW.current = sidebarW;
-    document.body.style.cursor = "col-resize";
-    document.body.style.userSelect = "none";
-  }, [sidebarW]);
+  const onSeparatorMouseDown = useCallback(
+    (e: React.MouseEvent) => {
+      e.preventDefault();
+      dragging.current = true;
+      startX.current = e.clientX;
+      startW.current = sidebarW;
+      document.body.style.cursor = "col-resize";
+      document.body.style.userSelect = "none";
+    },
+    [sidebarW],
+  );
 
   useEffect(() => {
     const onMouseMove = (e: MouseEvent) => {
@@ -79,7 +82,7 @@ export function Telemetry() {
       dragging.current = false;
       document.body.style.cursor = "";
       document.body.style.userSelect = "";
-      setSidebarW(prev => {
+      setSidebarW((prev) => {
         try {
           localStorage.setItem(SIDEBAR_LS_KEY, String(prev));
         } catch {
@@ -303,8 +306,8 @@ export function Telemetry() {
             position: "relative",
             transition: "background 0.15s",
           }}
-          onMouseEnter={e => (e.currentTarget.style.background = "var(--f1-red)")}
-          onMouseLeave={e => (e.currentTarget.style.background = "var(--border)")}
+          onMouseEnter={(e) => (e.currentTarget.style.background = "var(--f1-red)")}
+          onMouseLeave={(e) => (e.currentTarget.style.background = "var(--border)")}
         />
 
         {/* Right sidebar — sticky, width controlled by drag */}

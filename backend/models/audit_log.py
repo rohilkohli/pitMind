@@ -11,7 +11,10 @@ from typing import Any
 from sqlalchemy import Index, String, Float, DateTime, JSON, Integer
 from sqlalchemy.orm import Mapped, mapped_column
 
-from models.database import Base
+try:
+    from .database import Base
+except ImportError:
+    from models.database import Base
 
 
 class AuditLog(Base):

@@ -307,4 +307,9 @@ class CacheInvalidator:
 cache_invalidator = CacheInvalidator()
 
 
+def get_cache_invalidator() -> CacheInvalidator:
+    """Return shared cache invalidator instance."""
+    return cache_invalidator
+
+
 # Made with Bob

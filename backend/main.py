@@ -399,10 +399,8 @@ class ConnectionManager:
         if websocket in self.connection_ids:
             del self.connection_ids[websocket]
 
-        # Remove from Redis (fire and forget - don't await)
-        asyncio.create_task(
-            redis_client.remove_websocket_connection(session_id, connection_id)
-        )
+        # Remove from Redis
+        await redis_client.remove_websocket_connection(session_id, connection_id)
 
         logger.info(f"Client {connection_id} disconnected from session {session_id}")
 

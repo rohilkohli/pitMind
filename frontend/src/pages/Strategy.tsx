@@ -19,19 +19,37 @@ import { usePanelStateContext } from "../contexts/PanelStateContext";
 import * as Resizable from "react-resizable-panels";
 const { Panel, Group } = Resizable;
 import { ResizeHandle } from "../components/ui/ResizeHandle";
-import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
-import { SortableContext, sortableKeyboardCoordinates, horizontalListSortingStrategy, arrayMove } from '@dnd-kit/sortable';
-import { SortableColumn } from '../components/layout/SortableColumn';
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  sortableKeyboardCoordinates,
+  horizontalListSortingStrategy,
+  arrayMove,
+} from "@dnd-kit/sortable";
+import { SortableColumn } from "../components/layout/SortableColumn";
 import { ChevronDown, ChevronUp } from "lucide-react";
 
-const LapChart = lazy(() => import("../components/dashboard/LapChart").then(m => ({ default: m.LapChart })));
-const PostRaceDebrief = lazy(() => import("../components/dashboard/PostRaceDebrief").then(m => ({ default: m.PostRaceDebrief })));
-const DecisionLog = lazy(() => import("../components/dashboard/DecisionLog").then(m => ({ default: m.DecisionLog })));
+const LapChart = lazy(() =>
+  import("../components/dashboard/LapChart").then((m) => ({ default: m.LapChart })),
+);
+const PostRaceDebrief = lazy(() =>
+  import("../components/dashboard/PostRaceDebrief").then((m) => ({ default: m.PostRaceDebrief })),
+);
+const DecisionLog = lazy(() =>
+  import("../components/dashboard/DecisionLog").then((m) => ({ default: m.DecisionLog })),
+);
 
 export function Strategy() {
   const { raceState } = useFirebaseRaceState("current_race");
   const { currentRole, setRole } = useRole();
-  const { getShareableUrl, copyShareableUrl } = useDashboardState({ timeFilter: 'live' });
+  const { getShareableUrl, copyShareableUrl } = useDashboardState({ timeFilter: "live" });
   const { payload: localPayload } = useTelemetry(demoDriverA);
   const { collapseAll, expandAll } = usePanelStateContext();
 
@@ -54,7 +72,8 @@ export function Strategy() {
           setReco({
             action: "PIT FOR FRESH SOFTS",
             confidence: 84,
-            explanation: "Tyre wear at 73%. Lap time degradation trend\nexceeds threshold. Pit window optimal at current lap.",
+            explanation:
+              "Tyre wear at 73%. Lap time degradation trend\nexceeds threshold. Pit window optimal at current lap.",
             evidence: ["Tyre wear: 73%", "Lap delta: +0.31s", "Gap to P2: 1.8s"],
             urgency_score: 84,
             assumptions: ["No safety car in next 3 laps"],
@@ -65,25 +84,25 @@ export function Strategy() {
               pit_urgency: 84,
               sc_probability_next_3_laps: 15,
               overtake_risk: 30,
-              recommended_window_laps: [18, 25]
+              recommended_window_laps: [18, 25],
             },
             structured_reasons: [
               "Tyre wear at 73% exceeds critical threshold",
               "Lap time degradation trend exceeds normal limits",
-              "Pit window optimal at current lap"
+              "Pit window optimal at current lap",
             ],
             pipeline_steps: [
               "FastF1 Data Load Completed",
               "Tyre Wear Assessment Completed",
               "Race Simulation Completed",
-              "Granite Strategy Suggestion Generated"
+              "Granite Strategy Suggestion Generated",
             ],
             confidence_decomposition: {
               data_quality: 92,
               model_certainty: 84,
               stability: 78,
-              regret_bound: 0.16
-            }
+              regret_bound: 0.16,
+            },
           });
         }
       }
@@ -94,7 +113,7 @@ export function Strategy() {
     };
   }, [localPayload]);
 
-  const mockChartData = localPayload.laps.map(lap => ({
+  const mockChartData = localPayload.laps.map((lap) => ({
     lap: lap.lap,
     VER: lap.lap_time_s || 0,
     LEC: (lap.lap_time_s || 0) + 0.3,
@@ -104,10 +123,10 @@ export function Strategy() {
 
   const [columnOrder, setColumnOrder] = useState(() => {
     try {
-      const saved = localStorage.getItem('pitmind_strategy_layout');
-      return saved ? JSON.parse(saved) : ['left', 'center', 'right'];
+      const saved = localStorage.getItem("pitmind_strategy_layout");
+      return saved ? JSON.parse(saved) : ["left", "center", "right"];
     } catch {
-      return ['left', 'center', 'right'];
+      return ["left", "center", "right"];
     }
   });
 
@@ -128,7 +147,7 @@ export function Strategy() {
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
-    })
+    }),
   );
 
   function handleDragEnd(event: any) {
@@ -138,7 +157,7 @@ export function Strategy() {
         const oldIndex = items.indexOf(active.id);
         const newIndex = items.indexOf(over.id);
         const newOrder = arrayMove(items, oldIndex, newIndex);
-        localStorage.setItem('pitmind_strategy_layout', JSON.stringify(newOrder));
+        localStorage.setItem("pitmind_strategy_layout", JSON.stringify(newOrder));
         return newOrder;
       });
     }
@@ -146,7 +165,18 @@ export function Strategy() {
 
   // ─── LEFT COLUMN: AI Reasoning Trace ──────────────────────────────────────
   const renderLeftColumn = () => (
-    <div style={{ display: "flex", flexDirection: "column", gap: 1, background: "var(--border)", height: "100%", minHeight: 0, overflow: "hidden", minWidth: 300 }}>
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        gap: 1,
+        background: "var(--border)",
+        height: "100%",
+        minHeight: 0,
+        overflow: "hidden",
+        minWidth: 300,
+      }}
+    >
       <MinimizablePanel
         id="strategy__ai-reasoning-trace"
         defaultCollapsed={false}
@@ -155,11 +185,13 @@ export function Strategy() {
         header={
           <>
             <div className="pm-panel-title">AI REASONING TRACE</div>
-            <span className="pm-panel-badge pm-badge-ok">{reco ? `${reco.confidence.toFixed(0)}%` : "LIVE"}</span>
+            <span className="pm-panel-badge pm-badge-ok">
+              {reco ? `${reco.confidence.toFixed(0)}%` : "LIVE"}
+            </span>
           </>
         }
-        headerStyle={{ padding: '10px 16px', borderBottom: '1px solid var(--border)' }}
-        bodyStyle={{ flex: 1, minHeight: 0, overflowY: 'auto' }}
+        headerStyle={{ padding: "10px 16px", borderBottom: "1px solid var(--border)" }}
+        bodyStyle={{ flex: 1, minHeight: 0, overflowY: "auto" }}
         style={{ flex: 1, minHeight: 0 }}
         className="pm-panel"
       >
@@ -167,7 +199,9 @@ export function Strategy() {
           reco={reco}
           strategyChecklistKey={`pitmind.strategy.checklist.${localPayload.circuit}.${localPayload.session_label}.${localPayload.driver}`}
           onInjectBriefToChat={() => {}}
-          onCommitStrategy={async () => { return {} as any; }}
+          onCommitStrategy={async () => {
+            return {} as any;
+          }}
           showHeader={false}
         />
       </MinimizablePanel>
@@ -176,9 +210,29 @@ export function Strategy() {
 
   // ─── CENTER COLUMN: Branching Simulator → Post-Race Debrief → Lap Time Trace
   const renderCenterColumn = () => (
-    <div style={{ display: "flex", flexDirection: "column", gap: 1, background: "var(--border)", height: "100%", minHeight: 0, overflow: "hidden", minWidth: 0 }}>
-      <div style={{ flex: 1, minHeight: 0, overflowY: "auto", display: "flex", flexDirection: "column", gap: 1, scrollbarGutter: "stable" }}>
-
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        gap: 1,
+        background: "var(--border)",
+        height: "100%",
+        minHeight: 0,
+        overflow: "hidden",
+        minWidth: 0,
+      }}
+    >
+      <div
+        style={{
+          flex: 1,
+          minHeight: 0,
+          overflowY: "auto",
+          display: "flex",
+          flexDirection: "column",
+          gap: 1,
+          scrollbarGutter: "stable",
+        }}
+      >
         {/* 1. Branching Simulator — top */}
         <MinimizablePanel
           id="strategy__branching-simulator"
@@ -187,15 +241,20 @@ export function Strategy() {
               <div className="pm-panel-title">BRANCHING SIMULATOR</div>
               <span
                 className="pm-panel-badge"
-                style={{ background: 'var(--f1-red-dim)', color: 'var(--f1-red)', border: '1px solid var(--f1-red)', fontWeight: 700 }}
+                style={{
+                  background: "var(--f1-red-dim)",
+                  color: "var(--f1-red)",
+                  border: "1px solid var(--f1-red)",
+                  fontWeight: 700,
+                }}
               >
                 GRANITE
               </span>
             </>
           }
-          headerStyle={{ padding: '10px 16px', borderBottom: '1px solid var(--border)' }}
-          bodyStyle={{ overflowY: 'auto', flex: 1 }}
-          style={{ flex: "0 0 auto", minHeight: 48, maxHeight: '70vh' }}
+          headerStyle={{ padding: "10px 16px", borderBottom: "1px solid var(--border)" }}
+          bodyStyle={{ overflowY: "auto", flex: 1 }}
+          style={{ flex: "0 0 auto", minHeight: 48, maxHeight: "70vh" }}
           className="pm-panel"
         >
           <BranchingSimulator onSelectScenario={() => {}} />
@@ -210,7 +269,7 @@ export function Strategy() {
               <span className="pm-chip">DOCLING ENABLED</span>
             </>
           }
-          headerStyle={{ padding: '10px 16px', borderBottom: '1px solid var(--border)' }}
+          headerStyle={{ padding: "10px 16px", borderBottom: "1px solid var(--border)" }}
           style={{ flex: "0 0 auto", minHeight: 48 }}
           className="pm-panel"
         >
@@ -224,11 +283,9 @@ export function Strategy() {
           id="strategy__lap-time-trace"
           defaultCollapsed={false}
           persist={false}
-          header={
-            <div className="pm-panel-title">LAP TIME TRACE</div>
-          }
-          headerStyle={{ padding: '10px 16px', borderBottom: '1px solid var(--border)' }}
-          bodyStyle={{ height: 380, overflow: 'hidden', flexShrink: 0 }}
+          header={<div className="pm-panel-title">LAP TIME TRACE</div>}
+          headerStyle={{ padding: "10px 16px", borderBottom: "1px solid var(--border)" }}
+          bodyStyle={{ height: 380, overflow: "hidden", flexShrink: 0 }}
           style={{ flex: "0 0 auto", minHeight: 48 }}
           className="pm-panel"
         >
@@ -242,16 +299,25 @@ export function Strategy() {
 
   // ─── RIGHT COLUMN: Decision Log + Confidence Breakdown ────────────────────
   const renderRightColumn = () => (
-    <div style={{ display: "flex", flexDirection: "column", gap: 1, background: "var(--border)", height: "100%", minHeight: 0, overflow: "hidden", minWidth: 320 }}>
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        gap: 1,
+        background: "var(--border)",
+        height: "100%",
+        minHeight: 0,
+        overflow: "hidden",
+        minWidth: 320,
+      }}
+    >
       {/* Decision Log — scrollable within its own capped height */}
       <MinimizablePanel
         id="strategy__decision-log"
-        header={
-          <div className="pm-panel-title">DECISION LOG</div>
-        }
-        headerStyle={{ padding: '10px 16px', borderBottom: '1px solid var(--border)' }}
-        bodyStyle={{ overflowY: 'auto', flex: 1 }}
-        style={{ flex: "1 1 0", minHeight: 48, maxHeight: '60vh', overflow: 'hidden' }}
+        header={<div className="pm-panel-title">DECISION LOG</div>}
+        headerStyle={{ padding: "10px 16px", borderBottom: "1px solid var(--border)" }}
+        bodyStyle={{ overflowY: "auto", flex: 1 }}
+        style={{ flex: "1 1 0", minHeight: 48, maxHeight: "60vh", overflow: "hidden" }}
         className="pm-panel"
       >
         <Suspense fallback={<div className="skeleton-row" style={{ height: 200 }} />}>
@@ -262,12 +328,10 @@ export function Strategy() {
       {/* Confidence Breakdown — always visible at bottom, fixed height */}
       <MinimizablePanel
         id="strategy__confidence-breakdown"
-        header={
-          <div className="pm-panel-title">CONFIDENCE BREAKDOWN</div>
-        }
-        headerStyle={{ padding: '10px 16px', borderBottom: '1px solid var(--border)' }}
-        bodyStyle={{ overflowY: 'auto', flex: 1 }}
-        style={{ flex: "0 0 auto", minHeight: 48, maxHeight: '45vh', overflow: 'hidden' }}
+        header={<div className="pm-panel-title">CONFIDENCE BREAKDOWN</div>}
+        headerStyle={{ padding: "10px 16px", borderBottom: "1px solid var(--border)" }}
+        bodyStyle={{ overflowY: "auto", flex: 1 }}
+        style={{ flex: "0 0 auto", minHeight: 48, maxHeight: "45vh", overflow: "hidden" }}
         className="pm-panel"
       >
         <ConfidenceDecompositionCard
@@ -280,19 +344,27 @@ export function Strategy() {
 
   const getColumnProps = (id: string) => {
     switch (id) {
-      case 'left': return { defaultSize: 24, minSize: 20 };
-      case 'center': return { defaultSize: 52, minSize: 10 };
-      case 'right': return { defaultSize: 24, minSize: 22 };
-      default: return { defaultSize: 33, minSize: 20 };
+      case "left":
+        return { defaultSize: 24, minSize: 20 };
+      case "center":
+        return { defaultSize: 52, minSize: 10 };
+      case "right":
+        return { defaultSize: 24, minSize: 22 };
+      default:
+        return { defaultSize: 33, minSize: 20 };
     }
   };
 
   const renderColumnContent = (id: string) => {
     switch (id) {
-      case 'left': return renderLeftColumn();
-      case 'center': return renderCenterColumn();
-      case 'right': return renderRightColumn();
-      default: return null;
+      case "left":
+        return renderLeftColumn();
+      case "center":
+        return renderCenterColumn();
+      case "right":
+        return renderRightColumn();
+      default:
+        return null;
     }
   };
 
@@ -346,7 +418,10 @@ export function Strategy() {
                 letterSpacing: "0.05em",
               }}
             >
-              Strategy Workspace <span style={{ color: "var(--text-secondary)", fontSize: 10, fontWeight: 400 }}>v1.2.5</span>
+              Strategy Workspace{" "}
+              <span style={{ color: "var(--text-secondary)", fontSize: 10, fontWeight: 400 }}>
+                v1.2.5
+              </span>
             </div>
           </div>
           <div style={{ width: 1, height: 36, background: "var(--border)" }} />
@@ -358,21 +433,63 @@ export function Strategy() {
           {/* Collapse All / Expand All */}
           <div style={{ display: "flex", gap: 4, marginLeft: 8 }}>
             <button
-              onClick={() => collapseAll('strategy')}
+              onClick={() => collapseAll("strategy")}
               title="Collapse all panels"
-              style={{ background: 'none', border: '1px solid var(--border)', color: 'var(--text-secondary)', cursor: 'pointer', padding: '4px 8px', fontFamily: "'Barlow Condensed', sans-serif", fontSize: 10, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: 4, borderRadius: 0 }}
-              onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--f1-red)'; e.currentTarget.style.color = 'var(--f1-red)'; }}
-              onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-secondary)'; }}
+              style={{
+                background: "none",
+                border: "1px solid var(--border)",
+                color: "var(--text-secondary)",
+                cursor: "pointer",
+                padding: "4px 8px",
+                fontFamily: "'Barlow Condensed', sans-serif",
+                fontSize: 10,
+                fontWeight: 700,
+                letterSpacing: "0.1em",
+                textTransform: "uppercase",
+                display: "flex",
+                alignItems: "center",
+                gap: 4,
+                borderRadius: 0,
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.borderColor = "var(--f1-red)";
+                e.currentTarget.style.color = "var(--f1-red)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.borderColor = "var(--border)";
+                e.currentTarget.style.color = "var(--text-secondary)";
+              }}
             >
               <ChevronDown size={12} />
               FOLD
             </button>
             <button
-              onClick={() => expandAll('strategy')}
+              onClick={() => expandAll("strategy")}
               title="Expand all panels"
-              style={{ background: 'none', border: '1px solid var(--border)', color: 'var(--text-secondary)', cursor: 'pointer', padding: '4px 8px', fontFamily: "'Barlow Condensed', sans-serif", fontSize: 10, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: 4, borderRadius: 0 }}
-              onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--f1-red)'; e.currentTarget.style.color = 'var(--f1-red)'; }}
-              onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-secondary)'; }}
+              style={{
+                background: "none",
+                border: "1px solid var(--border)",
+                color: "var(--text-secondary)",
+                cursor: "pointer",
+                padding: "4px 8px",
+                fontFamily: "'Barlow Condensed', sans-serif",
+                fontSize: 10,
+                fontWeight: 700,
+                letterSpacing: "0.1em",
+                textTransform: "uppercase",
+                display: "flex",
+                alignItems: "center",
+                gap: 4,
+                borderRadius: 0,
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.borderColor = "var(--f1-red)";
+                e.currentTarget.style.color = "var(--f1-red)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.borderColor = "var(--border)";
+                e.currentTarget.style.color = "var(--text-secondary)";
+              }}
             >
               <ChevronUp size={12} />
               UNFOLD
@@ -381,7 +498,14 @@ export function Strategy() {
         </div>
 
         <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
-          <div style={{ display: "flex", gap: 20, paddingRight: 20, borderRight: "1px solid var(--border)" }}>
+          <div
+            style={{
+              display: "flex",
+              gap: 20,
+              paddingRight: 20,
+              borderRight: "1px solid var(--border)",
+            }}
+          >
             <div style={{ textAlign: "right" }}>
               <div
                 style={{
@@ -461,11 +585,11 @@ export function Strategy() {
               {columnOrder.map((id: string, index: number) => (
                 <Fragment key={id}>
                   <Panel id={id} {...getColumnProps(id)} className="h-full min-h-0">
-                    <SortableColumn id={id}>
-                      {renderColumnContent(id)}
-                    </SortableColumn>
+                    <SortableColumn id={id}>{renderColumnContent(id)}</SortableColumn>
                   </Panel>
-                  {index < columnOrder.length - 1 && <ResizeHandle className="shrink-0 w-[2px] mx-1" />}
+                  {index < columnOrder.length - 1 && (
+                    <ResizeHandle className="shrink-0 w-[2px] mx-1" />
+                  )}
                 </Fragment>
               ))}
             </Group>

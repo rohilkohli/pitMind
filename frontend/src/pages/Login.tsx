@@ -76,8 +76,7 @@ const RacingBackground = () => (
         left: 0,
         right: 0,
         height: "25%",
-        background:
-          "linear-gradient(0deg, rgba(6,6,10,0.65) 0%, transparent 100%)",
+        background: "linear-gradient(0deg, rgba(6,6,10,0.65) 0%, transparent 100%)",
       }}
     />
 
@@ -174,9 +173,13 @@ const PitMindLogo = () => (
         gap: 8,
       }}
     >
-      <span style={{ width: 20, height: 1, background: "var(--f1-red)", display: "inline-block" }} />
+      <span
+        style={{ width: 20, height: 1, background: "var(--f1-red)", display: "inline-block" }}
+      />
       AI Race Strategy Copilot
-      <span style={{ width: 20, height: 1, background: "var(--f1-red)", display: "inline-block" }} />
+      <span
+        style={{ width: 20, height: 1, background: "var(--f1-red)", display: "inline-block" }}
+      />
     </div>
   </div>
 );
@@ -282,7 +285,8 @@ export function Login() {
             left: 0,
             right: 0,
             height: 2,
-            background: "linear-gradient(90deg, transparent 0%, var(--f1-red) 30%, rgba(232,0,45,0.6) 70%, transparent 100%)",
+            background:
+              "linear-gradient(90deg, transparent 0%, var(--f1-red) 30%, rgba(232,0,45,0.6) 70%, transparent 100%)",
             boxShadow: "0 0 20px rgba(232,0,45,0.6), 0 0 40px rgba(232,0,45,0.3)",
             zIndex: 2,
           }}
@@ -320,8 +324,7 @@ export function Login() {
               right: -60,
               width: 200,
               height: 200,
-              background:
-                "radial-gradient(circle, rgba(232,0,45,0.06) 0%, transparent 70%)",
+              background: "radial-gradient(circle, rgba(232,0,45,0.06) 0%, transparent 70%)",
               pointerEvents: "none",
             }}
           />
@@ -387,8 +390,8 @@ export function Login() {
               maxWidth: 280,
             }}
           >
-            Authenticate with Google to access the live strategy workspace, simulation tools,
-            and AI explanation trace.
+            Authenticate with Google to access the live strategy workspace, simulation tools, and AI
+            explanation trace.
           </p>
 
           {/* Feature list — glass cards with red accent */}

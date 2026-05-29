@@ -24,7 +24,10 @@ try:
     from .services import granite
     from .services import redis_client
     from .services.logger import get_logger, RequestIDMiddleware
-    from .middleware.error_handler import register_exception_handlers, ErrorTrackingMiddleware
+    from .middleware.error_handler import (
+        register_exception_handlers,
+        ErrorTrackingMiddleware,
+    )
     from .models import database as db
     from .services.cache_manager import _cache_stats
 except ImportError:
@@ -33,7 +36,10 @@ except ImportError:
     from services import granite
     from services import redis_client
     from services.logger import get_logger, RequestIDMiddleware
-    from middleware.error_handler import register_exception_handlers, ErrorTrackingMiddleware
+    from middleware.error_handler import (
+        register_exception_handlers,
+        ErrorTrackingMiddleware,
+    )
     from models import database as db
     from services.cache_manager import _cache_stats
 
@@ -79,14 +85,14 @@ app.add_middleware(ErrorTrackingMiddleware)
 async def startup_event():
     """Initialize database and Redis connections on startup."""
     logger.info("Starting up PitMind API...")
-    
+
     # Initialize Redis (graceful degradation if unavailable)
     redis_available = await redis_client.init_redis()
     if redis_available:
         logger.info("✓ Redis initialized successfully")
     else:
         logger.warning("⚠ Redis unavailable - running with in-memory fallback")
-    
+
     # Initialize database (graceful degradation if unavailable)
     try:
         await db.init_db()
@@ -96,8 +102,10 @@ async def startup_event():
         else:
             logger.warning("⚠ Database unavailable - audit logs will not be persisted")
     except Exception as e:
-        logger.error(f"⚠ Database initialization failed: {e} - audit logs will not be persisted")
-    
+        logger.error(
+            f"⚠ Database initialization failed: {e} - audit logs will not be persisted"
+        )
+
     logger.info("PitMind API startup complete")
 
 
@@ -105,15 +113,15 @@ async def startup_event():
 async def shutdown_event():
     """Clean up database and Redis connections on shutdown."""
     logger.info("Shutting down PitMind API...")
-    
+
     # Close Redis connections
     await redis_client.close_redis()
     logger.info("✓ Redis connections closed")
-    
+
     # Close database connections
     await db.close_db()
     logger.info("✓ Database connections closed")
-    
+
     logger.info("PitMind API shutdown complete")
 
 
@@ -132,30 +140,30 @@ async def add_security_headers(request: Request, call_next):
 async def log_requests(request: Request, call_next):
     """Log all HTTP requests with performance metrics."""
     start_time = time.time()
-    
+
     # Log incoming request
     logger.info(
         "Incoming request",
         method=request.method,
         path=str(request.url.path),
         query_params=dict(request.query_params),
-        client_host=request.client.host if request.client else None
+        client_host=request.client.host if request.client else None,
     )
-    
+
     # Process request
     response = await call_next(request)
-    
+
     # Calculate duration
     duration_ms = (time.time() - start_time) * 1000
-    
+
     # Log completed request
     logger.log_request(
         method=request.method,
         path=str(request.url.path),
         status_code=response.status_code,
-        duration_ms=duration_ms
+        duration_ms=duration_ms,
     )
-    
+
     return response
 
 
@@ -166,12 +174,14 @@ async def health() -> dict[str, Any]:
     db_health = await db.check_db_health()
 
     total_requests = _cache_stats["hits"] + _cache_stats["misses"]
-    hit_rate = (_cache_stats["hits"] / total_requests * 100) if total_requests > 0 else 0.0
-    
+    hit_rate = (
+        (_cache_stats["hits"] / total_requests * 100) if total_requests > 0 else 0.0
+    )
+
     overall_status = "ok"
     if not redis_health.get("connected") or not db_health.get("connected"):
         overall_status = "degraded"
-    
+
     return {
         "status": overall_status,
         "redis": redis_health,
@@ -182,7 +192,7 @@ async def health() -> dict[str, Any]:
             "hits": _cache_stats["hits"],
             "misses": _cache_stats["misses"],
         },
-        **granite.get_ai_status()
+        **granite.get_ai_status(),
     }
 
 
@@ -193,12 +203,14 @@ async def api_health() -> dict[str, Any]:
     db_health = await db.check_db_health()
 
     total_requests = _cache_stats["hits"] + _cache_stats["misses"]
-    hit_rate = (_cache_stats["hits"] / total_requests * 100) if total_requests > 0 else 0.0
-    
+    hit_rate = (
+        (_cache_stats["hits"] / total_requests * 100) if total_requests > 0 else 0.0
+    )
+
     overall_status = "ok"
     if not redis_health.get("connected") or not db_health.get("connected"):
         overall_status = "degraded"
-    
+
     return {
         "status": overall_status,
         "redis": redis_health,
@@ -209,7 +221,7 @@ async def api_health() -> dict[str, Any]:
             "hits": _cache_stats["hits"],
             "misses": _cache_stats["misses"],
         },
-        **granite.get_ai_status()
+        **granite.get_ai_status(),
     }
 
 
@@ -221,11 +233,13 @@ async def get_health_metrics() -> dict[str, Any]:
     db_health = await db.check_db_health()
 
     total_requests = _cache_stats["hits"] + _cache_stats["misses"]
-    hit_rate = (_cache_stats["hits"] / total_requests * 100) if total_requests > 0 else 0.0
-    
+    hit_rate = (
+        (_cache_stats["hits"] / total_requests * 100) if total_requests > 0 else 0.0
+    )
+
     # Get cached metrics or use defaults
     cached_metrics = await redis_client.get_cached_health_metrics()
-    
+
     # Determine cache health status based on hit rate
     cache_status = "healthy"
     if total_requests > 10:  # Only evaluate if we have enough data
@@ -233,7 +247,7 @@ async def get_health_metrics() -> dict[str, Any]:
             cache_status = "degraded"
         elif hit_rate < 50:
             cache_status = "warning"
-    
+
     return {
         "api": {
             "name": "API Gateway",
@@ -277,7 +291,9 @@ async def get_health_metrics() -> dict[str, Any]:
         "dataQuality": {
             "name": "Data Quality Score",
             "status": "healthy",
-            "value": cached_metrics.get("dataQuality", 96.8) if cached_metrics else 96.8,
+            "value": (
+                cached_metrics.get("dataQuality", 96.8) if cached_metrics else 96.8
+            ),
             "unit": "%",
             "threshold": 90,
             "lastUpdated": datetime.now().isoformat(),
@@ -285,20 +301,26 @@ async def get_health_metrics() -> dict[str, Any]:
         "engineerApprovals": {
             "name": "Engineer Approvals",
             "status": "healthy",
-            "value": cached_metrics.get("engineerApprovals", 4) if cached_metrics else 4,
+            "value": (
+                cached_metrics.get("engineerApprovals", 4) if cached_metrics else 4
+            ),
             "unit": "decisions",
             "lastUpdated": datetime.now().isoformat(),
         },
         "uptime": {
             "name": "System Uptime",
             "status": "healthy",
-            "value": cached_metrics.get("uptime", "4h 23m") if cached_metrics else "4h 23m",
+            "value": (
+                cached_metrics.get("uptime", "4h 23m") if cached_metrics else "4h 23m"
+            ),
             "lastUpdated": datetime.now().isoformat(),
         },
         "strategyCallCount": {
             "name": "Strategy Calls",
             "status": "healthy",
-            "value": cached_metrics.get("strategyCallCount", 12) if cached_metrics else 12,
+            "value": (
+                cached_metrics.get("strategyCallCount", 12) if cached_metrics else 12
+            ),
             "unit": "total",
             "lastUpdated": datetime.now().isoformat(),
         },
@@ -313,7 +335,11 @@ async def get_health_metrics() -> dict[str, Any]:
         "telemetryDatapoints": {
             "name": "Telemetry Points",
             "status": "healthy",
-            "value": cached_metrics.get("telemetryDatapoints", 2847) if cached_metrics else 2847,
+            "value": (
+                cached_metrics.get("telemetryDatapoints", 2847)
+                if cached_metrics
+                else 2847
+            ),
             "unit": "pts",
             "lastUpdated": datetime.now().isoformat(),
         },
@@ -324,7 +350,7 @@ async def get_health_metrics() -> dict[str, Any]:
 # WebSocket connection manager
 class ConnectionManager:
     """Manages WebSocket connections for real-time telemetry streaming with Redis tracking."""
-    
+
     def __init__(self):
         # In-memory storage (always available)
         self.active_connections: dict[str, list[WebSocket]] = {}
@@ -332,31 +358,33 @@ class ConnectionManager:
         self.start_time = time.time()
         # Connection ID mapping for Redis tracking
         self.connection_ids: dict[WebSocket, str] = {}
-    
+
     async def connect(self, websocket: WebSocket, session_id: str):
         """Accept and register a new WebSocket connection."""
         await websocket.accept()
-        
+
         # Generate unique connection ID
         connection_id = str(uuid.uuid4())
         self.connection_ids[websocket] = connection_id
-        
+
         # Store in memory
         if session_id not in self.active_connections:
             self.active_connections[session_id] = []
             self.message_count[session_id] = 0
         self.active_connections[session_id].append(websocket)
-        
+
         # Track in Redis (graceful degradation if unavailable)
         await redis_client.add_websocket_connection(session_id, connection_id)
-        
-        logger.info(f"Client {connection_id} connected to session {session_id}. Active: {len(self.active_connections[session_id])}")
-    
-    def disconnect(self, websocket: WebSocket, session_id: str):
+
+        logger.info(
+            f"Client {connection_id} connected to session {session_id}. Active: {len(self.active_connections[session_id])}"
+        )
+
+    async def disconnect(self, websocket: WebSocket, session_id: str):
         """Unregister a disconnected WebSocket."""
         # Get connection ID
         connection_id = self.connection_ids.get(websocket, "unknown")
-        
+
         # Remove from memory
         if session_id in self.active_connections:
             try:
@@ -366,16 +394,18 @@ class ConnectionManager:
             if not self.active_connections[session_id]:
                 del self.active_connections[session_id]
                 del self.message_count[session_id]
-        
+
         # Remove from connection ID mapping
         if websocket in self.connection_ids:
             del self.connection_ids[websocket]
-        
+
         # Remove from Redis (fire and forget - don't await)
-        asyncio.create_task(redis_client.remove_websocket_connection(session_id, connection_id))
-        
+        asyncio.create_task(
+            redis_client.remove_websocket_connection(session_id, connection_id)
+        )
+
         logger.info(f"Client {connection_id} disconnected from session {session_id}")
-    
+
     async def broadcast_telemetry(self, session_id: str, telemetry: dict[str, Any]):
         """Broadcast telemetry to all connected clients in a session."""
         if session_id in self.active_connections:
@@ -388,8 +418,8 @@ class ConnectionManager:
                     logger.error(f"Error broadcasting telemetry: {e}")
                     stale_connections.append(connection)
             for stale in stale_connections:
-                self.disconnect(stale, session_id)
-    
+                await self.disconnect(stale, session_id)
+
     async def send_to_one(self, websocket: WebSocket, message: dict[str, Any]):
         """Send a message to a single client."""
         try:
@@ -402,11 +432,13 @@ manager = ConnectionManager()
 
 
 @app.websocket("/api/v1/stream/telemetry")
-async def websocket_telemetry_stream(websocket: WebSocket, session_id: str | None = None):
+async def websocket_telemetry_stream(
+    websocket: WebSocket, session_id: str | None = None
+):
     """
     WebSocket endpoint for real-time telemetry streaming.
     Handles ping/pong for latency measurement and broadcasts telemetry data.
-    
+
     Args:
         websocket: WebSocket connection
         session_id: Session identifier from query parameter (e.g., ?session_id=race_2024_monaco)
@@ -416,17 +448,17 @@ async def websocket_telemetry_stream(websocket: WebSocket, session_id: str | Non
     if not session_id:
         session_id = "current_race"
         logger.warning("No session_id provided, using default 'current_race'")
-    
+
     # Validate session_id format (alphanumeric, underscores, hyphens only)
     if not session_id.replace("_", "").replace("-", "").isalnum():
         logger.error(f"Invalid session_id format: {session_id}")
         await websocket.close(code=1008, reason="Invalid session_id format")
         return
-    
+
     logger.info(f"Connecting WebSocket session: {session_id}")
     await manager.connect(websocket, session_id)
     logger.info(f"WebSocket connected: {session_id}")
-    
+
     try:
         # Generate and send initial state
         initial_telemetry = {
@@ -447,7 +479,7 @@ async def websocket_telemetry_stream(websocket: WebSocket, session_id: str | Non
         logger.info(f"Sending initial telemetry to {session_id}")
         await manager.send_to_one(websocket, initial_telemetry)
         logger.info(f"Initial telemetry sent to {session_id}")
-        
+
         async def receive_handler():
             try:
                 while True:
@@ -455,10 +487,13 @@ async def websocket_telemetry_stream(websocket: WebSocket, session_id: str | Non
                     try:
                         message = json.loads(data)
                         if message.get("type") == "ping":
-                            await manager.send_to_one(websocket, {
-                                "type": "pong",
-                                "timestamp": message.get("timestamp"),
-                            })
+                            await manager.send_to_one(
+                                websocket,
+                                {
+                                    "type": "pong",
+                                    "timestamp": message.get("timestamp"),
+                                },
+                            )
                     except json.JSONDecodeError:
                         logger.warning(f"Invalid JSON from client: {data}")
             except WebSocketDisconnect:
@@ -492,10 +527,10 @@ async def websocket_telemetry_stream(websocket: WebSocket, session_id: str | Non
         # Run both handlers concurrently
         await asyncio.gather(receive_handler(), broadcast_handler())
     except WebSocketDisconnect:
-        manager.disconnect(websocket, session_id)
+        await manager.disconnect(websocket, session_id)
         logger.info(f"WebSocket closed for session {session_id}")
     except Exception as e:
-        manager.disconnect(websocket, session_id)
+        await manager.disconnect(websocket, session_id)
         logger.error(f"WebSocket error: {e}")
 
 

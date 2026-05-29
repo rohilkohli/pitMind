@@ -281,7 +281,10 @@ export function StrategyTimeline({
           </div>
         )}
 
-        <div className="space-y-5 overflow-y-auto px-4 py-4 flex-1 min-h-0" style={{ scrollbarWidth: "thin", scrollbarColor: "#ff1801 #1a1a1a" }}>
+        <div
+          className="space-y-5 overflow-y-auto px-4 py-4 flex-1 min-h-0"
+          style={{ scrollbarWidth: "thin", scrollbarColor: "#ff1801 #1a1a1a" }}
+        >
           <div className="pm-panel border-l-4 border-[var(--f1-red)] p-4">
             <div className="flex items-start justify-between gap-3">
               <div>

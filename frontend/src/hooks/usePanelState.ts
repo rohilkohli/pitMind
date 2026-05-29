@@ -1,9 +1,9 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect } from "react";
 
 interface UsePanelStateOptions {
-  id: string;           // unique panel identifier, used as localStorage key
+  id: string; // unique panel identifier, used as localStorage key
   defaultCollapsed?: boolean;
-  persist?: boolean;    // if true, remember state across page refreshes
+  persist?: boolean; // if true, remember state across page refreshes
 }
 
 interface UsePanelStateReturn {
@@ -21,9 +21,9 @@ export function usePanelState({
   const storageKey = `pitmind_panel_${id}`;
 
   const getInitialState = (): boolean => {
-    if (persist && typeof window !== 'undefined') {
+    if (persist && typeof window !== "undefined") {
       const stored = localStorage.getItem(storageKey);
-      if (stored !== null) return stored === 'true';
+      if (stored !== null) return stored === "true";
     }
     return defaultCollapsed;
   };
@@ -41,14 +41,14 @@ export function usePanelState({
     const handleStorage = () => {
       if (persist) {
         const stored = localStorage.getItem(storageKey);
-        if (stored !== null) setIsCollapsed(stored === 'true');
+        if (stored !== null) setIsCollapsed(stored === "true");
       }
     };
-    window.addEventListener('storage', handleStorage);
-    return () => window.removeEventListener('storage', handleStorage);
+    window.addEventListener("storage", handleStorage);
+    return () => window.removeEventListener("storage", handleStorage);
   }, [storageKey, persist]);
 
-  const toggle = useCallback(() => setIsCollapsed(prev => !prev), []);
+  const toggle = useCallback(() => setIsCollapsed((prev) => !prev), []);
   const collapse = useCallback(() => setIsCollapsed(true), []);
   const expand = useCallback(() => setIsCollapsed(false), []);
 

@@ -119,58 +119,58 @@ export const DecisionLog: React.FC<DecisionLogProps> = ({
       <div>
         {/* Header */}
         {showHeader && (
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            marginBottom: 16,
-          }}
-        >
-          <div className="pm-panel-title">Decision Log</div>
-          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <span
-              style={{
-                fontFamily: "'IBM Plex Mono', monospace",
-                fontSize: 10,
-                color: "var(--text-secondary)",
-              }}
-            >
-              {decisions.length} CALLS · {decisions.filter((d) => d.approved).length} APPROVED
-            </span>
-            <button
-              onClick={onExportSession}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 6,
-                padding: "5px 12px",
-                border: "1px solid var(--border)",
-                background: "var(--carbon-light)",
-                color: "var(--text-secondary)",
-                fontFamily: "'Barlow Condensed', sans-serif",
-                fontSize: 10,
-                fontWeight: 700,
-                letterSpacing: "0.15em",
-                textTransform: "uppercase",
-                cursor: "pointer",
-                clipPath: "polygon(8px 0, 100% 0, calc(100% - 8px) 100%, 0 100%)",
-                transition: "all 0.2s",
-              }}
-              onMouseEnter={(e) => {
-                (e.currentTarget as HTMLElement).style.color = "var(--text-primary)";
-                (e.currentTarget as HTMLElement).style.borderColor = "var(--border-active)";
-              }}
-              onMouseLeave={(e) => {
-                (e.currentTarget as HTMLElement).style.color = "var(--text-secondary)";
-                (e.currentTarget as HTMLElement).style.borderColor = "var(--border)";
-              }}
-            >
-              <Download style={{ width: 10, height: 10 }} />
-              EXPORT
-            </button>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              marginBottom: 16,
+            }}
+          >
+            <div className="pm-panel-title">Decision Log</div>
+            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+              <span
+                style={{
+                  fontFamily: "'IBM Plex Mono', monospace",
+                  fontSize: 10,
+                  color: "var(--text-secondary)",
+                }}
+              >
+                {decisions.length} CALLS · {decisions.filter((d) => d.approved).length} APPROVED
+              </span>
+              <button
+                onClick={onExportSession}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 6,
+                  padding: "5px 12px",
+                  border: "1px solid var(--border)",
+                  background: "var(--carbon-light)",
+                  color: "var(--text-secondary)",
+                  fontFamily: "'Barlow Condensed', sans-serif",
+                  fontSize: 10,
+                  fontWeight: 700,
+                  letterSpacing: "0.15em",
+                  textTransform: "uppercase",
+                  cursor: "pointer",
+                  clipPath: "polygon(8px 0, 100% 0, calc(100% - 8px) 100%, 0 100%)",
+                  transition: "all 0.2s",
+                }}
+                onMouseEnter={(e) => {
+                  (e.currentTarget as HTMLElement).style.color = "var(--text-primary)";
+                  (e.currentTarget as HTMLElement).style.borderColor = "var(--border-active)";
+                }}
+                onMouseLeave={(e) => {
+                  (e.currentTarget as HTMLElement).style.color = "var(--text-secondary)";
+                  (e.currentTarget as HTMLElement).style.borderColor = "var(--border)";
+                }}
+              >
+                <Download style={{ width: 10, height: 10 }} />
+                EXPORT
+              </button>
+            </div>
           </div>
-        </div>
         )}
 
         {/* Cards */}

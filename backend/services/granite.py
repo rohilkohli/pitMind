@@ -66,16 +66,16 @@ async def granite_generate(
 ) -> str:
     """
     Generate AI response with caching support and parallel provider calls.
-    
+
     Uses asyncio.gather with first-success pattern to try all providers
     simultaneously with 5s timeout per provider for optimal performance.
-    
+
     Args:
         system: System prompt
         user: User prompt
         max_tokens: Maximum tokens for response
         bypass_cache: If True, skip cache and force fresh AI call
-        
+
     Returns:
         Generated text response
     """
@@ -86,7 +86,7 @@ async def granite_generate(
     if settings.cache_enabled and not bypass_cache:
         cache_key = generate_ai_response_cache_key(system, user, max_tokens)
         cached_response = await get_cached_strategy(cache_key)
-        
+
         if cached_response is not None:
             logger.info("Cache HIT for AI response", cache_key_prefix=cache_key[:32])
             # Extract the actual response from cache entry
@@ -97,26 +97,44 @@ async def granite_generate(
     # Cache miss or bypassed - try providers in parallel with timeout
     generated_text: Optional[str] = None
     provider_used: Optional[str] = None
-    
+
     # Build list of provider tasks
     provider_tasks = []
     provider_names = []
-    
+
     # Add Watsonx if configured
     if settings.watsonx_api_key.strip() and settings.watsonx_project_id.strip():
-        provider_tasks.append(asyncio.create_task(_call_provider_with_timeout("watsonx", _watsonx_chat, system, user, max_tokens)))
+        provider_tasks.append(
+            asyncio.create_task(
+                _call_provider_with_timeout(
+                    "watsonx", _watsonx_chat, system, user, max_tokens
+                )
+            )
+        )
         provider_names.append("watsonx")
-    
+
     # Add HuggingFace if configured
     if settings.hf_api_token.strip() and settings.hf_model_id.strip():
-        provider_tasks.append(asyncio.create_task(_call_provider_with_timeout("huggingface", _hf_run, system, user, max_tokens)))
+        provider_tasks.append(
+            asyncio.create_task(
+                _call_provider_with_timeout(
+                    "huggingface", _hf_run, system, user, max_tokens
+                )
+            )
+        )
         provider_names.append("huggingface")
-    
+
     # Add Replicate if configured
     if settings.replicate_api_token.strip():
-        provider_tasks.append(asyncio.create_task(_call_provider_with_timeout("replicate", _replicate_run, system, user, max_tokens)))
+        provider_tasks.append(
+            asyncio.create_task(
+                _call_provider_with_timeout(
+                    "replicate", _replicate_run, system, user, max_tokens
+                )
+            )
+        )
         provider_names.append("replicate")
-    
+
     # Try all providers in parallel if any are configured
     if provider_tasks:
         try:
@@ -124,13 +142,13 @@ async def granite_generate(
             done, pending = await asyncio.wait(
                 provider_tasks,
                 return_when=asyncio.FIRST_COMPLETED,
-                timeout=45.0  # Overall timeout for all providers
+                timeout=45.0,  # Overall timeout for all providers
             )
-            
+
             # Cancel pending tasks
             for task in pending:
                 task.cancel()
-            
+
             # Get first successful result
             for task in done:
                 try:
@@ -143,13 +161,17 @@ async def granite_generate(
                             provider=provider_used,
                             model="granite",
                             duration_ms=duration_ms,
-                            success=True
+                            success=True,
                         )
-                        logger.info("AI provider succeeded", provider=provider_used, duration_ms=round(duration_ms, 2))
+                        logger.info(
+                            "AI provider succeeded",
+                            provider=provider_used,
+                            duration_ms=round(duration_ms, 2),
+                        )
                         break
                 except Exception as e:
                     logger.warning("Provider task failed", exc_info=e)
-                    
+
         except asyncio.TimeoutError:
             logger.warning("All AI providers timed out", timeout_seconds=45.0)
         except Exception as e:
@@ -165,7 +187,9 @@ async def granite_generate(
     if settings.cache_enabled and generated_text and not bypass_cache:
         cache_key = generate_ai_response_cache_key(system, user, max_tokens)
         # Use strategy TTL for AI responses
-        await set_cached_strategy(cache_key, generated_text, ttl=settings.cache_ttl_strategy)
+        await set_cached_strategy(
+            cache_key, generated_text, ttl=settings.cache_ttl_strategy
+        )
         logger.info("Cached AI response", cache_key_prefix=cache_key[:32])
 
     return generated_text
@@ -177,11 +201,11 @@ async def _call_provider_with_timeout(
     system: str,
     user: str,
     max_tokens: int,
-    timeout: float = 30.0
+    timeout: float = 30.0,
 ) -> dict[str, Any]:
     """
     Call an AI provider with timeout handling.
-    
+
     Args:
         provider_name: Name of the provider
         provider_func: Async function to call
@@ -189,20 +213,21 @@ async def _call_provider_with_timeout(
         user: User prompt
         max_tokens: Maximum tokens
         timeout: Timeout in seconds
-        
+
     Returns:
         Dict with provider name and generated text, or None if failed
     """
     try:
         text = await asyncio.wait_for(
-            provider_func(system, user, max_tokens),
-            timeout=timeout
+            provider_func(system, user, max_tokens), timeout=timeout
         )
         if text:
             return {"provider": provider_name, "text": text}
         return {"provider": provider_name, "text": None}
     except asyncio.TimeoutError:
-        logger.warning("Provider timeout", provider=provider_name, timeout_seconds=timeout)
+        logger.warning(
+            "Provider timeout", provider=provider_name, timeout_seconds=timeout
+        )
         return {"provider": provider_name, "text": None}
     except Exception as e:
         logger.warning("Provider failed", provider=provider_name, exc_info=e)
@@ -211,16 +236,20 @@ async def _call_provider_with_timeout(
 
 def get_ai_status() -> dict[str, Any]:
     settings = get_settings()
-    watsonx_ready = bool(settings.watsonx_api_key.strip() and settings.watsonx_project_id.strip() and settings.watsonx_url.strip())
+    watsonx_ready = bool(
+        settings.watsonx_api_key.strip()
+        and settings.watsonx_project_id.strip()
+        and settings.watsonx_url.strip()
+    )
     hf_ready = bool(settings.hf_api_token.strip() and settings.hf_model_id.strip())
-    
+
     if watsonx_ready:
         provider = "watsonx"
     elif hf_ready:
         provider = "granite"
     else:
         provider = "stub"
-    
+
     return {
         "provider": provider,
         "watsonx_configured": watsonx_ready,
@@ -289,7 +318,9 @@ async def _watsonx_chat(system: str, user: str, max_tokens: int) -> str | None:
                 except Exception:
                     body_text = "<unreadable response body>"
                 print(f"DEBUG: Watsonx HTTP {resp.status_code}: {body_text}")
-                logger.warning("Watsonx HTTP error", status_code=resp.status_code, body=body_text)
+                logger.warning(
+                    "Watsonx HTTP error", status_code=resp.status_code, body=body_text
+                )
                 return None
             data = r.json()
             results = data.get("results") or []
@@ -302,7 +333,9 @@ async def _watsonx_chat(system: str, user: str, max_tokens: int) -> str | None:
         except Exception:
             body_text = "<unreadable response body>"
         print(f"DEBUG: Watsonx HTTP exception: {resp.status_code} {body_text}")
-        logger.warning("Watsonx HTTP exception", status_code=resp.status_code, body=body_text)
+        logger.warning(
+            "Watsonx HTTP exception", status_code=resp.status_code, body=body_text
+        )
     except Exception as exc:  # noqa: BLE001
         print(f"DEBUG: Watsonx Exception: {exc}")
         logger.warning("Watsonx generation failed", exc_info=exc)
@@ -346,7 +379,10 @@ async def _replicate_run(system: str, user: str, max_tokens: int) -> str | None:
             poll_interval = 0.5
             max_interval = 5.0
             for _ in range(45):
-                pr = await client.get(get_url, headers={"Authorization": f"Token {settings.replicate_api_token}"})
+                pr = await client.get(
+                    get_url,
+                    headers={"Authorization": f"Token {settings.replicate_api_token}"},
+                )
                 pr.raise_for_status()
                 body = pr.json()
                 if body.get("status") == "succeeded":
@@ -393,7 +429,10 @@ async def _hf_run(system: str, user: str, max_tokens: int) -> str | None:
             res = await client.post(
                 HF_CHAT_COMPLETIONS_URL,
                 json=payload,
-                headers={"Authorization": f"Bearer {settings.hf_api_token}", "Content-Type": "application/json"},
+                headers={
+                    "Authorization": f"Bearer {settings.hf_api_token}",
+                    "Content-Type": "application/json",
+                },
             )
             res.raise_for_status()
             data = res.json()
@@ -414,7 +453,11 @@ def _expects_json_response(system: str, user: str) -> bool:
         or "json schema" in haystack
         or '"recommendation"' in haystack
         or '"prose"' in haystack
-        or ("evidence" in haystack and "assumptions" in haystack and "alternative" in haystack)
+        or (
+            "evidence" in haystack
+            and "assumptions" in haystack
+            and "alternative" in haystack
+        )
     )
 
 
@@ -464,10 +507,15 @@ def _coerce_strategy_payload(payload: Any, raw_text: str, user: str) -> dict[str
     if not isinstance(payload, dict):
         payload = {}
     recommendation = _coerce_text(
-        payload.get("recommendation") or payload.get("summary") or payload.get("explanation"),
+        payload.get("recommendation")
+        or payload.get("summary")
+        or payload.get("explanation"),
         (user.strip() or raw_text.strip() or "Strategy output unavailable.")[:160],
     )
-    prose = _coerce_text(payload.get("prose") or payload.get("summary") or payload.get("explanation"), raw_text.strip() or recommendation)
+    prose = _coerce_text(
+        payload.get("prose") or payload.get("summary") or payload.get("explanation"),
+        raw_text.strip() or recommendation,
+    )
     evidence = _coerce_list(payload.get("evidence"))
     assumptions = _coerce_list(payload.get("assumptions"))
     confidence = _coerce_confidence(payload.get("confidence"))
@@ -516,7 +564,7 @@ def _local_fallback_response(system: str, user: str) -> str:
 
     preview = cleaned[:420]
     return (
-        "AI provider is currently unreachable or timed out. PitMind is running in secure local fallback mode. "
+        "AI provider is not configured or is currently unreachable or timed out. PitMind is running in secure local fallback mode. "
         "Based on your latest chat context, prioritize tyre wear trend, lap-time delta, and gap evolution "
         "before committing a pit call. "
         f"Context preview: {preview}"

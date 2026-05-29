@@ -16,10 +16,10 @@ from unittest.mock import AsyncMock, MagicMock
 
 from models.race_state import LapPoint, TelemetryPayload
 
-
 # ============================================================================
 # Pytest Configuration
 # ============================================================================
+
 
 @pytest.fixture(scope="session")
 def event_loop() -> Generator:
@@ -32,6 +32,7 @@ def event_loop() -> Generator:
 # ============================================================================
 # Sample Data Fixtures
 # ============================================================================
+
 
 @pytest.fixture
 def sample_lap_points() -> list[LapPoint]:
@@ -59,10 +60,7 @@ def sample_lap_points() -> list[LapPoint]:
 def sample_telemetry_payload(sample_lap_points) -> TelemetryPayload:
     """Create a sample telemetry payload for testing."""
     return TelemetryPayload(
-        circuit="Monza",
-        session_label="R",
-        driver="VER",
-        laps=sample_lap_points
+        circuit="Monza", session_label="R", driver="VER", laps=sample_lap_points
     )
 
 
@@ -85,12 +83,7 @@ def high_wear_telemetry_payload() -> TelemetryPayload:
                 gap_behind_s=1.5,
             )
         )
-    return TelemetryPayload(
-        circuit="Monza",
-        session_label="R",
-        driver="VER",
-        laps=laps
-    )
+    return TelemetryPayload(circuit="Monza", session_label="R", driver="VER", laps=laps)
 
 
 @pytest.fixture
@@ -113,16 +106,14 @@ def low_wear_telemetry_payload() -> TelemetryPayload:
             )
         )
     return TelemetryPayload(
-        circuit="Monaco",
-        session_label="R",
-        driver="HAM",
-        laps=laps
+        circuit="Monaco", session_label="R", driver="HAM", laps=laps
     )
 
 
 # ============================================================================
 # Mock Redis Fixtures
 # ============================================================================
+
 
 @pytest.fixture
 def mock_redis_client():
@@ -153,6 +144,7 @@ def mock_redis_connection_pool():
 # Mock Database Fixtures
 # ============================================================================
 
+
 @pytest.fixture
 def mock_db_session():
     """Create a mock database session for testing."""
@@ -181,6 +173,7 @@ def mock_db_engine():
 # ============================================================================
 # Mock WebSocket Fixtures
 # ============================================================================
+
 
 @pytest.fixture
 def mock_websocket():
@@ -215,6 +208,7 @@ def multiple_mock_websockets():
 # Test Configuration Fixtures
 # ============================================================================
 
+
 @pytest.fixture
 def test_session_id() -> str:
     """Provide a test session ID."""
@@ -236,6 +230,7 @@ def test_circuit_name() -> str:
 # ============================================================================
 # Mock Strategy Response Fixtures
 # ============================================================================
+
 
 @pytest.fixture
 def mock_strategy_scores():
@@ -260,8 +255,8 @@ def mock_strategy_response(mock_strategy_scores):
             "current_lap": 27,
             "wear": 75.5,
             "degradation": 0.25,
-            "suggested_compound": "MEDIUM"
-        }
+            "suggested_compound": "MEDIUM",
+        },
     )
 
 
@@ -269,13 +264,14 @@ def mock_strategy_response(mock_strategy_scores):
 # Mock Health Check Fixtures
 # ============================================================================
 
+
 @pytest.fixture
 def mock_redis_health_healthy():
     """Mock healthy Redis health check response."""
     return {
         "status": "healthy",
         "connected": True,
-        "message": "Redis connection successful"
+        "message": "Redis connection successful",
     }
 
 
@@ -285,7 +281,7 @@ def mock_redis_health_unavailable():
     return {
         "status": "unavailable",
         "connected": False,
-        "message": "Redis not initialized or unavailable"
+        "message": "Redis not initialized or unavailable",
     }
 
 
@@ -295,7 +291,7 @@ def mock_db_health_healthy():
     return {
         "status": "healthy",
         "connected": True,
-        "message": "Database connection successful"
+        "message": "Database connection successful",
     }
 
 
@@ -305,13 +301,14 @@ def mock_db_health_unavailable():
     return {
         "status": "unhealthy",
         "connected": False,
-        "message": "Database connection failed"
+        "message": "Database connection failed",
     }
 
 
 # ============================================================================
 # Mock Cache Fixtures
 # ============================================================================
+
 
 @pytest.fixture
 def mock_cache_stats():
@@ -328,6 +325,7 @@ def mock_cache_stats():
 # Cleanup Fixtures
 # ============================================================================
 
+
 @pytest.fixture(autouse=True)
 async def cleanup_after_test():
     """Cleanup after each test."""
@@ -340,36 +338,57 @@ async def cleanup_after_test():
 # Marker Fixtures
 # ============================================================================
 
+
 def pytest_configure(config):
     """Configure custom pytest markers."""
-    config.addinivalue_line(
-        "markers", "unit: mark test as a unit test"
-    )
-    config.addinivalue_line(
-        "markers", "integration: mark test as an integration test"
-    )
-    config.addinivalue_line(
-        "markers", "performance: mark test as a performance test"
-    )
-    config.addinivalue_line(
-        "markers", "slow: mark test as slow running"
-    )
+    config.addinivalue_line("markers", "unit: mark test as a unit test")
+    config.addinivalue_line("markers", "integration: mark test as an integration test")
+    config.addinivalue_line("markers", "performance: mark test as a performance test")
+    config.addinivalue_line("markers", "slow: mark test as slow running")
+
 
 # ============================================================================
 # Auth Overrides
 # ============================================================================
 
+
 @pytest.fixture(autouse=True)
 def override_auth_for_tests(request):
     """Override auth dependency for all tests except auth tests."""
-    from main import app
-    from routes.auth import verify_token
-    
-    if "test_auth_fixes" not in str(request.node.name) and "test_auth_fixes" not in str(request.node.fspath):
-        app.dependency_overrides[verify_token] = lambda: "test_uid_123"
+    import importlib
+
+    app_modules = []
+    for module_name in ("main", "backend.main"):
+        try:
+            module = importlib.import_module(module_name)
+        except ImportError:
+            continue
+        app = getattr(module, "app", None)
+        if app is not None:
+            app_modules.append(app)
+
+    auth_dependencies = []
+    for module_name in ("routes.auth", "backend.routes.auth"):
+        try:
+            module = importlib.import_module(module_name)
+        except ImportError:
+            continue
+        verify_token = getattr(module, "verify_token", None)
+        if verify_token is not None:
+            auth_dependencies.append(verify_token)
+
+    if "test_auth_fixes" not in str(request.node.name) and "test_auth_fixes" not in str(
+        request.node.fspath
+    ):
+        for app in app_modules:
+            for verify_token in auth_dependencies:
+                app.dependency_overrides[verify_token] = lambda: "test_uid_123"
         yield
-        app.dependency_overrides.pop(verify_token, None)
+        for app in app_modules:
+            for verify_token in auth_dependencies:
+                app.dependency_overrides.pop(verify_token, None)
     else:
         yield
+
 
 # Made with Bob

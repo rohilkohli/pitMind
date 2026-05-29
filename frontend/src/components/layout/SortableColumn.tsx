@@ -26,8 +26,12 @@ export function SortableColumn({ id, children }: SortableColumnProps) {
     <div
       ref={setNodeRef}
       style={style}
-      onMouseEnter={() => { if (handleRef.current) handleRef.current.style.opacity = '1'; }}
-      onMouseLeave={() => { if (handleRef.current) handleRef.current.style.opacity = '0'; }}
+      onMouseEnter={() => {
+        if (handleRef.current) handleRef.current.style.opacity = "1";
+      }}
+      onMouseLeave={() => {
+        if (handleRef.current) handleRef.current.style.opacity = "0";
+      }}
     >
       {/* Drag Handle — only visible on column hover */}
       <div
@@ -51,15 +55,15 @@ export function SortableColumn({ id, children }: SortableColumnProps) {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          pointerEvents: "none",  // don't intercept clicks until hovered
+          pointerEvents: "none", // don't intercept clicks until hovered
         }}
         onMouseEnter={(e) => {
-          e.currentTarget.style.opacity = '1';
-          e.currentTarget.style.pointerEvents = 'all';
+          e.currentTarget.style.opacity = "1";
+          e.currentTarget.style.pointerEvents = "all";
         }}
         onMouseLeave={(e) => {
-          e.currentTarget.style.opacity = '0';
-          e.currentTarget.style.pointerEvents = 'none';
+          e.currentTarget.style.opacity = "0";
+          e.currentTarget.style.pointerEvents = "none";
         }}
       >
         <GripHorizontal size={14} />

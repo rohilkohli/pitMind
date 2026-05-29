@@ -64,7 +64,6 @@ export const ConfidenceDecompositionCard: React.FC<ConfidenceDecompositionCardPr
       }}
     >
       <div style={{ padding: "16px" }}>
-
         {/* Overall */}
         <div style={{ marginBottom: 16 }}>
           <div

@@ -28,7 +28,6 @@ import type {
 // Type Guard Functions
 // ============================================================================
 
-
 /**
  * Type guard for StrategyScores
  */
@@ -110,7 +109,6 @@ export function isAuditLogEntry(value: unknown): value is AuditLogEntry {
   );
 }
 
-
 // ============================================================================
 // Validation Functions with Error Handling
 // ============================================================================
@@ -126,7 +124,6 @@ export function validateStrategyRecommendation(data: unknown): StrategyRecommend
   return data;
 }
 
-
 // ============================================================================
 // Safe Parsing Functions (returns null on failure)
 // ============================================================================
@@ -141,6 +138,5 @@ export function safeParseStrategyRecommendation(data: unknown): StrategyRecommen
     return null;
   }
 }
-
 
 // Made with Bob

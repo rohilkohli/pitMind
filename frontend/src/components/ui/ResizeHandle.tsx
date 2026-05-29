@@ -25,10 +25,10 @@ export function ResizeHandle({ direction = "horizontal", className = "", id }: R
             : "h-[1px] group-hover:h-[2px] w-[80%]"
         }`}
         style={{
-          background: "linear-gradient(to bottom, transparent, var(--border-active), transparent)"
+          background: "linear-gradient(to bottom, transparent, var(--border-active), transparent)",
         }}
       />
-      
+
       {/* Handle Grip Indicator */}
       <div
         className={`absolute bg-f1-border group-hover:bg-f1-red transition-all duration-300 rounded-full ${

@@ -1,4 +1,5 @@
-import { useAuthState } from "react-firebase-hooks/auth";
+import { useEffect, useState } from "react";
+import { type User } from "firebase/auth";
 import { auth, firebaseReady } from "../lib/firebase";
 
 /**
@@ -7,11 +8,31 @@ import { auth, firebaseReady } from "../lib/firebase";
  * If Firebase is not configured, returns { user: null, loading: false }.
  */
 export function useOptionalAuthUser() {
-  // If firebase is not configured, return null/false immediately
-  if (!firebaseReady || !auth) {
-    return { user: null, loading: false, error: undefined };
-  }
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(Boolean(firebaseReady && auth));
+  const [error, setError] = useState<Error | undefined>(undefined);
 
-  const [user, loading, error] = useAuthState(auth);
+  useEffect(() => {
+    if (!firebaseReady || !auth) {
+      setUser(null);
+      setLoading(false);
+      setError(undefined);
+      return;
+    }
+
+    const unsubscribe = auth.onAuthStateChanged(
+      (nextUser) => {
+        setUser(nextUser);
+        setLoading(false);
+      },
+      (nextError) => {
+        setError(nextError);
+        setLoading(false);
+      },
+    );
+
+    return unsubscribe;
+  }, [auth]);
+
   return { user, loading, error };
 }

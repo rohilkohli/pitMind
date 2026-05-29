@@ -216,4 +216,3 @@ def test_coerce_confidence():
     assert _coerce_confidence(-10) == 0
     assert _coerce_confidence("invalid") == 0
     assert _coerce_confidence(None) == 0
->>>>>>> main

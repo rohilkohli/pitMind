@@ -1,5 +1,3 @@
-import pytest
-from typing import Any
 from backend.services.pipeline import _extract_granite_json
 
 class TestExtractGraniteJson:

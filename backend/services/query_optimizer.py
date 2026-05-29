@@ -5,10 +5,7 @@ Provides query optimization, batching, and performance monitoring
 for database operations.
 """
 
-from typing import Any, Dict, List, Optional, TypeVar
-from sqlalchemy import select, func
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import selectinload, joinedload
+from typing import Any, Dict, Optional, TypeVar
 import time
 
 from services.logger import get_logger

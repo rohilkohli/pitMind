@@ -540,7 +540,7 @@ export function Dashboard() {
           </>
         }
         headerStyle={{ padding: '10px 16px', borderBottom: '1px solid var(--border)' }}
-        className="pm-panel"
+        className="pm-panel pm-glass-card"
         style={{ flex: "1 1 0", minHeight: 280, overflow: 'hidden' }}
         bodyStyle={{ display: 'flex', flexDirection: 'column', flex: 1, overflow: 'hidden', padding: '12px 16px' }}
         defaultCollapsed={false}

@@ -749,89 +749,117 @@ h6 {
 }
 
 /* ── GRANITE CHAT ────────────────────────────────────────────────────────── */
+/* ── GRANITE CHAT ────────────────────────────────────────────────────────── */
 .pm-chat-msg {
-  margin-bottom: 12px;
-  animation: fade-up 0.3s ease;
+  margin-bottom: 16px;
+  animation: fade-up 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  flex-direction: column;
 }
 .pm-chat-msg.ai .pm-msg-label {
   font-family: "Barlow Condensed", sans-serif;
-  font-size: 10px;
+  font-size: 11px;
   letter-spacing: 0.15em;
   color: var(--f1-red);
   font-weight: 700;
   text-transform: uppercase;
-  margin-bottom: 4px;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.pm-chat-msg.ai .pm-msg-label::before {
+  content: "";
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  background: var(--f1-red);
+  border-radius: 50%;
+  box-shadow: 0 0 8px var(--f1-red-glow);
 }
 .pm-chat-msg.user .pm-msg-label {
   font-family: "Barlow Condensed", sans-serif;
-  font-size: 10px;
+  font-size: 11px;
   letter-spacing: 0.15em;
   color: var(--text-secondary);
   font-weight: 600;
   text-transform: uppercase;
-  margin-bottom: 4px;
+  margin-bottom: 6px;
   text-align: right;
 }
 .pm-msg-bubble {
   font-family: "IBM Plex Mono", monospace;
-  font-size: 11px;
-  line-height: 1.55;
+  font-size: 12px;
+  line-height: 1.6;
   color: var(--text-primary);
-  padding: 10px 12px;
-  border: 1px solid var(--border);
-  background: var(--carbon-light);
+  padding: 12px 16px;
+  border-radius: 4px;
   position: relative;
-  max-width: 72ch;
+  max-width: 85%;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 }
 .pm-chat-msg.ai .pm-msg-bubble {
-  border-left: 2px solid var(--f1-red);
+  background: linear-gradient(135deg, rgba(30, 30, 36, 0.9) 0%, rgba(20, 20, 24, 0.95) 100%);
+  border: 1px solid rgba(232, 0, 45, 0.3);
+  border-left: 3px solid var(--f1-red);
+  border-top-left-radius: 0;
 }
 .pm-chat-msg.user .pm-msg-bubble {
-  border-right: 2px solid var(--chrome-dim);
-  text-align: right;
-  background: var(--steel);
+  background: linear-gradient(135deg, rgba(40, 42, 50, 0.9) 0%, rgba(30, 32, 38, 0.95) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-right: 3px solid var(--chrome-dim);
+  text-align: left;
   margin-left: auto;
+  border-top-right-radius: 0;
 }
 
 /* Chat chips */
 .pm-chip {
   font-family: "Barlow Condensed", sans-serif;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  padding: 5px 10px;
+  padding: 6px 12px;
   cursor: pointer;
-  border: 1px solid var(--border);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   color: var(--text-secondary);
-  background: var(--carbon-light);
-  transition: all 0.2s;
-  clip-path: polygon(4px 0, 100% 0, calc(100% - 4px) 100%, 0 100%);
+  background: rgba(255, 255, 255, 0.03);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  clip-path: polygon(6px 0, 100% 0, calc(100% - 6px) 100%, 0 100%);
+  backdrop-filter: blur(4px);
 }
 .pm-chip:hover {
-  border-color: var(--f1-red-glow);
-  color: var(--text-primary);
-  background: var(--f1-red-dim);
+  border-color: rgba(232, 0, 45, 0.6);
+  color: #fff;
+  background: rgba(232, 0, 45, 0.15);
+  box-shadow: 0 0 15px rgba(232, 0, 45, 0.2);
+  transform: translateY(-1px);
 }
 
 /* Chat input */
 .pm-chat-input {
   flex: 1;
-  background: var(--carbon-light);
-  border: 1px solid var(--border);
+  background: rgba(10, 10, 14, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   color: var(--text-primary);
-  padding: 10px 12px;
+  padding: 14px 16px;
   font-family: "IBM Plex Mono", monospace;
-  font-size: 11px;
+  font-size: 12px;
   outline: none;
-  transition: border-color 0.2s;
+  transition: all 0.3s ease;
   text-transform: uppercase;
+  backdrop-filter: blur(8px);
 }
 .pm-chat-input:focus {
-  border-color: var(--f1-red-glow);
+  border-color: var(--f1-red);
+  background: rgba(15, 15, 20, 0.9);
+  box-shadow: 0 0 0 1px rgba(232, 0, 45, 0.3) inset, 0 0 20px rgba(232, 0, 45, 0.1);
 }
 .pm-chat-input::placeholder {
-  color: var(--text-secondary);
+  color: rgba(255, 255, 255, 0.3);
 }
 
 .pm-chat-send {

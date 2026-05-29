@@ -32,7 +32,7 @@ export function useOptionalAuthUser() {
     );
 
     return unsubscribe;
-  }, [auth]);
+  }, []);
 
   return { user, loading, error };
 }

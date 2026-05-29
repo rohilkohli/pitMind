@@ -167,6 +167,9 @@ def _try_docling_pdf(raw: bytes) -> tuple[str, dict]:
 
     Falls back gracefully if Docling is not installed (e.g. plain text or stub).
     """
+    import logging
+    logger = logging.getLogger("docling_pdf")
+
     meta: dict = {
         "docling_used": False,
         "page_count": 0,
@@ -175,25 +178,33 @@ def _try_docling_pdf(raw: bytes) -> tuple[str, dict]:
         "docling_version": None,
     }
     try:
+        logger.info("Attempting Docling import...")
         import docling  # noqa: F401
         from docling.document_converter import DocumentConverter
+        logger.info("Docling imported successfully")
 
         # Capture installed Docling version for traceability
         try:
             meta["docling_version"] = docling.__version__
         except AttributeError:
             meta["docling_version"] = "unknown"
+        logger.info("Docling version: %s", meta["docling_version"])
 
         with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as tmp:
             tmp.write(raw)
             path = tmp.name
+        logger.info("Wrote PDF to temp file: %s (%d bytes)", path, len(raw))
 
         try:
+            logger.info("Creating DocumentConverter...")
             conv = DocumentConverter()
+            logger.info("Converting PDF...")
             res = conv.convert(path)
             doc = res.document
+            logger.info("Conversion complete, exporting to markdown...")
 
             markdown_text = doc.export_to_markdown()
+            logger.info("Markdown export done, length=%d", len(markdown_text))
 
             # Page count
             try:
@@ -213,6 +224,8 @@ def _try_docling_pdf(raw: bytes) -> tuple[str, dict]:
                 pass  # docling_core import might differ by version
 
             meta["docling_used"] = True
+            logger.info("Docling SUCCESS: pages=%d, tables=%d, figures=%d",
+                        meta["page_count"], meta["table_count"], meta["figure_count"])
             return markdown_text, meta
 
         finally:
@@ -221,12 +234,14 @@ def _try_docling_pdf(raw: bytes) -> tuple[str, dict]:
             except OSError:
                 pass
 
-    except ImportError:
+    except ImportError as exc:
+        logger.error("Docling ImportError: %s", exc)
         fallback = (
             "[Docling not installed — run `pip install docling>=2.0.0` "
             "or uncomment it in requirements.txt for structured PDF extraction]"
         )
         return fallback, meta
     except Exception as exc:
+        logger.error("Docling FAILED with %s: %s", type(exc).__name__, exc, exc_info=True)
         fallback = f"[Docling PDF parse failed: {exc}]"
         return fallback, meta

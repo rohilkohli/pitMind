@@ -57,7 +57,14 @@ except Exception as e:
 logger = get_logger(__name__)
 
 limiter = Limiter(key_func=get_remote_address)
-RATE_LIMIT = f"{get_settings().rate_limit_per_minute}/minute"
+
+# Tiered rate limiting configuration
+RATE_LIMIT_DEFAULT = f"{get_settings().rate_limit_per_minute}/minute"  # 120/min
+RATE_LIMIT_AI = "10/minute"  # Strict limit for AI-powered endpoints
+RATE_LIMIT_WEBSOCKET = "5/minute"  # Limit WebSocket connection attempts
+RATE_LIMIT_HEALTH = "300/minute"  # Relaxed for health checks
+RATE_LIMIT_AUTH = "20/minute"  # Moderate for authentication
+
 app = FastAPI(title="PitMind API", version="0.1.0")
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
@@ -197,6 +204,19 @@ async def add_security_headers(request: Request, call_next):
         response.headers["Pragma"] = "no-cache"
     else:
         response.headers["Cache-Control"] = "public, max-age=60"
+
+    return response
+
+
+@app.middleware("http")
+async def add_rate_limit_headers(request: Request, call_next):
+    """Add rate limit headers for client visibility."""
+    response = await call_next(request)
+
+    # Add rate limit information headers
+    # These are exposed in CORS configuration for client access
+    if "X-RateLimit-Limit" not in response.headers:
+        response.headers["X-RateLimit-Limit"] = str(get_settings().rate_limit_per_minute)
 
     return response
 
@@ -423,6 +443,8 @@ class ConnectionManager:
         self.start_time = time.time()
         # Connection ID mapping for Redis tracking
         self.connection_ids: dict[WebSocket, str] = {}
+        # Message sequence numbers for ordering guarantee
+        self.sequence_numbers: dict[str, int] = {}
 
     async def connect(self, websocket: WebSocket, session_id: str):
         """Accept and register a new WebSocket connection."""
@@ -436,6 +458,7 @@ class ConnectionManager:
         if session_id not in self.active_connections:
             self.active_connections[session_id] = []
             self.message_count[session_id] = 0
+            self.sequence_numbers[session_id] = 0
         self.active_connections[session_id].append(websocket)
 
         # Track in Redis (graceful degradation if unavailable)
@@ -459,6 +482,8 @@ class ConnectionManager:
             if not self.active_connections[session_id]:
                 del self.active_connections[session_id]
                 del self.message_count[session_id]
+                if session_id in self.sequence_numbers:
+                    del self.sequence_numbers[session_id]
 
         # Remove from connection ID mapping
         if websocket in self.connection_ids:
@@ -470,9 +495,23 @@ class ConnectionManager:
         logger.info(f"Client {connection_id} disconnected from session {session_id}")
 
     async def broadcast_telemetry(self, session_id: str, telemetry: dict[str, Any]):
-        """Broadcast telemetry to all connected clients in a session."""
+        """
+        Broadcast telemetry to all connected clients in a session with message ordering.
+
+        Adds sequence number to ensure clients can reorder out-of-sequence messages.
+        """
         if session_id in self.active_connections:
             self.message_count[session_id] += 1
+
+            # Increment sequence number for this session
+            if session_id not in self.sequence_numbers:
+                self.sequence_numbers[session_id] = 0
+            self.sequence_numbers[session_id] += 1
+
+            # Add sequence number and server timestamp to message
+            telemetry["sequence"] = self.sequence_numbers[session_id]
+            telemetry["server_timestamp"] = datetime.now().isoformat()
+
             stale_connections: list[WebSocket] = []
             for connection in list(self.active_connections[session_id]):
                 try:

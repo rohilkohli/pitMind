@@ -4,6 +4,8 @@ import logging
 from typing import Optional
 
 from fastapi import APIRouter, File, HTTPException, Request, UploadFile, Depends
+from slowapi import Limiter
+from slowapi.util import get_remote_address
 from sqlalchemy import select, desc
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -47,11 +49,13 @@ except ImportError:
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/v1/strategy", tags=["strategy"])
+limiter = Limiter(key_func=get_remote_address)
 
 # In-memory fallback for when database is unavailable
 STRATEGY_AUDIT_LOG: list[dict] = []
 
 @router.post("/recommend")
+@limiter.limit("10/minute")  # Strict rate limit for AI-powered strategy recommendations
 async def recommend_strategy(
     request: Request,
     payload: TelemetryPayload,

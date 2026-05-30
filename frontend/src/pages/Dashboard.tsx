@@ -320,12 +320,12 @@ export function Dashboard() {
     }),
   );
 
-  function handleDragEnd(event: any) {
+  function handleDragEnd(event: import("@dnd-kit/core").DragEndEvent) {
     const { active, over } = event;
     if (active && over && active.id !== over.id) {
       setColumnOrder((items: string[]) => {
-        const oldIndex = items.indexOf(active.id);
-        const newIndex = items.indexOf(over.id);
+        const oldIndex = items.indexOf(active.id as string);
+        const newIndex = items.indexOf(over.id as string);
         const newOrder = arrayMove(items, oldIndex, newIndex);
         localStorage.setItem("pitmind_dashboard_layout", JSON.stringify(newOrder));
         return newOrder;

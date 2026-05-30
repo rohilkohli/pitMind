@@ -150,12 +150,12 @@ export function Strategy() {
     }),
   );
 
-  function handleDragEnd(event: any) {
+  function handleDragEnd(event: import("@dnd-kit/core").DragEndEvent) {
     const { active, over } = event;
     if (active && over && active.id !== over.id) {
       setColumnOrder((items: string[]) => {
-        const oldIndex = items.indexOf(active.id);
-        const newIndex = items.indexOf(over.id);
+        const oldIndex = items.indexOf(active.id as string);
+        const newIndex = items.indexOf(over.id as string);
         const newOrder = arrayMove(items, oldIndex, newIndex);
         localStorage.setItem("pitmind_strategy_layout", JSON.stringify(newOrder));
         return newOrder;
@@ -200,7 +200,12 @@ export function Strategy() {
           strategyChecklistKey={`pitmind.strategy.checklist.${localPayload.circuit}.${localPayload.session_label}.${localPayload.driver}`}
           onInjectBriefToChat={() => {}}
           onCommitStrategy={async () => {
-            return {} as any;
+            // TODO: Implement strategy commit functionality
+            return {
+              message: "Strategy commit not yet implemented",
+              audit_id: "",
+              timestamp: new Date().toISOString()
+            };
           }}
           showHeader={false}
         />

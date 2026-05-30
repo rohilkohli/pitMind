@@ -30,9 +30,12 @@ export const FastF1Loader: React.FC<FastF1LoaderProps> = ({ onDataLoaded }) => {
         token,
       );
       onDataLoaded(data);
-    } catch (err: any) {
-      console.error(err);
-      setError(err.message || "Failed to load FastF1 data");
+    } catch (err) {
+      const error = err instanceof Error ? err : new Error("Failed to load FastF1 data");
+      if (import.meta.env.DEV) {
+        console.error("FastF1 Load Error:", error);
+      }
+      setError(error.message);
     } finally {
       setLoading(false);
     }
@@ -92,7 +95,7 @@ export const FastF1Loader: React.FC<FastF1LoaderProps> = ({ onDataLoaded }) => {
             </label>
             <select
               value={sessionType}
-              onChange={(e) => setSessionType(e.target.value as any)}
+              onChange={(e) => setSessionType(e.target.value as "R" | "Q" | "S" | "FP1" | "FP2" | "FP3")}
               className="w-full"
             >
               <option value="R">Race</option>

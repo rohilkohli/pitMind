@@ -210,24 +210,46 @@ async def get_audit_history(
 ) -> dict:
     """
     Retrieve audit log history from database with pagination.
-    
+
     Args:
         session_id: Filter by session ID
         driver: Filter by driver name
         limit: Maximum number of records to return (default: 100, max: 1000)
         offset: Number of records to skip (for pagination)
-    
+
     Returns:
         dict with 'total', 'limit', 'offset', and 'records' keys
     """
     try:
-        # Validate limit
+        # Input validation to prevent SQL injection
+        if session_id:
+            # Validate session_id: alphanumeric, underscores, hyphens only, max 128 chars
+            if len(session_id) > 128 or not all(c.isalnum() or c in "_-" for c in session_id):
+                raise HTTPException(
+                    status_code=400,
+                    detail="Invalid session_id format. Use alphanumeric characters, underscores, and hyphens only."
+                )
+
+        if driver:
+            # Validate driver: alphanumeric, spaces, hyphens only, max 64 chars
+            if len(driver) > 64 or not all(c.isalnum() or c in " -" for c in driver):
+                raise HTTPException(
+                    status_code=400,
+                    detail="Invalid driver format. Use alphanumeric characters, spaces, and hyphens only."
+                )
+
+        # Validate limit and offset to prevent abuse
+        if limit < 0:
+            raise HTTPException(status_code=400, detail="Limit must be non-negative")
+        if offset < 0:
+            raise HTTPException(status_code=400, detail="Offset must be non-negative")
+
         limit = min(limit, 1000)
-        
-        # Build query
+
+        # Build query with parameterized values (SQLAlchemy ORM handles parameterization)
         query = select(AuditLog).order_by(desc(AuditLog.timestamp))
-        
-        # Apply filters
+
+        # Apply filters using parameterized queries
         if session_id:
             query = query.where(AuditLog.session_id == session_id)
         if driver:

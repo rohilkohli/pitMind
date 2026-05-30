@@ -5,6 +5,7 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
+import os
 import time
 import uuid
 from datetime import datetime
@@ -65,12 +66,39 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 register_exception_handlers(app)
 
 # Add middleware in correct order (last added = first executed)
+# CORS configuration with security-focused restrictions
+allowed_origins = cors_origin_list()
+
+# Filter out localhost/development origins in production
+settings = get_settings()
+if os.getenv("ENVIRONMENT", "production") == "production":
+    allowed_origins = [
+        origin for origin in allowed_origins
+        if not any(dev_host in origin for dev_host in ["localhost", "127.0.0.1", "0.0.0.0"])
+    ]
+    logger.info(f"Production mode: Filtered CORS origins to {allowed_origins}")
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=cors_origin_list(),
+    allow_origins=allowed_origins,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    # Explicitly allow only necessary HTTP methods (no wildcard)
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    # Explicitly allow only necessary headers (no wildcard)
+    allow_headers=[
+        "Authorization",
+        "Content-Type",
+        "Accept",
+        "Origin",
+        "User-Agent",
+        "DNT",
+        "Cache-Control",
+        "X-Requested-With",
+    ],
+    # Expose headers that frontend needs to read
+    expose_headers=["X-Request-ID", "X-RateLimit-Remaining", "X-RateLimit-Limit"],
+    # Cache preflight requests for 1 hour
+    max_age=3600,
 )
 
 # Add request ID tracking middleware
@@ -128,11 +156,48 @@ async def shutdown_event():
 @app.middleware("http")
 async def add_security_headers(request: Request, call_next):
     response: Response = await call_next(request)
+
+    # Prevent MIME type sniffing
     response.headers["X-Content-Type-Options"] = "nosniff"
+
+    # Prevent clickjacking attacks
     response.headers["X-Frame-Options"] = "DENY"
+
+    # Control referrer information
     response.headers["Referrer-Policy"] = "no-referrer"
+
+    # Restrict browser features
     response.headers["Permissions-Policy"] = "geolocation=(), microphone=(), camera=()"
-    response.headers["Cache-Control"] = "no-store"
+
+    # Content Security Policy - prevent XSS attacks
+    response.headers["Content-Security-Policy"] = (
+        "default-src 'self'; "
+        "script-src 'self' 'unsafe-inline'; "
+        "style-src 'self' 'unsafe-inline'; "
+        "img-src 'self' data: https:; "
+        "font-src 'self' data:; "
+        "connect-src 'self' https://us-south.ml.cloud.ibm.com https://api-inference.huggingface.co; "
+        "frame-ancestors 'none'; "
+        "base-uri 'self'; "
+        "form-action 'self'; "
+        "object-src 'none'"
+    )
+
+    # HTTP Strict Transport Security - enforce HTTPS
+    # Only add HSTS if running on HTTPS (not localhost development)
+    if request.url.scheme == "https":
+        response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains; preload"
+
+    # XSS Protection for older browsers
+    response.headers["X-XSS-Protection"] = "1; mode=block"
+
+    # Cache control for sensitive endpoints
+    if "/api/" in str(request.url.path) and "/health" not in str(request.url.path):
+        response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, private"
+        response.headers["Pragma"] = "no-cache"
+    else:
+        response.headers["Cache-Control"] = "public, max-age=60"
+
     return response
 
 
@@ -447,10 +512,24 @@ async def websocket_telemetry_stream(
         session_id = "current_race"
         logger.warning("No session_id provided, using default 'current_race'")
 
-    # Validate session_id format (alphanumeric, underscores, hyphens only)
+    # Comprehensive session_id validation
+    # 1. Length validation (prevent DoS via extremely long IDs)
+    if len(session_id) > 128:
+        logger.error(f"Session ID too long: {len(session_id)} characters")
+        await websocket.close(code=1008, reason="Session ID exceeds maximum length")
+        return
+
+    # 2. Format validation (alphanumeric, underscores, hyphens only)
     if not session_id.replace("_", "").replace("-", "").isalnum():
         logger.error(f"Invalid session_id format: {session_id}")
         await websocket.close(code=1008, reason="Invalid session_id format")
+        return
+
+    # 3. Prevent path traversal and injection attempts
+    forbidden_patterns = ["../", "..\\", "<", ">", "&", "|", ";", "`", "$", "(", ")"]
+    if any(pattern in session_id for pattern in forbidden_patterns):
+        logger.error(f"Session ID contains forbidden characters: {session_id}")
+        await websocket.close(code=1008, reason="Invalid session_id characters")
         return
 
     logger.info(f"Connecting WebSocket session: {session_id}")

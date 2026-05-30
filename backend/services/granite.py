@@ -317,8 +317,7 @@ async def _watsonx_chat(system: str, user: str, max_tokens: int) -> str | None:
                     body_text = resp.text
                 except Exception:
                     body_text = "<unreadable response body>"
-                print(f"DEBUG: Watsonx HTTP {resp.status_code}: {body_text}")
-                logger.warning(
+                logger.error(
                     "Watsonx HTTP error", status_code=resp.status_code, body=body_text
                 )
                 return None
@@ -332,13 +331,11 @@ async def _watsonx_chat(system: str, user: str, max_tokens: int) -> str | None:
             body_text = resp.text
         except Exception:
             body_text = "<unreadable response body>"
-        print(f"DEBUG: Watsonx HTTP exception: {resp.status_code} {body_text}")
-        logger.warning(
+        logger.error(
             "Watsonx HTTP exception", status_code=resp.status_code, body=body_text
         )
     except Exception as exc:  # noqa: BLE001
-        print(f"DEBUG: Watsonx Exception: {exc}")
-        logger.warning("Watsonx generation failed", exc_info=exc)
+        logger.error("Watsonx generation failed", exc_info=exc)
     return None
 
 

@@ -14,27 +14,24 @@ router = APIRouter(prefix="/api/v1/auth", tags=["auth"])
 logger = logging.getLogger(__name__)
 
 async def verify_token(authorization: str = Header(None)) -> str:
-    """Verify Firebase ID token or allow mock UID in development."""
+    """Verify Firebase ID token with proper signature validation."""
     if not authorization:
         logger.warning("Missing Authorization header")
         raise HTTPException(status_code=401, detail="Missing or invalid Authorization header")
-        
+
     token = authorization.removeprefix("Bearer ").strip()
     if not token:
         raise HTTPException(status_code=401, detail="Authorization header malformed")
-    
-    # Only in non-production, allow dev testing
-    if os.getenv("ENVIRONMENT") == "development" and token.startswith("dev_"):
-        return token.replace("Bearer ", "")
-        
+
     try:
         from config import get_settings
         settings = get_settings()
-        
+
+        # Always verify tokens using Firebase JWKS for production-grade security
         jwks_url = "https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com"
         jwks_client = jwt.PyJWKClient(jwks_url)
         signing_key = jwks_client.get_signing_key_from_jwt(token)
-        
+
         decoded = jwt.decode(
             token,
             signing_key.key,
@@ -43,24 +40,22 @@ async def verify_token(authorization: str = Header(None)) -> str:
             issuer=f"https://securetoken.google.com/{settings.firebase_project_id}",
             options={"verify_exp": True, "verify_iat": True}
         )
-        return decoded.get("uid") or decoded.get("user_id") or decoded.get("sub")
-    except Exception as e:
-        logger.warning(f"Token verification failed: {e}")
-        
-        # Fallback for local development if Google credentials are missing
-        if os.getenv("ENVIRONMENT") == "development":
-            logger.warning("Development mode: attempting unverified token decode fallback")
-            try:
-                # Decode without verification just to extract the UID for dev session continuity
-                unverified = jwt.decode(token, options={"verify_signature": False})
-                uid = unverified.get("uid") or unverified.get("user_id") or unverified.get("sub")
-                if uid:
-                    logger.info(f"Fallback success: using unverified UID {uid}")
-                    return uid
-            except Exception as jwt_err:
-                logger.error(f"Fallback decode failed: {jwt_err}")
 
-        raise HTTPException(status_code=401, detail="Invalid or expired token") from e
+        uid = decoded.get("uid") or decoded.get("user_id") or decoded.get("sub")
+        if not uid:
+            raise HTTPException(status_code=401, detail="Token missing user identifier")
+
+        return uid
+
+    except jwt.ExpiredSignatureError:
+        logger.warning("Token has expired")
+        raise HTTPException(status_code=401, detail="Token has expired") from None
+    except jwt.InvalidTokenError as e:
+        logger.warning(f"Invalid token: {e}")
+        raise HTTPException(status_code=401, detail="Invalid token") from e
+    except Exception as e:
+        logger.error(f"Token verification failed: {e}")
+        raise HTTPException(status_code=401, detail="Authentication failed") from e
 
 @router.get("/verify")
 async def verify_auth(uid: str = Depends(verify_token)):

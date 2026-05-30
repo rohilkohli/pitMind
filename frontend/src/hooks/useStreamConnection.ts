@@ -290,17 +290,24 @@ export const useStreamConnection = (config: StreamConnectionConfig) => {
     }
   }, []);
 
-  // Auto-connect on mount — stable refs used, no dependency risk
+  // Auto-connect on mount — use refs to avoid reconnect loop
+  const connectRef = useRef(connect);
+  const disconnectRef = useRef(disconnect);
+
+  useEffect(() => {
+    connectRef.current = connect;
+    disconnectRef.current = disconnect;
+  });
+
   useEffect(() => {
     isComponentMounted.current = true;
-    connect();
+    connectRef.current();
 
     return () => {
       isComponentMounted.current = false;
-      disconnect();
+      disconnectRef.current();
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // connect/disconnect are stable callbacks; omitting avoids reconnect loop
+  }, []);
 
   return {
     state,

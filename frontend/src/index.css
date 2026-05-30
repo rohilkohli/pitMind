@@ -91,10 +91,21 @@ body {
   text-rendering: optimizeLegibility;
 }
 
-/* Only hide default cursor when custom cursor is active (not for reduced motion users) */
+/* Only hide default cursor when custom cursor is active AND motion is allowed */
 @media (prefers-reduced-motion: no-preference) {
   body {
     cursor: none;
+  }
+}
+
+/* Ensure cursor is visible for reduced-motion users */
+@media (prefers-reduced-motion: reduce) {
+  body {
+    cursor: auto !important;
+  }
+  .pm-cursor,
+  .pm-cursor-ring {
+    display: none !important;
   }
 }
 

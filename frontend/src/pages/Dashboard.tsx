@@ -221,7 +221,7 @@ export function Dashboard() {
       setReco(data);
     } catch (e) {
       console.error(e);
-      setRecoError(String(e));
+      setRecoError("Failed to fetch strategy recommendation. Check your connection and try again.");
     } finally {
       setRecoLoading(false);
     }
@@ -263,19 +263,27 @@ export function Dashboard() {
 
   const [localPayload, setLocalPayload] = useState<TelemetryPayload>(initialPayload);
   const [isUploading, setIsUploading] = useState(false);
+  const [uploadStatus, setUploadStatus] = useState<string | null>(null);
 
   async function handleUploadTelemetry(e: React.ChangeEvent<HTMLInputElement>) {
     if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
       setIsUploading(true);
+      setUploadStatus(`Uploading ${file.name}...`);
       try {
         const token = await auth?.currentUser?.getIdToken(true);
-        const data = await uploadTelemetry(e.target.files[0], token);
+        const data = await uploadTelemetry(file, token);
         setLocalPayload(data);
+        setUploadStatus(`✓ ${file.name} loaded`);
+        setTimeout(() => setUploadStatus(null), 3000);
       } catch (err) {
         console.error(err);
-        alert("Failed to upload telemetry");
+        setUploadStatus("Upload failed. Please try again.");
+        setTimeout(() => setUploadStatus(null), 4000);
       } finally {
         setIsUploading(false);
+        // Reset file input so same file can be re-uploaded
+        e.target.value = "";
       }
     }
   }
@@ -449,6 +457,7 @@ export function Dashboard() {
                   <input
                     type="file"
                     onChange={handleUploadTelemetry}
+                    aria-label="Upload telemetry data file"
                     style={{
                       position: "absolute",
                       inset: 0,
@@ -482,8 +491,24 @@ export function Dashboard() {
                     ) : (
                       <Upload style={{ width: 10, height: 10 }} />
                     )}
-                    {isUploading ? "Ingesting..." : "Ingest Data"}
+                    {isUploading ? "Uploading..." : "Ingest Data"}
                   </button>
+                  {/* Upload status feedback */}
+                  {uploadStatus && (
+                    <span
+                      style={{
+                        fontFamily: "'IBM Plex Mono', monospace",
+                        fontSize: 10,
+                        color: uploadStatus.startsWith("✓") ? "var(--neon-green)" : uploadStatus.includes("failed") ? "var(--f1-red)" : "var(--text-secondary)",
+                        position: "absolute",
+                        top: "calc(100% + 4px)",
+                        right: 0,
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      {uploadStatus}
+                    </span>
+                  )}
                 </div>
                 <span
                   style={{
@@ -606,6 +631,10 @@ export function Dashboard() {
                   border: "1px solid var(--border-active)",
                   background: "var(--f1-red-dim)",
                   marginBottom: 12,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  gap: 8,
                 }}
               >
                 <span
@@ -613,12 +642,33 @@ export function Dashboard() {
                     fontFamily: "'IBM Plex Mono', monospace",
                     fontSize: 10,
                     color: "var(--f1-red)",
+                    flex: 1,
                   }}
                 >
                   {recoError}
                 </span>
+                <button
+                  onClick={onRecommend}
+                  disabled={recoLoading}
+                  style={{
+                    fontFamily: "'Barlow Condensed', sans-serif",
+                    fontSize: 10,
+                    fontWeight: 700,
+                    letterSpacing: "0.12em",
+                    textTransform: "uppercase",
+                    background: "var(--f1-red)",
+                    color: "#fff",
+                    border: "none",
+                    padding: "4px 10px",
+                    cursor: "pointer",
+                    flexShrink: 0,
+                  }}
+                >
+                  ↺ Retry
+                </button>
               </div>
             )}
+
 
             {reco && (
               <div
@@ -812,12 +862,15 @@ export function Dashboard() {
 
         {/* Input */}
         <div style={{ display: "flex", gap: 0, flexShrink: 0 }}>
+          <label htmlFor="chat-strategy-input" className="sr-only">Strategy query</label>
           <input
+            id="chat-strategy-input"
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && onSendChat()}
             placeholder="ENTER STRATEGY QUERY..."
             className="pm-chat-input"
+            aria-label="Strategy query input"
             disabled={isChatThinking}
           />
           <button onClick={onSendChat} disabled={isChatThinking} className="pm-chat-send">

@@ -6,6 +6,7 @@ import { StreamProvider } from "./contexts/StreamContext";
 import { PanelStateProvider } from "./contexts/PanelStateContext";
 import { PageShell } from "./components/layout/PageShell";
 import { Skeleton } from "./components/ui/skeleton";
+import { ErrorBoundary } from "./components/ui/ErrorBoundary";
 
 const Dashboard = React.lazy(() =>
   import("./pages/Dashboard").then((module) => ({ default: module.Dashboard })),
@@ -221,8 +222,8 @@ function CustomCursor() {
 
   return (
     <>
-      <div ref={dotRef} className="pm-cursor" />
-      <div ref={ringRef} className="pm-cursor-ring" />
+      <div ref={dotRef} className="pm-cursor" aria-hidden="true" />
+      <div ref={ringRef} className="pm-cursor-ring" aria-hidden="true" />
     </>
   );
 }
@@ -250,9 +251,11 @@ export default function App() {
             <Route
               path="/login"
               element={
-                <Suspense fallback={<PageLoader label="Loading login..." />}>
-                  <Login />
-                </Suspense>
+                <ErrorBoundary>
+                  <Suspense fallback={<PageLoader label="Loading login..." />}>
+                    <Login />
+                  </Suspense>
+                </ErrorBoundary>
               }
             />
 
@@ -260,11 +263,13 @@ export default function App() {
             <Route
               path="/fan"
               element={
-                <PageShell>
-                  <Suspense fallback={<PageLoader label="Loading fan view..." />}>
-                    <FanMode />
-                  </Suspense>
-                </PageShell>
+                <ErrorBoundary>
+                  <PageShell>
+                    <Suspense fallback={<PageLoader label="Loading fan view..." />}>
+                      <FanMode />
+                    </Suspense>
+                  </PageShell>
+                </ErrorBoundary>
               }
             />
 
@@ -272,51 +277,57 @@ export default function App() {
             <Route
               path="/dashboard"
               element={
-                <RequireAuth>
-                  <StreamProvider wsUrl={defaultWsUrl}>
-                    <RoleProvider>
-                      <PageShell>
-                        <Suspense fallback={<PageLoader label="Loading engineer console..." />}>
-                          <Dashboard />
-                        </Suspense>
-                      </PageShell>
-                    </RoleProvider>
-                  </StreamProvider>
-                </RequireAuth>
+                <ErrorBoundary>
+                  <RequireAuth>
+                    <StreamProvider wsUrl={defaultWsUrl}>
+                      <RoleProvider>
+                        <PageShell>
+                          <Suspense fallback={<PageLoader label="Loading engineer console..." />}>
+                            <Dashboard />
+                          </Suspense>
+                        </PageShell>
+                      </RoleProvider>
+                    </StreamProvider>
+                  </RequireAuth>
+                </ErrorBoundary>
               }
             />
 
             <Route
               path="/strategy"
               element={
-                <RequireAuth>
-                  <StreamProvider wsUrl={defaultWsUrl}>
-                    <RoleProvider>
-                      <PageShell>
-                        <Suspense fallback={<PageLoader label="Loading Strategy Workspace..." />}>
-                          <Strategy />
-                        </Suspense>
-                      </PageShell>
-                    </RoleProvider>
-                  </StreamProvider>
-                </RequireAuth>
+                <ErrorBoundary>
+                  <RequireAuth>
+                    <StreamProvider wsUrl={defaultWsUrl}>
+                      <RoleProvider>
+                        <PageShell>
+                          <Suspense fallback={<PageLoader label="Loading Strategy Workspace..." />}>
+                            <Strategy />
+                          </Suspense>
+                        </PageShell>
+                      </RoleProvider>
+                    </StreamProvider>
+                  </RequireAuth>
+                </ErrorBoundary>
               }
             />
 
             <Route
               path="/telemetry"
               element={
-                <RequireAuth>
-                  <StreamProvider wsUrl={defaultWsUrl}>
-                    <RoleProvider>
-                      <PageShell>
-                        <Suspense fallback={<PageLoader label="Loading Telemetry..." />}>
-                          <Telemetry />
-                        </Suspense>
-                      </PageShell>
-                    </RoleProvider>
-                  </StreamProvider>
-                </RequireAuth>
+                <ErrorBoundary>
+                  <RequireAuth>
+                    <StreamProvider wsUrl={defaultWsUrl}>
+                      <RoleProvider>
+                        <PageShell>
+                          <Suspense fallback={<PageLoader label="Loading Telemetry..." />}>
+                            <Telemetry />
+                          </Suspense>
+                        </PageShell>
+                      </RoleProvider>
+                    </StreamProvider>
+                  </RequireAuth>
+                </ErrorBoundary>
               }
             />
 
@@ -324,17 +335,19 @@ export default function App() {
             <Route
               path="/copilot"
               element={
-                <RequireAuth>
-                  <StreamProvider wsUrl={defaultWsUrl}>
-                    <RoleProvider>
-                      <PageShell>
-                        <Suspense fallback={<PageLoader label="Loading Copilot workspace..." />}>
-                          <Dashboard />
-                        </Suspense>
-                      </PageShell>
-                    </RoleProvider>
-                  </StreamProvider>
-                </RequireAuth>
+                <ErrorBoundary>
+                  <RequireAuth>
+                    <StreamProvider wsUrl={defaultWsUrl}>
+                      <RoleProvider>
+                        <PageShell>
+                          <Suspense fallback={<PageLoader label="Loading Copilot workspace..." />}>
+                            <Dashboard />
+                          </Suspense>
+                        </PageShell>
+                      </RoleProvider>
+                    </StreamProvider>
+                  </RequireAuth>
+                </ErrorBoundary>
               }
             />
 
@@ -342,11 +355,13 @@ export default function App() {
             <Route
               path="/"
               element={
-                <PageShell>
-                  <Suspense fallback={<PageLoader label="Loading PitMind..." />}>
-                    <Landing />
-                  </Suspense>
-                </PageShell>
+                <ErrorBoundary>
+                  <PageShell>
+                    <Suspense fallback={<PageLoader label="Loading PitMind..." />}>
+                      <Landing />
+                    </Suspense>
+                  </PageShell>
+                </ErrorBoundary>
               }
             />
           </Routes>

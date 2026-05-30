@@ -68,6 +68,19 @@ html {
   background: var(--carbon);
 }
 
+/* Screen-reader only utility — visually hidden but accessible */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
 body {
   min-height: 100vh;
   background-color: var(--carbon);
@@ -76,7 +89,13 @@ body {
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
-  cursor: none;
+}
+
+/* Only hide default cursor when custom cursor is active (not for reduced motion users) */
+@media (prefers-reduced-motion: no-preference) {
+  body {
+    cursor: none;
+  }
 }
 
 /* ── CUSTOM CURSOR ──────────────────────────────────────────────────────── */
@@ -1840,5 +1859,75 @@ button,
   .pm-cursor,
   .pm-cursor-ring {
     display: none;
+  }
+}
+
+/* ── MOBILE RESPONSIVENESS ───────────────────────────────────────────────── */
+/* Bug 3 & 4 fix: Stack all panels vertically on mobile/tablet */
+@media (max-width: 768px) {
+  /* Hide custom cursor on touch devices */
+  .pm-cursor,
+  .pm-cursor-ring {
+    display: none;
+  }
+  body {
+    cursor: auto;
+  }
+
+  /* Dashboard: full-width single column */
+  .pm-kpi-strip {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  /* Stack resizable panel group columns vertically */
+  [data-panel-group-direction="horizontal"] {
+    flex-direction: column !important;
+  }
+
+  /* Remove resize handle visibility on mobile */
+  [data-panel-resize-handle-enabled="true"] {
+    display: none !important;
+  }
+
+  /* Each panel takes full width */
+  [data-panel] {
+    width: 100% !important;
+    min-width: 100% !important;
+    max-width: 100% !important;
+    flex: none !important;
+  }
+
+  /* Mission bar becomes scrollable on mobile */
+  .pm-mission-bar {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+  }
+
+  /* Login page: single column stack */
+  .login-glass-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Chat bubble max-width relaxed on mobile */
+  .pm-msg-bubble {
+    max-width: 95% !important;
+  }
+
+  /* KPI strip becomes 2 columns on mobile */
+  .pm-kpi-item {
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+  }
+}
+
+@media (max-width: 480px) {
+  .pm-kpi-strip {
+    grid-template-columns: 1fr;
+  }
+
+  /* Chips wrap nicely on small screens */
+  .pm-chip {
+    font-size: 9px;
+    padding: 4px 8px;
   }
 }

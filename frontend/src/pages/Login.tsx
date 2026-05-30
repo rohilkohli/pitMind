@@ -208,11 +208,35 @@ export function Login() {
       await signInWithPopup(auth, googleProvider);
       navigate("/dashboard");
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Failed to sign in with Google.");
+      // Parse Firebase error codes for user-friendly messages
+      const code = (err as { code?: string })?.code;
+      const friendlyMessages: Record<string, string> = {
+        "auth/popup-blocked":
+          "Sign-in popup was blocked by your browser. Please allow popups for this site and try again.",
+        "auth/popup-closed-by-user":
+          "Sign-in window was closed before completing. Please try again.",
+        "auth/cancelled-popup-request":
+          "Another sign-in attempt is in progress. Please wait and try again.",
+        "auth/network-request-failed":
+          "Network error. Please check your internet connection and try again.",
+        "auth/too-many-requests":
+          "Too many sign-in attempts. Please wait a few minutes and try again.",
+        "auth/user-disabled":
+          "This account has been disabled. Please contact support.",
+        "auth/account-exists-with-different-credential":
+          "An account already exists with a different sign-in method.",
+        "auth/internal-error":
+          "An internal error occurred. Please try again.",
+      };
+      setError(
+        (code && friendlyMessages[code]) ||
+          (err instanceof Error ? err.message : "Failed to sign in with Google. Please try again."),
+      );
     } finally {
       setLoading(false);
     }
   };
+
 
   return (
     <div

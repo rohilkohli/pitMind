@@ -311,8 +311,19 @@ export function Dashboard() {
   }
 
   const [columnOrder, setColumnOrder] = useState(() => {
-    const saved = localStorage.getItem("pitmind_dashboard_layout");
-    return saved ? JSON.parse(saved) : ["left", "center", "right"];
+    try {
+      const saved = localStorage.getItem("pitmind_dashboard_layout");
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        // Validate it's an array of valid column IDs
+        if (Array.isArray(parsed) && parsed.every((id) => ["left", "center", "right"].includes(id))) {
+          return parsed;
+        }
+      }
+    } catch {
+      // Corrupt localStorage — fall through to default
+    }
+    return ["left", "center", "right"];
   });
 
   // Track mission bar height for correct grid height calc

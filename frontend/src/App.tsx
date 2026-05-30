@@ -1,4 +1,4 @@
-import React, { Suspense, useEffect, useRef } from "react";
+import React, { Suspense, useEffect, useRef, useState } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useOptionalAuthUser } from "./hooks/useOptionalAuthUser";
 import { RoleProvider } from "./contexts/RoleContext";
@@ -7,6 +7,51 @@ import { PanelStateProvider } from "./contexts/PanelStateContext";
 import { PageShell } from "./components/layout/PageShell";
 import { Skeleton } from "./components/ui/skeleton";
 import { ErrorBoundary } from "./components/ui/ErrorBoundary";
+
+// ── OFFLINE DETECTION BANNER ─────────────────────────────────────────────────
+function OfflineBanner() {
+  const [isOffline, setIsOffline] = useState(!navigator.onLine);
+
+  useEffect(() => {
+    const goOffline = () => setIsOffline(true);
+    const goOnline = () => setIsOffline(false);
+    window.addEventListener("offline", goOffline);
+    window.addEventListener("online", goOnline);
+    return () => {
+      window.removeEventListener("offline", goOffline);
+      window.removeEventListener("online", goOnline);
+    };
+  }, []);
+
+  if (!isOffline) return null;
+
+  return (
+    <div
+      role="alert"
+      aria-live="assertive"
+      style={{
+        position: "fixed",
+        top: 0,
+        left: 0,
+        right: 0,
+        zIndex: 99999,
+        background: "rgba(232,0,45,0.95)",
+        color: "#fff",
+        fontFamily: "'Barlow Condensed', sans-serif",
+        fontSize: 12,
+        fontWeight: 700,
+        letterSpacing: "0.2em",
+        textTransform: "uppercase",
+        textAlign: "center",
+        padding: "8px 16px",
+        backdropFilter: "blur(8px)",
+      }}
+    >
+      ⚠ NO NETWORK CONNECTION — TELEMETRY DATA MAY BE STALE
+    </div>
+  );
+}
+
 
 const Dashboard = React.lazy(() =>
   import("./pages/Dashboard").then((module) => ({ default: module.Dashboard })),
@@ -241,6 +286,7 @@ export default function App() {
   return (
     <BrowserRouter>
       {/* Global overlays */}
+      <OfflineBanner />
       <SpeedLinesCanvas />
       <CustomCursor />
 

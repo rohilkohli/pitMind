@@ -100,8 +100,12 @@ export function Dashboard() {
           setReco(result);
         }
       } catch (e) {
-        console.error("Auto-load failed, using fallback:", e);
+        // Bug HP-6 fix: surface auto-load error to UI instead of silently swallowing
+        if (import.meta.env.DEV) {
+          console.error("Auto-load failed, using fallback:", e);
+        }
         if (active) {
+          setRecoError("Could not load live strategy. Using demo data.");
           setReco({
             action: "PIT FOR FRESH SOFTS",
             confidence: 84,
@@ -149,6 +153,7 @@ export function Dashboard() {
       active = false;
     };
   }, []);
+
 
   const [draft, setDraft] = useState("");
   const [chat, setChat] = useState<ChatMessage[]>([

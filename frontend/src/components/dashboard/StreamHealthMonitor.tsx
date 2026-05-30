@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { Wifi, WifiOff, AlertTriangle, RotateCcw } from "lucide-react";
 import { useStream } from "../../contexts/StreamContext";
 
@@ -80,16 +80,12 @@ const getStatusIcon = (status: ConnectionStatus) => {
 
 export const StreamHealthMonitor: React.FC<StreamHealthMonitorProps> = ({ showMetrics = true }) => {
   const { state, reconnect } = useStream();
-  const [uptime, setUptime] = useState(0);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setUptime((prev) => prev + 1);
-    }, 1000);
-    return () => clearInterval(interval);
-  }, []);
+  // Use uptime from the stream state — avoids a duplicate setInterval
+  // (useStreamConnection already maintains its own uptime counter)
+  const uptime = state.uptime;
 
   const formatUptime = (seconds: number) => {
+
     const hours = Math.floor(seconds / 3600);
     const minutes = Math.floor((seconds % 3600) / 60);
     const secs = seconds % 60;

@@ -91,8 +91,9 @@ class Settings(BaseSettings):
         description="Redis connection URL for caching and session management"
     )
     redis_max_connections: int = Field(
-        default=10,
+        default=50,
         validation_alias=AliasChoices("REDIS_MAX_CONNECTIONS", "redis_max_connections"),
+        description="Redis connection pool size (increased for WebSocket scale)"
     )
     redis_socket_timeout: int = Field(
         default=5,
@@ -110,12 +111,14 @@ class Settings(BaseSettings):
         description="PostgreSQL connection URL with asyncpg driver"
     )
     db_pool_size: int = Field(
-        default=5,
+        default=20,
         validation_alias=AliasChoices("DB_POOL_SIZE", "db_pool_size"),
+        description="Database connection pool size (increased for production load)"
     )
     db_max_overflow: int = Field(
-        default=10,
+        default=30,
         validation_alias=AliasChoices("DB_MAX_OVERFLOW", "db_max_overflow"),
+        description="Maximum overflow connections beyond pool size"
     )
     db_pool_timeout: int = Field(
         default=30,

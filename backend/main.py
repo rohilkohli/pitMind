@@ -25,6 +25,7 @@ try:
     from .services import granite
     from .services import redis_client
     from .services.logger import get_logger, RequestIDMiddleware
+    from .services.websocket_manager import ConnectionManager
     from .middleware.error_handler import (
         register_exception_handlers,
         ErrorTrackingMiddleware,
@@ -37,6 +38,7 @@ except ImportError:
     from services import granite
     from services import redis_client
     from services.logger import get_logger, RequestIDMiddleware
+    from services.websocket_manager import ConnectionManager
     from middleware.error_handler import (
         register_exception_handlers,
         ErrorTrackingMiddleware,
@@ -252,9 +254,11 @@ async def log_requests(request: Request, call_next):
     return response
 
 
-@app.get("/health")
-async def health() -> dict[str, Any]:
-    """Basic health check with Redis, database, and cache status."""
+async def _get_basic_health() -> dict[str, Any]:
+    """
+    Internal function to get basic health metrics.
+    Used by both /health and /api/health endpoints.
+    """
     redis_health = await redis_client.check_redis_health()
     db_health = await db.check_db_health()
 
@@ -279,35 +283,18 @@ async def health() -> dict[str, Any]:
         },
         **granite.get_ai_status(),
     }
+
+
+@app.get("/health")
+async def health() -> dict[str, Any]:
+    """Basic health check for liveness/readiness probes."""
+    return await _get_basic_health()
 
 
 @app.get("/api/health")
 async def api_health() -> dict[str, Any]:
-    """API health check with Redis, database, and cache status."""
-    redis_health = await redis_client.check_redis_health()
-    db_health = await db.check_db_health()
-
-    total_requests = _cache_stats["hits"] + _cache_stats["misses"]
-    hit_rate = (
-        (_cache_stats["hits"] / total_requests * 100) if total_requests > 0 else 0.0
-    )
-
-    overall_status = "ok"
-    if not redis_health.get("connected") or not db_health.get("connected"):
-        overall_status = "degraded"
-
-    return {
-        "status": overall_status,
-        "redis": redis_health,
-        "database": db_health,
-        "cache": {
-            "hit_rate": round(hit_rate, 2),
-            "total_requests": total_requests,
-            "hits": _cache_stats["hits"],
-            "misses": _cache_stats["misses"],
-        },
-        **granite.get_ai_status(),
-    }
+    """API health check (alias for /health for backward compatibility)."""
+    return await _get_basic_health()
 
 
 @app.get("/api/v1/metrics/health")
@@ -432,104 +419,8 @@ async def get_health_metrics() -> dict[str, Any]:
     }
 
 
-# WebSocket connection manager
-class ConnectionManager:
-    """Manages WebSocket connections for real-time telemetry streaming with Redis tracking."""
-
-    def __init__(self):
-        # In-memory storage (always available)
-        self.active_connections: dict[str, list[WebSocket]] = {}
-        self.message_count: dict[str, int] = {}
-        self.start_time = time.time()
-        # Connection ID mapping for Redis tracking
-        self.connection_ids: dict[WebSocket, str] = {}
-        # Message sequence numbers for ordering guarantee
-        self.sequence_numbers: dict[str, int] = {}
-
-    async def connect(self, websocket: WebSocket, session_id: str):
-        """Accept and register a new WebSocket connection."""
-        await websocket.accept()
-
-        # Generate unique connection ID
-        connection_id = str(uuid.uuid4())
-        self.connection_ids[websocket] = connection_id
-
-        # Store in memory
-        if session_id not in self.active_connections:
-            self.active_connections[session_id] = []
-            self.message_count[session_id] = 0
-            self.sequence_numbers[session_id] = 0
-        self.active_connections[session_id].append(websocket)
-
-        # Track in Redis (graceful degradation if unavailable)
-        await redis_client.add_websocket_connection(session_id, connection_id)
-
-        logger.info(
-            f"Client {connection_id} connected to session {session_id}. Active: {len(self.active_connections[session_id])}"
-        )
-
-    async def disconnect(self, websocket: WebSocket, session_id: str):
-        """Unregister a disconnected WebSocket."""
-        # Get connection ID
-        connection_id = self.connection_ids.get(websocket, "unknown")
-
-        # Remove from memory
-        if session_id in self.active_connections:
-            try:
-                self.active_connections[session_id].remove(websocket)
-            except ValueError:
-                pass
-            if not self.active_connections[session_id]:
-                del self.active_connections[session_id]
-                del self.message_count[session_id]
-                if session_id in self.sequence_numbers:
-                    del self.sequence_numbers[session_id]
-
-        # Remove from connection ID mapping
-        if websocket in self.connection_ids:
-            del self.connection_ids[websocket]
-
-        # Remove from Redis
-        await redis_client.remove_websocket_connection(session_id, connection_id)
-
-        logger.info(f"Client {connection_id} disconnected from session {session_id}")
-
-    async def broadcast_telemetry(self, session_id: str, telemetry: dict[str, Any]):
-        """
-        Broadcast telemetry to all connected clients in a session with message ordering.
-
-        Adds sequence number to ensure clients can reorder out-of-sequence messages.
-        """
-        if session_id in self.active_connections:
-            self.message_count[session_id] += 1
-
-            # Increment sequence number for this session
-            if session_id not in self.sequence_numbers:
-                self.sequence_numbers[session_id] = 0
-            self.sequence_numbers[session_id] += 1
-
-            # Add sequence number and server timestamp to message
-            telemetry["sequence"] = self.sequence_numbers[session_id]
-            telemetry["server_timestamp"] = datetime.now().isoformat()
-
-            stale_connections: list[WebSocket] = []
-            for connection in list(self.active_connections[session_id]):
-                try:
-                    await connection.send_json(telemetry)
-                except Exception as e:
-                    logger.error(f"Error broadcasting telemetry: {e}")
-                    stale_connections.append(connection)
-            for stale in stale_connections:
-                await self.disconnect(stale, session_id)
-
-    async def send_to_one(self, websocket: WebSocket, message: dict[str, Any]):
-        """Send a message to a single client."""
-        try:
-            await websocket.send_json(message)
-        except Exception as e:
-            logger.error(f"Error sending message: {e}")
-
-
+# Initialize WebSocket connection manager
+# Extracted to services/websocket_manager.py for better testability and reuse
 manager = ConnectionManager()
 
 

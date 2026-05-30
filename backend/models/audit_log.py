@@ -100,6 +100,8 @@ class AuditLog(Base):
         Index("idx_session_lap", "session_id", "lap"),
         Index("idx_driver_timestamp", "driver", "timestamp"),
         Index("idx_strategy_confidence", "strategy_type", "confidence"),
+        # Composite index for common query pattern (session + driver queries)
+        Index("idx_session_driver", "session_id", "driver", "timestamp"),
     )
     
     def __repr__(self) -> str:

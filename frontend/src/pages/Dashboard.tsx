@@ -1325,5 +1325,6 @@ export function Dashboard() {
           </div>
         </div>
       )}
+    </div>
   );
 }

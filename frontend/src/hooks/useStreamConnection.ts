@@ -303,10 +303,3 @@ export const useStreamConnection = (config: StreamConnectionConfig) => {
     isConnected: state.status === "connected",
   };
 };
-state,
-  send,
-  reconnect,
-  disconnect,
-  isConnected: state.status === "connected",
-  };
-};

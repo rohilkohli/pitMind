@@ -227,4 +227,4 @@ export const ConfidenceDecompositionCard = memo<ConfidenceDecompositionCardProps
       </div>
     </Card>
   );
-};
+});

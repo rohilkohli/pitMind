@@ -221,8 +221,7 @@ export function Dashboard() {
       setReco(data);
     } catch (e) {
       console.error(e);
-      const errorMessage = e instanceof Error ? e.message : String(e);
-      setRecoError(errorMessage);
+      setRecoError(String(e));
     } finally {
       setRecoLoading(false);
     }
@@ -264,39 +263,19 @@ export function Dashboard() {
 
   const [localPayload, setLocalPayload] = useState<TelemetryPayload>(initialPayload);
   const [isUploading, setIsUploading] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0);
-  const [uploadError, setUploadError] = useState<string | null>(null);
 
   async function handleUploadTelemetry(e: React.ChangeEvent<HTMLInputElement>) {
     if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
       setIsUploading(true);
-      setUploadProgress(0);
-      setUploadError(null);
-
-      // Simulate progress (since API doesn't support real progress tracking)
-      const progressInterval = setInterval(() => {
-        setUploadProgress((prev) => Math.min(prev + 10, 90));
-      }, 200);
-
       try {
         const token = await auth?.currentUser?.getIdToken(true);
-        const data = await uploadTelemetry(file, token);
-        setUploadProgress(100);
+        const data = await uploadTelemetry(e.target.files[0], token);
         setLocalPayload(data);
-        setTimeout(() => {
-          setUploadProgress(0);
-          setIsUploading(false);
-        }, 500);
       } catch (err) {
-        clearInterval(progressInterval);
         console.error(err);
-        const errorMessage = err instanceof Error ? err.message : "Failed to upload telemetry file. Please try again.";
-        setUploadError(errorMessage);
-        setUploadProgress(0);
-        setIsUploading(false);
+        alert("Failed to upload telemetry");
       } finally {
-        clearInterval(progressInterval);
+        setIsUploading(false);
       }
     }
   }
@@ -467,11 +446,7 @@ export function Dashboard() {
               <div className="pm-panel-title">LAP TIME TRACE</div>
               <div style={{ display: "flex", alignItems: "center", gap: 8, marginLeft: "auto" }}>
                 <div className="relative overflow-hidden group" style={{ position: "relative" }}>
-                  <label htmlFor="file-upload-input" className="sr-only">
-                    Upload telemetry data file
-                  </label>
                   <input
-                    id="file-upload-input"
                     type="file"
                     onChange={handleUploadTelemetry}
                     style={{
@@ -482,11 +457,9 @@ export function Dashboard() {
                       zIndex: 10,
                     }}
                     accept=".csv,.json"
-                    aria-label="Upload telemetry data file (CSV or JSON)"
                   />
                   <button
                     disabled={isUploading}
-                    aria-label={isUploading ? "Uploading telemetry data" : "Upload telemetry data"}
                     style={{
                       display: "flex",
                       alignItems: "center",
@@ -505,71 +478,13 @@ export function Dashboard() {
                     }}
                   >
                     {isUploading ? (
-                      <Loader2 style={{ width: 10, height: 10 }} className="animate-spin" aria-hidden="true" />
+                      <Loader2 style={{ width: 10, height: 10 }} className="animate-spin" />
                     ) : (
-                      <Upload style={{ width: 10, height: 10 }} aria-hidden="true" />
+                      <Upload style={{ width: 10, height: 10 }} />
                     )}
-                    {isUploading ? `Ingesting... ${uploadProgress}%` : "Ingest Data"}
+                    {isUploading ? "Ingesting..." : "Ingest Data"}
                   </button>
-                  {/* Upload progress bar */}
-                  {isUploading && (
-                    <div
-                      style={{
-                        position: "absolute",
-                        bottom: 0,
-                        left: 0,
-                        right: 0,
-                        height: 2,
-                        background: "rgba(232,0,45,0.2)",
-                      }}
-                    >
-                      <div
-                        style={{
-                          height: "100%",
-                          width: `${uploadProgress}%`,
-                          background: "var(--f1-red)",
-                          transition: "width 0.3s ease",
-                        }}
-                      />
-                    </div>
-                  )}
                 </div>
-                {/* Upload error display */}
-                {uploadError && (
-                  <div
-                    role="alert"
-                    style={{
-                      position: "absolute",
-                      top: "calc(100% + 8px)",
-                      right: 0,
-                      padding: "8px 12px",
-                      background: "var(--f1-red-dim)",
-                      border: "1px solid var(--border-active)",
-                      borderLeft: "3px solid var(--f1-red)",
-                      fontSize: 9,
-                      color: "var(--f1-red)",
-                      whiteSpace: "nowrap",
-                      zIndex: 100,
-                      backdropFilter: "blur(8px)",
-                    }}
-                  >
-                    {uploadError}
-                    <button
-                      onClick={() => setUploadError(null)}
-                      style={{
-                        marginLeft: 8,
-                        background: "transparent",
-                        border: "none",
-                        color: "var(--f1-red)",
-                        cursor: "pointer",
-                        fontSize: 11,
-                      }}
-                      aria-label="Dismiss upload error"
-                    >
-                      ✕
-                    </button>
-                  </div>
-                )}
                 <span
                   style={{
                     fontFamily: "'Orbitron', sans-serif",
@@ -686,73 +601,22 @@ export function Dashboard() {
 
             {recoError && (
               <div
-                role="alert"
-                aria-live="polite"
                 style={{
-                  padding: "12px 16px",
+                  padding: "8px 12px",
                   border: "1px solid var(--border-active)",
                   background: "var(--f1-red-dim)",
-                  borderLeft: "3px solid var(--f1-red)",
                   marginBottom: 12,
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: 10,
                 }}
               >
-                <div style={{ display: "flex", alignItems: "flex-start", gap: 8 }}>
-                  <span style={{ fontSize: 14, flexShrink: 0 }} aria-hidden="true">⚠️</span>
-                  <span
-                    style={{
-                      fontFamily: "'IBM Plex Mono', monospace",
-                      fontSize: 10,
-                      color: "var(--f1-red)",
-                      lineHeight: 1.5,
-                      flex: 1,
-                    }}
-                  >
-                    {recoError}
-                  </span>
-                </div>
-                <div style={{ display: "flex", gap: 8 }}>
-                  <button
-                    onClick={onRecommend}
-                    disabled={recoLoading}
-                    style={{
-                      padding: "6px 12px",
-                      background: "var(--f1-red)",
-                      color: "#fff",
-                      border: "1px solid var(--border-active)",
-                      fontFamily: "'Barlow Condensed', sans-serif",
-                      fontSize: 10,
-                      fontWeight: 700,
-                      letterSpacing: "0.1em",
-                      textTransform: "uppercase",
-                      cursor: recoLoading ? "not-allowed" : "pointer",
-                      opacity: recoLoading ? 0.6 : 1,
-                    }}
-                    aria-label="Retry strategy recommendation"
-                  >
-                    🔄 Retry
-                  </button>
-                  <button
-                    onClick={() => setRecoError(null)}
-                    style={{
-                      padding: "6px 12px",
-                      background: "transparent",
-                      color: "var(--text-secondary)",
-                      border: "1px solid var(--border)",
-                      fontFamily: "'Barlow Condensed', sans-serif",
-                      fontSize: 10,
-                      fontWeight: 700,
-                      letterSpacing: "0.1em",
-                      textTransform: "uppercase",
-                      cursor: "pointer",
-                    }}
-                    aria-label="Dismiss error message"
-                  >
-                    Dismiss
-                  </button>
-                </div>
+                <span
+                  style={{
+                    fontFamily: "'IBM Plex Mono', monospace",
+                    fontSize: 10,
+                    color: "var(--f1-red)",
+                  }}
+                >
+                  {recoError}
+                </span>
               </div>
             )}
 
@@ -948,25 +812,15 @@ export function Dashboard() {
 
         {/* Input */}
         <div style={{ display: "flex", gap: 0, flexShrink: 0 }}>
-          <label htmlFor="chat-input" className="sr-only">
-            Chat input for strategy questions
-          </label>
           <input
-            id="chat-input"
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && onSendChat()}
             placeholder="ENTER STRATEGY QUERY..."
             className="pm-chat-input"
             disabled={isChatThinking}
-            aria-label="Enter strategy question"
           />
-          <button
-            onClick={onSendChat}
-            disabled={isChatThinking}
-            className="pm-chat-send"
-            aria-label="Send message"
-          >
+          <button onClick={onSendChat} disabled={isChatThinking} className="pm-chat-send">
             ▶
           </button>
         </div>
@@ -1472,5 +1326,84 @@ export function Dashboard() {
         </div>
       )}
     </div>
+  );
+}
+              ))}
+            </Group >
+          </SortableContext >
+        </DndContext >
+      </div >
+
+  {/* Persistent Role Identity */ }
+{
+  currentRole !== "engineer" && (
+    <div
+      style={{
+        position: "fixed",
+        bottom: 32,
+        left: 32,
+        zIndex: 200,
+        maxWidth: 320,
+        animation: "feed-in 0.5s ease",
+      }}
+    >
+      <div
+        style={{
+          background: "rgba(10,10,10,0.95)",
+          border: "1px solid var(--border-active)",
+          borderLeft: "3px solid var(--f1-red)",
+          backdropFilter: "blur(16px)",
+        }}
+      >
+        <div
+          style={{
+            padding: "10px 16px",
+            borderBottom: "1px solid var(--border)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+          }}
+        >
+          <span
+            style={{
+              fontFamily: "'Barlow Condensed', sans-serif",
+              fontSize: 10,
+              fontWeight: 700,
+              letterSpacing: "0.2em",
+              textTransform: "uppercase",
+              color: "var(--f1-red)",
+            }}
+          >
+            {currentRole} Context
+          </span>
+          <div
+            style={{
+              width: 6,
+              height: 6,
+              borderRadius: "50%",
+              background: "var(--f1-red)",
+              animation: "pulse-dot 1.5s infinite ease-in-out",
+            }}
+          />
+        </div>
+        <div
+          style={{
+            padding: "14px 16px",
+            fontFamily: "'IBM Plex Mono', monospace",
+            fontSize: 11,
+            color: "var(--text-secondary)",
+            lineHeight: 1.6,
+            fontStyle: "italic",
+          }}
+        >
+          {currentRole === "strategist"
+            ? "Strategic Overwatch: Prioritize lap delta and tyre degradation cycles."
+            : "Broadcast Feed: Focus on narrative arc and head-to-head performance battles."}
+        </div>
+      </div>
+    </div>
+  )
+}
+    </div >
   );
 }

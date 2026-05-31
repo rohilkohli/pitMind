@@ -34,11 +34,6 @@ export const useStreamConnection = (config: StreamConnectionConfig) => {
   const heartbeatIntervalRef = useRef<NodeJS.Timeout | undefined>(undefined);
   const reconnectAttemptsRef = useRef(0);
   const isComponentMounted = useRef(true);
-  // Store onMessage in a ref to avoid stale closures without adding it to deps
-  const onMessageRef = useRef(config.onMessage);
-  useEffect(() => {
-    onMessageRef.current = config.onMessage;
-  }, [config.onMessage]);
 
   const [state, setState] = useState<StreamConnectionState>({
     status: "connecting",
@@ -141,9 +136,9 @@ export const useStreamConnection = (config: StreamConnectionConfig) => {
             });
           }
 
-          // Call user-provided message handler via ref (avoids stale closures)
-          if (onMessageRef.current) {
-            onMessageRef.current(message);
+          // Call user-provided message handler
+          if (config.onMessage) {
+            config.onMessage(message);
           }
         } catch (e) {
           console.error("[Stream] Failed to parse message:", e);
@@ -231,7 +226,6 @@ export const useStreamConnection = (config: StreamConnectionConfig) => {
       }));
     }
   }, [config.url, config.maxRetries, config.heartbeatIntervalMs]);
-  // Note: config.onMessage is intentionally excluded — it's read via onMessageRef to avoid stale closures.
 
   // Disconnect from WebSocket
   const disconnect = useCallback(() => {
@@ -290,24 +284,16 @@ export const useStreamConnection = (config: StreamConnectionConfig) => {
     }
   }, []);
 
-  // Auto-connect on mount — use refs to avoid reconnect loop
-  const connectRef = useRef(connect);
-  const disconnectRef = useRef(disconnect);
-
-  useEffect(() => {
-    connectRef.current = connect;
-    disconnectRef.current = disconnect;
-  });
-
+  // Auto-connect on mount
   useEffect(() => {
     isComponentMounted.current = true;
-    connectRef.current();
+    connect();
 
     return () => {
       isComponentMounted.current = false;
-      disconnectRef.current();
+      disconnect();
     };
-  }, []);
+  }, [connect, disconnect]);
 
   return {
     state,
@@ -315,5 +301,12 @@ export const useStreamConnection = (config: StreamConnectionConfig) => {
     reconnect,
     disconnect,
     isConnected: state.status === "connected",
+  };
+};
+state,
+  send,
+  reconnect,
+  disconnect,
+  isConnected: state.status === "connected",
   };
 };

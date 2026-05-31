@@ -1,6 +1,7 @@
+import { memo } from "react";
 import type { DriverState } from "../../hooks/useFirebaseRaceState";
 
-export function StandingsTable({ standings }: { standings: DriverState[] | undefined }) {
+export const StandingsTable = memo(function StandingsTable({ standings }: { standings: DriverState[] | undefined }) {
   if (!standings || standings.length === 0) {
     return (
       <div style={{ padding: "16px" }}>
@@ -103,4 +104,4 @@ export function StandingsTable({ standings }: { standings: DriverState[] | undef
       </div>
     </div>
   );
-}
+});

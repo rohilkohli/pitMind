@@ -1,4 +1,4 @@
-import React from "react";
+import React, { memo } from "react";
 import { Card } from "../ui/card";
 import type { ConfidenceDecomposition } from "../../services/api";
 
@@ -7,7 +7,7 @@ interface ConfidenceDecompositionCardProps {
   overallConfidence?: number;
 }
 
-export const ConfidenceDecompositionCard: React.FC<ConfidenceDecompositionCardProps> = ({
+export const ConfidenceDecompositionCard = memo<ConfidenceDecompositionCardProps>(({
   decomposition,
   overallConfidence = 0,
 }) => {

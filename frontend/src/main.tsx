@@ -2,6 +2,7 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 
 import App from "./App";
+import { registerServiceWorker } from "./lib/serviceWorkerRegistration";
 
 import "./index.css";
 import "./styles/mobile.css";
@@ -48,3 +49,9 @@ createRoot(document.getElementById("root")!).render(
     <App />
   </StrictMode>,
 );
+
+// Register service worker for offline support
+registerServiceWorker({
+  onSuccess: () => console.log('[SW] Content cached for offline use'),
+  onUpdate: () => console.log('[SW] New content available - please refresh'),
+});

@@ -1,4 +1,4 @@
-import React, { Suspense, useEffect, useRef, useState } from "react";
+import React, { Suspense, useEffect, useRef } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useOptionalAuthUser } from "./hooks/useOptionalAuthUser";
 import { RoleProvider } from "./contexts/RoleContext";
@@ -6,52 +6,6 @@ import { StreamProvider } from "./contexts/StreamContext";
 import { PanelStateProvider } from "./contexts/PanelStateContext";
 import { PageShell } from "./components/layout/PageShell";
 import { Skeleton } from "./components/ui/skeleton";
-import { ErrorBoundary } from "./components/ui/ErrorBoundary";
-
-// ── OFFLINE DETECTION BANNER ─────────────────────────────────────────────────
-function OfflineBanner() {
-  const [isOffline, setIsOffline] = useState(!navigator.onLine);
-
-  useEffect(() => {
-    const goOffline = () => setIsOffline(true);
-    const goOnline = () => setIsOffline(false);
-    window.addEventListener("offline", goOffline);
-    window.addEventListener("online", goOnline);
-    return () => {
-      window.removeEventListener("offline", goOffline);
-      window.removeEventListener("online", goOnline);
-    };
-  }, []);
-
-  if (!isOffline) return null;
-
-  return (
-    <div
-      role="alert"
-      aria-live="assertive"
-      style={{
-        position: "fixed",
-        top: 0,
-        left: 0,
-        right: 0,
-        zIndex: 99999,
-        background: "rgba(232,0,45,0.95)",
-        color: "#fff",
-        fontFamily: "'Barlow Condensed', sans-serif",
-        fontSize: 12,
-        fontWeight: 700,
-        letterSpacing: "0.2em",
-        textTransform: "uppercase",
-        textAlign: "center",
-        padding: "8px 16px",
-        backdropFilter: "blur(8px)",
-      }}
-    >
-      ⚠ NO NETWORK CONNECTION — TELEMETRY DATA MAY BE STALE
-    </div>
-  );
-}
-
 
 const Dashboard = React.lazy(() =>
   import("./pages/Dashboard").then((module) => ({ default: module.Dashboard })),
@@ -267,23 +221,10 @@ function CustomCursor() {
 
   return (
     <>
-      <div ref={dotRef} className="pm-cursor" aria-hidden="true" />
-      <div ref={ringRef} className="pm-cursor-ring" aria-hidden="true" />
+      <div ref={dotRef} className="pm-cursor" />
+      <div ref={ringRef} className="pm-cursor-ring" />
     </>
   );
-}
-
-// Mobile responsive utility
-function useIsMobile() {
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
-
-  useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth < 768);
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
-
-  return isMobile;
 }
 
 export default function App() {
@@ -293,13 +234,12 @@ export default function App() {
     (apiBase
       ? apiBase.replace(/^http/, "ws") + "/api/v1/stream/telemetry"
       : (window.location.protocol === "https:" ? "wss://" : "ws://") +
-        window.location.host +
-        "/api/v1/stream/telemetry");
+      window.location.host +
+      "/api/v1/stream/telemetry");
 
   return (
     <BrowserRouter>
       {/* Global overlays */}
-      <OfflineBanner />
       <SpeedLinesCanvas />
       <CustomCursor />
 
@@ -310,11 +250,9 @@ export default function App() {
             <Route
               path="/login"
               element={
-                <ErrorBoundary>
-                  <Suspense fallback={<PageLoader label="Loading login..." />}>
-                    <Login />
-                  </Suspense>
-                </ErrorBoundary>
+                <Suspense fallback={<PageLoader label="Loading login..." />}>
+                  <Login />
+                </Suspense>
               }
             />
 
@@ -322,13 +260,11 @@ export default function App() {
             <Route
               path="/fan"
               element={
-                <ErrorBoundary>
-                  <PageShell>
-                    <Suspense fallback={<PageLoader label="Loading fan view..." />}>
-                      <FanMode />
-                    </Suspense>
-                  </PageShell>
-                </ErrorBoundary>
+                <PageShell>
+                  <Suspense fallback={<PageLoader label="Loading fan view..." />}>
+                    <FanMode />
+                  </Suspense>
+                </PageShell>
               }
             />
 
@@ -336,57 +272,51 @@ export default function App() {
             <Route
               path="/dashboard"
               element={
-                <ErrorBoundary>
-                  <RequireAuth>
-                    <StreamProvider wsUrl={defaultWsUrl}>
-                      <RoleProvider>
-                        <PageShell>
-                          <Suspense fallback={<PageLoader label="Loading engineer console..." />}>
-                            <Dashboard />
-                          </Suspense>
-                        </PageShell>
-                      </RoleProvider>
-                    </StreamProvider>
-                  </RequireAuth>
-                </ErrorBoundary>
+                <RequireAuth>
+                  <StreamProvider wsUrl={defaultWsUrl}>
+                    <RoleProvider>
+                      <PageShell>
+                        <Suspense fallback={<PageLoader label="Loading engineer console..." />}>
+                          <Dashboard />
+                        </Suspense>
+                      </PageShell>
+                    </RoleProvider>
+                  </StreamProvider>
+                </RequireAuth>
               }
             />
 
             <Route
               path="/strategy"
               element={
-                <ErrorBoundary>
-                  <RequireAuth>
-                    <StreamProvider wsUrl={defaultWsUrl}>
-                      <RoleProvider>
-                        <PageShell>
-                          <Suspense fallback={<PageLoader label="Loading Strategy Workspace..." />}>
-                            <Strategy />
-                          </Suspense>
-                        </PageShell>
-                      </RoleProvider>
-                    </StreamProvider>
-                  </RequireAuth>
-                </ErrorBoundary>
+                <RequireAuth>
+                  <StreamProvider wsUrl={defaultWsUrl}>
+                    <RoleProvider>
+                      <PageShell>
+                        <Suspense fallback={<PageLoader label="Loading Strategy Workspace..." />}>
+                          <Strategy />
+                        </Suspense>
+                      </PageShell>
+                    </RoleProvider>
+                  </StreamProvider>
+                </RequireAuth>
               }
             />
 
             <Route
               path="/telemetry"
               element={
-                <ErrorBoundary>
-                  <RequireAuth>
-                    <StreamProvider wsUrl={defaultWsUrl}>
-                      <RoleProvider>
-                        <PageShell>
-                          <Suspense fallback={<PageLoader label="Loading Telemetry..." />}>
-                            <Telemetry />
-                          </Suspense>
-                        </PageShell>
-                      </RoleProvider>
-                    </StreamProvider>
-                  </RequireAuth>
-                </ErrorBoundary>
+                <RequireAuth>
+                  <StreamProvider wsUrl={defaultWsUrl}>
+                    <RoleProvider>
+                      <PageShell>
+                        <Suspense fallback={<PageLoader label="Loading Telemetry..." />}>
+                          <Telemetry />
+                        </Suspense>
+                      </PageShell>
+                    </RoleProvider>
+                  </StreamProvider>
+                </RequireAuth>
               }
             />
 
@@ -394,19 +324,17 @@ export default function App() {
             <Route
               path="/copilot"
               element={
-                <ErrorBoundary>
-                  <RequireAuth>
-                    <StreamProvider wsUrl={defaultWsUrl}>
-                      <RoleProvider>
-                        <PageShell>
-                          <Suspense fallback={<PageLoader label="Loading Copilot workspace..." />}>
-                            <Dashboard />
-                          </Suspense>
-                        </PageShell>
-                      </RoleProvider>
-                    </StreamProvider>
-                  </RequireAuth>
-                </ErrorBoundary>
+                <RequireAuth>
+                  <StreamProvider wsUrl={defaultWsUrl}>
+                    <RoleProvider>
+                      <PageShell>
+                        <Suspense fallback={<PageLoader label="Loading Copilot workspace..." />}>
+                          <Dashboard />
+                        </Suspense>
+                      </PageShell>
+                    </RoleProvider>
+                  </StreamProvider>
+                </RequireAuth>
               }
             />
 
@@ -414,18 +342,29 @@ export default function App() {
             <Route
               path="/"
               element={
-                <ErrorBoundary>
-                  <PageShell>
-                    <Suspense fallback={<PageLoader label="Loading PitMind..." />}>
-                      <Landing />
-                    </Suspense>
-                  </PageShell>
-                </ErrorBoundary>
+                <PageShell>
+                  <Suspense fallback={<PageLoader label="Loading PitMind..." />}>
+                    <Landing />
+                  </Suspense>
+                </PageShell>
               }
             />
           </Routes>
         </div>
       </PanelStateProvider>
     </BrowserRouter>
+  );
+}
+<Suspense fallback={<PageLoader label="Loading PitMind..." />}>
+  <Landing />
+</Suspense>
+                  </PageShell >
+                </ErrorBoundary >
+              }
+            />
+          </Routes >
+        </div >
+      </PanelStateProvider >
+    </BrowserRouter >
   );
 }

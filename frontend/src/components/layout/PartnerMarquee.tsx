@@ -4,49 +4,43 @@ const categories = [
   {
     title: "AUTOMOTIVE & RACING",
     logos: [
-      { src: "https://cdn.simpleicons.org/ferrari/white", name: "Ferrari" },
-      { src: "https://cdn.simpleicons.org/mclaren/white", name: "McLaren" },
-      { src: "https://cdn.simpleicons.org/redbull/white", name: "Red Bull Racing" },
-      { src: "https://cdn.simpleicons.org/astonmartin/white", name: "Aston Martin" },
-      { src: "https://cdn.simpleicons.org/renault/white", name: "Renault" },
+      "https://cdn.simpleicons.org/ferrari/white",
+      "https://cdn.simpleicons.org/mclaren/white",
+      "https://cdn.simpleicons.org/redbull/white",
+      "https://cdn.simpleicons.org/astonmartin/white",
+      "https://cdn.simpleicons.org/renault/white",
     ],
   },
   {
     title: "TECHNOLOGY & DATA",
     logos: [
-      { src: "https://cdn.simpleicons.org/lenovo/white", name: "Lenovo" },
-      { src: "https://cdn.simpleicons.org/google/white", name: "Google" },
-      { src: "https://cdn.simpleicons.org/apple/white", name: "Apple" },
+      "https://cdn.simpleicons.org/lenovo/white",
+      "https://cdn.simpleicons.org/google/white",
+      "https://cdn.simpleicons.org/apple/white",
     ],
   },
   {
     title: "FINANCE & LOGISTICS",
     logos: [
-      { src: "https://cdn.simpleicons.org/dhl/white", name: "DHL" },
-      { src: "https://cdn.simpleicons.org/qatarairways/white", name: "Qatar Airways" },
-      { src: "https://cdn.simpleicons.org/americanexpress/white", name: "American Express" },
-      { src: "https://cdn.simpleicons.org/visa/white", name: "Visa" },
-      { src: "https://cdn.simpleicons.org/mastercard/white", name: "Mastercard" },
+      "https://cdn.simpleicons.org/dhl/white",
+      "https://cdn.simpleicons.org/qatarairways/white",
+      "https://cdn.simpleicons.org/americanexpress/white",
+      "https://cdn.simpleicons.org/visa/white",
+      "https://cdn.simpleicons.org/mastercard/white",
     ],
   },
   {
     title: "LIFESTYLE & ENTERTAINMENT",
     logos: [
-      { src: "https://cdn.simpleicons.org/paramountplus/white", name: "Paramount+" },
-      { src: "https://cdn.simpleicons.org/puma/white", name: "Puma" },
-      { src: "https://cdn.simpleicons.org/mcdonalds/white", name: "McDonald's" },
+      "https://cdn.simpleicons.org/paramountplus/white",
+      "https://cdn.simpleicons.org/puma/white",
+      "https://cdn.simpleicons.org/mcdonalds/white",
     ],
   },
 ];
 
-
-interface LogoEntry {
-  src: string;
-  name: string;
-}
-
 interface MarqueeRowProps {
-  logos: LogoEntry[];
+  logos: string[];
   opacity?: number;
 }
 
@@ -79,11 +73,11 @@ const MarqueeRow: React.FC<MarqueeRowProps> = ({ logos, opacity = 0.5 }) => {
         }
       `}</style>
       <div className="pm-marquee-track-animated">
-        {displayLogos.map((logo, i) => (
+        {displayLogos.map((src, i) => (
           <img
-            key={`${logo.src}-${i}`}
-            src={logo.src}
-            alt={logo.name}
+            key={`${src}-${i}`}
+            src={src}
+            alt="Partner Logo"
             className="pm-marquee-logo"
             style={{ opacity }}
           />

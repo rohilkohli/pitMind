@@ -1,12 +1,5 @@
 import type { RaceState } from "../../hooks/useFirebaseRaceState";
 
-// Typed driver entry for the SVG map
-interface TrackDriver {
-  driver: string;
-  team_color?: string | null;
-  gap_leader_s?: number | null;
-}
-
 const MONACO_PATH = `
           M 120 380
           L 120 300
@@ -35,8 +28,7 @@ const MONACO_PATH = `
 `;
 
 // Monaco Grand Prix SVG — accurate circuit outline with hairpins
-function MonacoCircuitSVG({ drivers }: { drivers: TrackDriver[] }) {
-
+function MonacoCircuitSVG({ drivers }: { drivers: any[] }) {
   return (
     <svg
       viewBox="0 0 800 500"

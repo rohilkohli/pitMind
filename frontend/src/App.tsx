@@ -355,16 +355,3 @@ export default function App() {
     </BrowserRouter>
   );
 }
-<Suspense fallback={<PageLoader label="Loading PitMind..." />}>
-  <Landing />
-</Suspense>
-                  </PageShell >
-                </ErrorBoundary >
-              }
-            />
-          </Routes >
-        </div >
-      </PanelStateProvider >
-    </BrowserRouter >
-  );
-}

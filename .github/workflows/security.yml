@@ -1,13 +1,6 @@
 name: Security Scanning
 
 on:
-  schedule:
-    # Run daily at 2 AM UTC
-    - cron: '0 2 * * *'
-  pull_request:
-    branches: [main, develop]
-  push:
-    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -125,6 +118,7 @@ jobs:
         with:
           languages: ${{ matrix.language }}
           queries: security-extended,security-and-quality
+          config-file: ./.github/codeql/codeql-config.yml
 
       - name: Autobuild
         uses: github/codeql-action/autobuild@v3

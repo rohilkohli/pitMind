@@ -1,0 +1,15 @@
+name: "pitMind CodeQL config"
+
+# Keep analysis focused on first-party source code and skip vendored/generated trees.
+paths:
+  - backend
+  - frontend
+
+paths-ignore:
+  # Accidental committed virtualenv containing third-party dependencies.
+  - .venv312/**
+  - backend/.venv_fix/**
+  # Standard dependency/build output folders.
+  - "**/node_modules/**"
+  - "**/dist/**"
+  - "**/build/**"
